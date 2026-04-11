@@ -1,0 +1,32 @@
+node_modules/
+dist/
+build/
+.turbo/
+.next/
+.cache/
+
+# env — secrets MUST live in Railway, never committed
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# coverage
+coverage/
+.nyc_output/
+
+# keys — JWT RS256 private keys must never be committed
+*.pem
+*.key
+keys/
