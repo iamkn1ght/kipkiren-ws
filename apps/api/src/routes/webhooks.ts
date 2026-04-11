@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from 'express';
 import { createHash } from 'node:crypto';
-import { loadEnv } from '../config/env.js';
+import { loadEnv, requireFeatureEnv } from '../config/env.js';
 import { getServiceClient } from '../lib/supabase.js';
 import { verifyKipkirenPaySignature, verifyPaystackSignature } from '../lib/hmac.js';
 import { writeAuditEvent } from '../services/audit.js';
@@ -193,6 +193,7 @@ const KipkirenPayPayloadSchema = (() => {
 })();
 
 webhooksRouter.post('/mpesa', async (req: RawBodyRequest, res: Response) => {
+  requireFeatureEnv('kipkiren_pay');
   const env = loadEnv();
   const raw = req.rawBody ?? '';
   const sig = req.header('x-kipkiren-pay-signature') ?? undefined;
@@ -251,6 +252,7 @@ webhooksRouter.post('/mpesa', async (req: RawBodyRequest, res: Response) => {
 // POST /v1/webhooks/paystack — Paystack callback
 // ----------------------------------------------------------------------------
 webhooksRouter.post('/paystack', async (req: RawBodyRequest, res: Response) => {
+  requireFeatureEnv('paystack');
   const env = loadEnv();
   const raw = req.rawBody ?? '';
   const sig = req.header('x-paystack-signature') ?? undefined;

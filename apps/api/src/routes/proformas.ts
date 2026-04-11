@@ -9,7 +9,7 @@ import { dispatchProforma } from '../services/proforma.js';
 import { writeAuditEvent } from '../services/audit.js';
 import { computeContentHash } from '../lib/content-hash.js';
 import { logger } from '../lib/logger.js';
-import { loadEnv } from '../config/env.js';
+import { loadEnv, requireFeatureEnv } from '../config/env.js';
 import {
   getKipkirenPayClient,
   getPaystackClient,
@@ -258,6 +258,7 @@ proformasRouter.post(
 
     if (input.rail === 'mpesa') {
       if (!input.msisdn) throw new HttpError(400, 'msisdn_required_for_mpesa');
+      requireFeatureEnv('kipkiren_pay');
       const stk = await kp().initiateStkPush({
         phone_msisdn: input.msisdn,
         amount_kes: proforma.total_kes,
@@ -280,6 +281,7 @@ proformasRouter.post(
     }
 
     // Card rail
+    requireFeatureEnv('paystack');
     const init = await ps().initialize({
       email: req.auth.sub + '@unknown.local', // TODO: load real client email in S3 polish
       amount_kes: proforma.total_kes,

@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
+import { FeatureUnavailableError } from '../config/env.js';
 import { logger } from '../lib/logger.js';
 
 export class HttpError extends Error {
@@ -21,6 +22,10 @@ export function errorHandler(
 ): void {
   if (err instanceof ZodError) {
     res.status(400).json({ error: 'validation_failed', issues: err.flatten() });
+    return;
+  }
+  if (err instanceof FeatureUnavailableError) {
+    res.status(503).json({ error: 'feature_unavailable', feature: err.feature, missing: err.missing });
     return;
   }
   if (err instanceof HttpError) {

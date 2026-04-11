@@ -4,6 +4,7 @@ import { CreateTicketInput, TicketStatus, type RetainerPlanName } from '@kws/sha
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { ticketRateLimit } from '../middleware/rate-limit.js';
 import { HttpError } from '../middleware/error.js';
+import { requireFeatureEnv } from '../config/env.js';
 import { getServiceClient } from '../lib/supabase.js';
 import { writeAuditEvent } from '../services/audit.js';
 import { decomposeTicket } from '../services/decomposition.js';
@@ -118,6 +119,7 @@ ticketsRouter.post(
 
     let proforma_id: string | null = null;
     try {
+      requireFeatureEnv('anthropic');
       const rateCard = await loadActiveRateCard();
       const ai = await decomposeTicket({
         ticket_description: input.description,
