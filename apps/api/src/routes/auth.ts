@@ -133,10 +133,10 @@ authRouter.post('/login', loginRateLimit, async (req: Request, res: Response) =>
   }
 
   const profile = await loadProfile(data.user.id);
-  const session = await issueSession(res, profile, {
-    userAgent: req.header('user-agent') ?? undefined,
-    ip: req.ip,
-  });
+  const meta: { userAgent?: string; ip?: string } = {};
+    if (req.header('user-agent')) meta.userAgent = req.header('user-agent') as string;
+    if (req.ip) meta.ip = req.ip;
+    const session = await issueSession(res, profile, meta);
   res.json(publicSession(session));
 });
 
@@ -185,11 +185,11 @@ authRouter.post('/refresh', async (req: Request, res: Response) => {
   }
 
   const profile = await loadProfile(row.user_id);
-  const next = await issueSession(res, profile, {
-    userAgent: req.header('user-agent') ?? undefined,
-    ip: req.ip,
-    familyId: row.family_id,
-  });
+  const refreshMeta: { userAgent?: string; ip?: string; familyId?: string } = {};
+    if (req.header('user-agent')) refreshMeta.userAgent = req.header('user-agent') as string;
+    if (req.ip) refreshMeta.ip = req.ip;
+    if (row.family_id) refreshMeta.familyId = row.family_id;
+    const next = await issueSession(res, profile, refreshMeta);
 
   // Mark the old token as replaced. Done AFTER issuing the new one so a
   // failure mid-issue doesn't lock the user out.

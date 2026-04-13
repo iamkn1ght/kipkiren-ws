@@ -69,7 +69,7 @@ adminRouter.put(
   requireAuth,
   requireRole('admin'),
   async (req: Request, res: Response) => {
-    const id = req.params.id;
+    const id = String(req.params.id);
     if (!id) throw new HttpError(400, 'missing_rate_card_id');
     const parsed = RateCardUpdate.safeParse(req.body);
     if (!parsed.success) {

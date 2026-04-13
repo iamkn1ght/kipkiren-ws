@@ -84,7 +84,7 @@ tasksRouter.get(
   requireAuth,
   requireRole('technical_delivery'),
   async (req: Request, res: Response) => {
-    const id = req.params.id;
+    const id = String(req.params.id);
     if (!id) throw new HttpError(400, 'missing_id');
     const sb = getServiceClient();
     const { data, error } = await sb

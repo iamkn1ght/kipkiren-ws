@@ -58,7 +58,7 @@ proformasRouter.put(
   requireAuth,
   requireRole('delivery_lead', 'admin'),
   async (req: Request, res: Response) => {
-    const id = req.params.id;
+    const id = String(req.params.id);
     if (!id) throw new HttpError(400, 'missing_proforma_id');
 
     const parsed = ReviewInput.safeParse(req.body);
@@ -195,7 +195,7 @@ proformasRouter.post(
   requireRole('client'),
   proformaApproveRateLimit,
   async (req: Request, res: Response) => {
-    const id = req.params.id;
+    const id = String(req.params.id);
     if (!id) throw new HttpError(400, 'missing_proforma_id');
     if (!req.auth?.clientId) throw new HttpError(403, 'client_context_missing');
 

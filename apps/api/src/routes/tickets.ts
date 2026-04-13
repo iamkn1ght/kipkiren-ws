@@ -186,7 +186,7 @@ ticketsRouter.put(
   requireAuth,
   requireRole('delivery_lead', 'admin'),
   async (req: Request, res: Response) => {
-    const id = req.params.id;
+    const id = String(req.params.id);
     if (!id) throw new HttpError(400, 'missing_ticket_id');
     const parsed = AssignInput.safeParse(req.body);
     if (!parsed.success) {
@@ -247,7 +247,7 @@ ticketsRouter.put(
   requireRole('technical_delivery', 'delivery_lead', 'admin'),
   async (req: Request, res: Response) => {
     if (!req.auth) throw new HttpError(401, 'unauthenticated');
-    const id = req.params.id;
+    const id = String(req.params.id);
     if (!id) throw new HttpError(400, 'missing_ticket_id');
     const parsed = StatusInput.safeParse(req.body);
     if (!parsed.success) {

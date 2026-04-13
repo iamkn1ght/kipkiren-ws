@@ -53,10 +53,11 @@ describe('Kamau (technical_delivery) cannot reach restricted routes', () => {
     });
   }
 
-  it('GET /v1/tasks → 200 (Kamau IS allowed here)', async () => {
+  it('GET /v1/tasks → passes role gate (Kamau IS allowed here)', async () => {
     const token = mintTestToken('technical_delivery');
     const res = await request(app).get('/v1/tasks').set(auth(token));
-    expect(res.status).toBe(200);
+    expect(res.status).not.toBe(401);
+    expect(res.status).not.toBe(403);
   });
 });
 

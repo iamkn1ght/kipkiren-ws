@@ -32,14 +32,16 @@ const skip = !url || !clientAJwt || !clientBJwt || !aTicketId || !anonKey;
 const d = skip ? describe.skip : describe;
 
 d('KWS-SEC-002 RLS isolation (live Supabase)', () => {
-  const sbAsB = createClient(url!, anonKey!, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: { headers: { Authorization: `Bearer ${clientBJwt!}` } },
-  });
-  const sbAsA = createClient(url!, anonKey!, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: { headers: { Authorization: `Bearer ${clientAJwt!}` } },
-  });
+  // Guard createClient — even inside describe.skip, vitest evaluates the
+  // callback body at collection time. Newer @supabase/supabase-js validates
+  // the URL eagerly, so we must not call createClient when env vars are missing.
+  const makeSb = (jwt: string) =>
+    createClient(url!, anonKey!, {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: { headers: { Authorization: `Bearer ${jwt}` } },
+    });
+  const sbAsB = skip ? (null as never) : makeSb(clientBJwt!);
+  const sbAsA = skip ? (null as never) : makeSb(clientAJwt!);
 
   it('Client A can read their own ticket row', async () => {
     const { data, error } = await sbAsA.from('tickets').select('id').eq('id', aTicketId!).maybeSingle();

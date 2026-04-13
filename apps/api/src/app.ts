@@ -2,7 +2,7 @@ import express, { type Express } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import pinoHttp from 'pino-http';
+import { pinoHttp } from 'pino-http';
 import { loadEnv } from './config/env.js';
 import { logger } from './lib/logger.js';
 import { healthRouter } from './routes/health.js';
