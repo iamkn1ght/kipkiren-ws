@@ -4,7 +4,7 @@ import { requireAuth, requireRole } from '../middleware/auth.js';
 import { HttpError } from '../middleware/error.js';
 import { getServiceClient } from '../lib/supabase.js';
 import { writeAuditEvent } from '../services/audit.js';
-import { loadQueue, loadClientAccounts, loadCapacitySnapshot } from '../services/admin-views.js';
+import { loadQueue, loadClientAccounts, loadCapacitySnapshot, loadReviewQueue, loadCapacityDetail, loadRecentDispatches } from '../services/admin-views.js';
 import { logger } from '../lib/logger.js';
 
 export const adminRouter: Router = Router();
@@ -36,6 +36,32 @@ adminRouter.get(
 );
 
 // ----------------------------------------------------------------------------
+// GET /v1/admin/recent-dispatches — last 5 dispatched proformas for dashboard
+// ----------------------------------------------------------------------------
+adminRouter.get(
+  '/recent-dispatches',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (_req: Request, res: Response) => {
+    const dispatches = await loadRecentDispatches();
+    res.json({ dispatches });
+  },
+);
+
+// ----------------------------------------------------------------------------
+// GET /v1/admin/review-queue — proformas awaiting review with line items
+// ----------------------------------------------------------------------------
+adminRouter.get(
+  '/review-queue',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (_req: Request, res: Response) => {
+    const items = await loadReviewQueue();
+    res.json({ items });
+  },
+);
+
+// ----------------------------------------------------------------------------
 // GET /v1/admin/capacity — snapshot for the Capacity tab
 // ----------------------------------------------------------------------------
 adminRouter.get(
@@ -45,6 +71,19 @@ adminRouter.get(
   async (_req: Request, res: Response) => {
     const snapshot = await loadCapacitySnapshot();
     res.json(snapshot);
+  },
+);
+
+// ----------------------------------------------------------------------------
+// GET /v1/admin/capacity-detail — per-staff utilisation, SLA trend, deadlines
+// ----------------------------------------------------------------------------
+adminRouter.get(
+  '/capacity-detail',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (_req: Request, res: Response) => {
+    const detail = await loadCapacityDetail();
+    res.json(detail);
   },
 );
 

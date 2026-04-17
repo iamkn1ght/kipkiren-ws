@@ -14,6 +14,8 @@ import { webhooksRouter } from './routes/webhooks.js';
 import { invoicesRouter } from './routes/invoices.js';
 import { adminRouter } from './routes/admin.js';
 import { tasksRouter } from './routes/tasks.js';
+import { servicesRouter } from './routes/services.js';
+import { onboardingRouter } from './routes/onboarding.js';
 import { errorHandler, notFound } from './middleware/error.js';
 import { requireAuth, requireRole } from './middleware/auth.js';
 
@@ -67,6 +69,8 @@ export function buildApp(): Express {
   app.use('/v1/invoices', invoicesRouter);
   app.use('/v1/admin', adminRouter);
   app.use('/v1/tasks', tasksRouter);
+  app.use('/v1/services', servicesRouter);
+  app.use('/v1/onboarding', onboardingRouter);
 
   // ----------------------------------------------------------------------
   // Stubs for read-side listing endpoints that the Kamau-403 penetration

@@ -167,6 +167,70 @@ proformasRouter.put(
 );
 
 // ----------------------------------------------------------------------------
+// PUT /v1/proformas/:id/reject
+//
+// Amara rejects a proforma that hasn't been dispatched yet. This sets
+// the proforma status to 'rejected' and reverts the ticket status so the
+// client can resubmit or clarify scope. Only works on pre-dispatch
+// proformas (ai_draft or under_review). Dispatched proformas are frozen
+// by migration 0003 triggers and cannot be rejected — they can only
+// expire or be superseded.
+// ----------------------------------------------------------------------------
+const RejectInput = z.object({
+  reason: z.string().min(1).max(500).optional(),
+});
+
+proformasRouter.put(
+  '/:id/reject',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (req: Request, res: Response) => {
+    const id = String(req.params.id);
+    if (!id) throw new HttpError(400, 'missing_proforma_id');
+
+    const parsed = RejectInput.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: 'invalid_input', issues: parsed.error.flatten() });
+      return;
+    }
+    const sb = getServiceClient();
+
+    const { data: proforma, error: pErr } = await sb
+      .from('proformas')
+      .select('id, status, content_hash, ticket_id')
+      .eq('id', id)
+      .single();
+    if (pErr || !proforma) throw new HttpError(404, 'proforma_not_found');
+    if (proforma.content_hash) {
+      throw new HttpError(409, 'proforma_already_dispatched');
+    }
+    if (proforma.status !== 'ai_draft' && proforma.status !== 'under_review') {
+      throw new HttpError(409, `proforma_invalid_status:${proforma.status}`);
+    }
+
+    await sb.from('proformas').update({ status: 'rejected' }).eq('id', id);
+
+    // Revert the ticket back to 'submitted' so the client can resubmit
+    // or the admin can re-trigger decomposition.
+    await sb.from('tickets').update({ status: 'submitted' }).eq('id', proforma.ticket_id);
+
+    await writeAuditEvent({
+      actor_id: req.auth!.sub,
+      actor_role: req.auth!.role,
+      event_type: 'proforma_rejected',
+      entity_type: 'proforma',
+      entity_id: id,
+      payload_snapshot: {
+        reason: parsed.data.reason ?? null,
+        previous_status: proforma.status,
+      },
+    });
+
+    res.json({ status: 'rejected' });
+  },
+);
+
+// ----------------------------------------------------------------------------
 // POST /v1/proformas/:id/approve
 //
 // The client clicks "Approve & pay" in the portal. We:
