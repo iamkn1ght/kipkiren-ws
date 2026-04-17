@@ -41,6 +41,7 @@ export type AuditEventType =
   | 'service_updated'
   | 'onboarding_invoice_created'
   | 'consent_recorded'
+  | 'dsar_fulfilled'
   | 'rate_card_modified'
   | 'ticket_assigned'
   | 'task_completed'

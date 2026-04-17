@@ -5,6 +5,7 @@ import { HttpError } from '../middleware/error.js';
 import { getServiceClient } from '../lib/supabase.js';
 import { writeAuditEvent } from '../services/audit.js';
 import { loadQueue, loadClientAccounts, loadCapacitySnapshot, loadReviewQueue, loadCapacityDetail, loadRecentDispatches } from '../services/admin-views.js';
+import { runUptimeChecks } from '../services/uptime.js';
 import { logger } from '../lib/logger.js';
 
 export const adminRouter: Router = Router();
@@ -145,5 +146,20 @@ adminRouter.put(
     });
 
     res.json({ rate_card_entry: after });
+  },
+);
+
+// ----------------------------------------------------------------------------
+// POST /v1/admin/uptime-check — run uptime checks on all hosting services
+// Pings each hosting service domain and records results in metadata.
+// Can be called manually or wired to a cron schedule.
+// ----------------------------------------------------------------------------
+adminRouter.post(
+  '/uptime-check',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (_req: Request, res: Response) => {
+    const results = await runUptimeChecks();
+    res.json({ checked: results.length, results });
   },
 );

@@ -568,6 +568,44 @@ function ServicesView({ services, loading, onRenewDomain }: { services: ClientSe
               </div>
               <div className={`bdg ${statusCls}`}>{statusLabel}</div>
             </div>
+            {/* Uptime blocks for hosting services */}
+            {svc.service_type === 'hosting' && Array.isArray(meta.uptime_checks) && (
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ fontFamily: 'var(--mono)', fontSize: 8, letterSpacing: 3, textTransform: 'uppercase', color: 'var(--mid)', marginBottom: 6 }}>
+                  Uptime · last {(meta.uptime_checks as { ok: boolean }[]).length} checks
+                </div>
+                <div className="uptime-row">
+                  {(meta.uptime_checks as { ok: boolean }[]).map((c, i) => (
+                    <div key={i} className={`uptime-block ${!c.ok ? 'down' : ''}`} />
+                  ))}
+                </div>
+                <div className="uptime-lbl">{String(meta.uptime_pct ?? 100)}% uptime</div>
+              </div>
+            )}
+            {/* SEO metrics */}
+            {svc.service_type === 'seo_retainer' && (meta.technical_score != null || meta.indexed_pages != null) && (
+              <div className="svc-detail-grid" style={{ marginBottom: 10 }}>
+                {meta.technical_score != null && <div className="svc-detail"><div className="svc-dl">Technical score</div><div className="svc-dv mono">{String(meta.technical_score)}/100</div></div>}
+                {meta.indexed_pages != null && <div className="svc-detail"><div className="svc-dl">Indexed pages</div><div className="svc-dv mono">{String(meta.indexed_pages)}</div></div>}
+                {meta.gsc_property_verified != null && <div className="svc-detail"><div className="svc-dl">GSC verified</div><div className="svc-dv">{meta.gsc_property_verified ? 'Yes' : 'No'}</div></div>}
+                {meta.last_audit != null && <div className="svc-detail"><div className="svc-dl">Last audit</div><div className="svc-dv">{String(meta.last_audit)}</div></div>}
+              </div>
+            )}
+            {/* Social media platforms */}
+            {svc.service_type === 'social_retainer' && Array.isArray(meta.platforms) && (
+              <div className="svc-detail-grid" style={{ marginBottom: 10 }}>
+                {(meta.platforms as string[]).map((p) => {
+                  const pd = meta[p] as Record<string, unknown> | undefined;
+                  return (
+                    <div key={p} className="svc-detail">
+                      <div className="svc-dl">{p}</div>
+                      <div className="svc-dv">{pd?.handle ? String(pd.handle) : p}{pd?.followers ? ` · ${String(pd.followers)} followers` : ''}</div>
+                    </div>
+                  );
+                })}
+                {meta.posts_per_month != null && <div className="svc-detail"><div className="svc-dl">Posts / month</div><div className="svc-dv mono">{String(meta.posts_per_month)}</div></div>}
+              </div>
+            )}
             <div className="svc-detail-grid">
               <div className="svc-detail">
                 <div className="svc-dl">Type</div>

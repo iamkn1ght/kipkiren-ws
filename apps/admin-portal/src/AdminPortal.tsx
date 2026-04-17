@@ -56,6 +56,8 @@ export function AdminPortal() {
   const [activeReview, setActiveReview] = useState<ReviewQueueItem | null>(null);
   const [editLines, setEditLines] = useState<EditLine[] | null>(null);
   const [actionBusy, setActionBusy] = useState(false);
+  const [showAddService, setShowAddService] = useState(false);
+  const [newSvc, setNewSvc] = useState({ client_id: '', service_type: 'hosting', monthly_cost_kes: '', renewal_at: '', domain: '' });
 
   const displayName = session?.email || 'Signed-in user';
   const displayEmail = session?.email ?? '';
@@ -166,6 +168,32 @@ export function AdminPortal() {
       reload();
     } catch {
       // Error already surfaced via ApiError
+    } finally {
+      setActionBusy(false);
+    }
+  };
+
+  const handleAddService = async () => {
+    if (actionBusy || !newSvc.client_id) return;
+    setActionBusy(true);
+    try {
+      const metadata: Record<string, unknown> = {};
+      if (newSvc.domain) metadata.domain = newSvc.domain;
+      await call('/v1/services/admin', {
+        method: 'POST',
+        body: {
+          client_id: newSvc.client_id,
+          service_type: newSvc.service_type,
+          monthly_cost_kes: parseInt(newSvc.monthly_cost_kes) || 0,
+          renewal_at: newSvc.renewal_at || null,
+          metadata,
+        },
+      });
+      setShowAddService(false);
+      setNewSvc({ client_id: '', service_type: 'hosting', monthly_cost_kes: '', renewal_at: '', domain: '' });
+      reload();
+    } catch {
+      // Error surfaced via ApiError
     } finally {
       setActionBusy(false);
     }
@@ -538,8 +566,13 @@ export function AdminPortal() {
 
         {/* ═════════════ SERVICES ════════════════ */}
         <section className={`view ${tab === 'services' ? 'active' : ''}`} id="services">
-          <h1 className="greeting">Client services</h1>
-          <p className="g-sub">{loading ? d : `${services?.length ?? 0} active services across all clients`}</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <h1 className="greeting">Client services</h1>
+              <p className="g-sub">{loading ? d : `${services?.length ?? 0} active services across all clients`}</p>
+            </div>
+            <button type="button" className="btn-tb" onClick={() => setShowAddService(true)}>+ Add service</button>
+          </div>
 
           {loading ? (
             <div style={{ textAlign: 'center', color: 'var(--mid)', padding: 40 }}>Loading…</div>
@@ -579,6 +612,58 @@ export function AdminPortal() {
             </>
           )}
         </section>
+      </div>
+
+      {/* ── ADD SERVICE MODAL ── */}
+      <div className={`rev-overlay ${showAddService ? 'open' : ''}`} onClick={(e) => { if (e.target === e.currentTarget) setShowAddService(false); }}>
+        {showAddService && (
+          <div className="rev-modal" style={{ maxWidth: 480 }}>
+            <div className="rev-hd">
+              <div className="rev-title">Add client service</div>
+              <button type="button" className="rev-close" onClick={() => setShowAddService(false)}>CLOSE ✕</button>
+            </div>
+            <div className="rev-body">
+              <div className="rev-line-hd"><span>Field</span><span>Value</span></div>
+              <div className="rev-line" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--mid)', minWidth: 100 }}>Client</span>
+                <select className="rev-inp" value={newSvc.client_id} onChange={(e) => setNewSvc({ ...newSvc, client_id: e.target.value })}>
+                  <option value="">Select client…</option>
+                  {(clients ?? []).map((c) => <option key={c.id} value={c.id}>{c.business_name}</option>)}
+                </select>
+              </div>
+              <div className="rev-line" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--mid)', minWidth: 100 }}>Type</span>
+                <select className="rev-inp" value={newSvc.service_type} onChange={(e) => setNewSvc({ ...newSvc, service_type: e.target.value })}>
+                  <option value="hosting">Hosting</option>
+                  <option value="domain">Domain</option>
+                  <option value="workspace">Google Workspace</option>
+                  <option value="microsoft365">Microsoft 365</option>
+                  <option value="ssl">SSL Certificate</option>
+                  <option value="seo_retainer">SEO Retainer</option>
+                  <option value="social_retainer">Social Media</option>
+                </select>
+              </div>
+              <div className="rev-line" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--mid)', minWidth: 100 }}>Cost / mo</span>
+                <input className="rev-inp mono" placeholder="KES" value={newSvc.monthly_cost_kes} onChange={(e) => setNewSvc({ ...newSvc, monthly_cost_kes: e.target.value.replace(/\D/g, '') })} />
+              </div>
+              <div className="rev-line" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--mid)', minWidth: 100 }}>Renewal</span>
+                <input className="rev-inp mono" type="date" value={newSvc.renewal_at} onChange={(e) => setNewSvc({ ...newSvc, renewal_at: e.target.value })} />
+              </div>
+              <div className="rev-line" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--mid)', minWidth: 100 }}>Domain</span>
+                <input className="rev-inp" placeholder="e.g. example.co.ke (optional)" value={newSvc.domain} onChange={(e) => setNewSvc({ ...newSvc, domain: e.target.value })} />
+              </div>
+              <div className="rev-acts">
+                <button type="button" className="btn-mod btn-cancel" onClick={() => setShowAddService(false)}>Cancel</button>
+                <button type="button" className="btn-mod btn-disp" disabled={actionBusy || !newSvc.client_id} onClick={() => void handleAddService()}>
+                  {actionBusy ? 'Creating…' : 'Create service'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── REVIEW MODAL ── */}
