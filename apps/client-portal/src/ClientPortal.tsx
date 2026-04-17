@@ -18,6 +18,15 @@
  */
 
 import { useState } from 'react';
+import { useAuth, useApi } from './auth.tsx';
+import {
+  useClientData,
+  serviceTypeLabel,
+  formatKes,
+  type ClientTicket,
+  type ClientInvoice,
+  type ClientService,
+} from './useClientData.ts';
 
 type View = 'dashboard' | 'ticket' | 'proforma' | 'invoices' | 'services';
 type ModalState = 'checkout' | 'stk' | 'proc' | 'confirm';
@@ -41,9 +50,14 @@ const VIEW_LABELS: Record<View, string> = {
 };
 
 export function ClientPortal() {
+  const { session, signOut } = useAuth();
+  const { tickets, invoices, services, loading, reload } = useClientData();
   const [view, setView] = useState<View>('dashboard');
   const [modal, setModal] = useState<ModalConfig | null>(null);
   const [proformaPaid, setProformaPaid] = useState(false);
+
+  const displayName = session?.email?.split('@')[0] ?? 'there';
+  const d = '—';
 
   const openPayModal = (context: PayContext) => {
     setModal({
@@ -95,8 +109,9 @@ export function ClientPortal() {
           </button>
         </div>
         <div className="sb-foot">
-          <div className="sb-plan">Growth Plan</div>
-          <div className="sb-name">Jane Wanjiru</div>
+          <div className="sb-plan">{d}</div>
+          <div className="sb-name">{session?.email ?? d}</div>
+          <button type="button" className="sb-signout" onClick={() => void signOut()}>Sign out</button>
         </div>
       </div>
 
@@ -107,11 +122,11 @@ export function ClientPortal() {
           <button type="button" className="btn-nt" onClick={() => setView('ticket')}>+ New Ticket</button>
         </div>
 
-        {view === 'dashboard' && <DashboardView onReviewProforma={() => setView('proforma')} />}
-        {view === 'ticket' && <TicketView />}
+        {view === 'dashboard' && <DashboardView name={displayName} tickets={tickets} services={services} invoices={invoices} loading={loading} onReviewProforma={() => setView('proforma')} />}
+        {view === 'ticket' && <TicketView onSubmitted={() => { reload(); setView('dashboard'); }} />}
         {view === 'proforma' && <ProformaView paid={proformaPaid} onApprove={() => openPayModal('proforma')} />}
-        {view === 'invoices' && <InvoicesView />}
-        {view === 'services' && <ServicesView onRenewDomain={() => openPayModal('domain')} />}
+        {view === 'invoices' && <InvoicesView invoices={invoices} loading={loading} />}
+        {view === 'services' && <ServicesView services={services} loading={loading} onRenewDomain={() => openPayModal('domain')} />}
 
         <div className="doc-note">Kipkiren Web Services · Client Portal v3.0 · ws.kipkiren.co.ke · Kipkiren Teknolojia © 2026</div>
       </div>
@@ -135,59 +150,79 @@ export function ClientPortal() {
 // ---------------------------------------------------------------------------
 // DASHBOARD
 // ---------------------------------------------------------------------------
-function DashboardView({ onReviewProforma }: { onReviewProforma: () => void }) {
+interface DashboardProps {
+  name: string;
+  tickets: ClientTicket[] | null;
+  services: ClientService[] | null;
+  invoices: ClientInvoice[] | null;
+  loading: boolean;
+  onReviewProforma: () => void;
+}
+function DashboardView({ name, tickets, services, invoices, loading, onReviewProforma }: DashboardProps) {
+  const d = '—';
+  const openTickets = tickets?.filter((t) => t.status !== 'complete' && t.status !== 'closed') ?? [];
+  const activeServices = services?.filter((s) => s.status === 'active' || s.status === 'expiring') ?? [];
+  const thisMonthTotal = (invoices ?? [])
+    .filter((i) => {
+      const m = new Date(i.issued_at);
+      const now = new Date();
+      return m.getFullYear() === now.getFullYear() && m.getMonth() === now.getMonth();
+    })
+    .reduce((s, i) => s + i.total_kes, 0);
+  const hasSlaBreaches = openTickets.some((t) => t.sla_deadline_at && Date.parse(t.sla_deadline_at) < Date.now());
+
   return (
     <div className="view">
-      <div className="greeting">Good morning, <em>Jane.</em></div>
-      <div className="g-sub">You have 2 open tickets and 1 proforma awaiting your approval.</div>
-      <div className="alert">
-        <div className="alert-txt">
-          <strong>Proforma #KWS-042</strong> — Homepage hero redesign · awaiting your approval before work begins.
+      <div className="greeting">Welcome back, <em>{name}.</em></div>
+      <div className="g-sub">{loading ? d : `You have ${openTickets.length} open ticket${openTickets.length !== 1 ? 's' : ''}.`}</div>
+      {openTickets.some((t) => t.status === 'ai_draft' || t.status === 'dispatched') && (
+        <div className="alert">
+          <div className="alert-txt">
+            <strong>Proforma awaiting review</strong> — approve before work begins.
+          </div>
+          <button type="button" className="btn-rev" onClick={onReviewProforma}>Review →</button>
         </div>
-        <button type="button" className="btn-rev" onClick={onReviewProforma}>Review →</button>
-      </div>
+      )}
       <div className="stats">
         <div className="sc">
           <div className="sc-lbl">Active services</div>
-          <div className="sc-val" style={{ color: 'var(--teal-deep)' }}>3</div>
-          <div className="sc-note">Hosting · Domain · Workspace</div>
+          <div className="sc-val" style={{ color: 'var(--teal-deep)' }}>{loading ? d : activeServices.length}</div>
+          <div className="sc-note">{loading ? d : activeServices.map((s) => serviceTypeLabel(s.service_type)).join(' · ') || 'None'}</div>
         </div>
         <div className="sc">
           <div className="sc-lbl">Open tickets</div>
-          <div className="sc-val">2</div>
-          <div className="sc-note">1 in progress · 1 pending</div>
+          <div className="sc-val">{loading ? d : openTickets.length}</div>
+          <div className="sc-note">{loading ? d : `${openTickets.filter((t) => t.status === 'in_progress').length} in progress`}</div>
         </div>
         <div className="sc">
           <div className="sc-lbl">This month</div>
-          <div className="sc-val" style={{ fontSize: 16, marginTop: 3, color: 'var(--teal-deep)' }}>KES 9,999</div>
-          <div className="sc-note">Retainer only · 0 task charges</div>
+          <div className="sc-val" style={{ fontSize: 16, marginTop: 3, color: 'var(--teal-deep)' }}>{loading ? d : `KES ${formatKes(thisMonthTotal)}`}</div>
+          <div className="sc-note">{loading ? d : 'Retainer + task charges'}</div>
         </div>
         <div className="sc">
           <div className="sc-lbl">SLA status</div>
-          <div className="sc-val" style={{ fontSize: 13, color: '#22c55e', marginTop: 4 }}>● All clear</div>
-          <div className="sc-note">No breaches this month</div>
+          <div className="sc-val" style={{ fontSize: 13, color: hasSlaBreaches ? 'var(--amber-deep)' : '#22c55e', marginTop: 4 }}>{loading ? d : hasSlaBreaches ? '● Breach' : '● All clear'}</div>
+          <div className="sc-note">{loading ? d : hasSlaBreaches ? 'Check open tickets' : 'No breaches this month'}</div>
         </div>
       </div>
       <div className="shd">Active services</div>
       <div className="svc-list">
-        <div className="svc-row">
-          <div className="dot dg" />
-          <div className="svc-nm">Managed Hosting</div>
-          <div className="svc-mt">janewanjiru-logistics.co.ke</div>
-          <div className="bdg bdg-t">Active</div>
-        </div>
-        <div className="svc-row">
-          <div className="dot da" />
-          <div className="svc-nm">Domain Registration</div>
-          <div className="svc-mt">Expires in 42 days</div>
-          <div className="bdg bdg-a">Renew soon</div>
-        </div>
-        <div className="svc-row">
-          <div className="dot dg" />
-          <div className="svc-nm">Google Workspace</div>
-          <div className="svc-mt">5 users · jane@jwlogistics.co.ke</div>
-          <div className="bdg bdg-t">Active</div>
-        </div>
+        {loading ? (
+          <div style={{ padding: 20, textAlign: 'center', color: 'var(--mid)' }}>Loading…</div>
+        ) : activeServices.length === 0 ? (
+          <div style={{ padding: 20, textAlign: 'center', color: 'var(--mid)' }}>No active services</div>
+        ) : activeServices.map((s) => {
+          const domain = (s.metadata as { domain?: string }).domain;
+          const isExpiring = s.status === 'expiring';
+          return (
+            <div key={s.id} className="svc-row">
+              <div className={`dot ${isExpiring ? 'da' : 'dg'}`} />
+              <div className="svc-nm">{serviceTypeLabel(s.service_type)}</div>
+              <div className="svc-mt">{domain ?? `KES ${formatKes(s.monthly_cost_kes)}/mo`}</div>
+              <div className={`bdg ${isExpiring ? 'bdg-a' : 'bdg-t'}`}>{isExpiring ? 'Renew soon' : 'Active'}</div>
+            </div>
+          );
+        })}
       </div>
       <div className="shd">Open tickets</div>
       <table className="tbl">
@@ -197,30 +232,31 @@ function DashboardView({ onReviewProforma }: { onReviewProforma: () => void }) {
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td><span className="tid">KWS-041</span></td>
-            <td>Update team page with 3 new staff</td>
-            <td style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--mid)' }}>Web</td>
-            <td>
-              <div className="sla-w">
-                <div className="sla-tr"><div className="sla-fl fl-g" /></div>
-                <span className="sla-t">18h left</span>
-              </div>
-            </td>
-            <td><span className="bdg bdg-t">In progress</span></td>
-          </tr>
-          <tr>
-            <td><span className="tid">KWS-042</span></td>
-            <td>Homepage hero section redesign</td>
-            <td style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--mid)' }}>Web</td>
-            <td>
-              <div className="sla-w">
-                <div className="sla-tr"><div className="sla-fl fl-a" /></div>
-                <span className="sla-t">Pending</span>
-              </div>
-            </td>
-            <td><span className="bdg bdg-a">Awaiting you</span></td>
-          </tr>
+          {loading ? (
+            <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--mid)' }}>Loading…</td></tr>
+          ) : openTickets.length === 0 ? (
+            <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--mid)' }}>No open tickets</td></tr>
+          ) : openTickets.map((t) => {
+            const slaMs = t.sla_deadline_at ? Date.parse(t.sla_deadline_at) - Date.now() : null;
+            const slaLabel = slaMs === null ? 'N/A' : slaMs <= 0 ? 'Breached' : slaMs < 3_600_000 ? `${Math.floor(slaMs / 60_000)}m` : `${Math.floor(slaMs / 3_600_000)}h left`;
+            const slaClass = slaMs === null ? 'fl-g' : slaMs <= 0 ? 'fl-r' : slaMs < 6 * 3_600_000 ? 'fl-a' : 'fl-g';
+            const statusLabel = t.status === 'in_progress' ? 'In progress' : t.status === 'dispatched' ? 'Awaiting you' : t.status.replace(/_/g, ' ');
+            const statusCls = t.status === 'dispatched' || t.status === 'ai_draft' ? 'bdg-a' : 'bdg-t';
+            return (
+              <tr key={t.id}>
+                <td><span className="tid">{t.ref}</span></td>
+                <td>{t.description}</td>
+                <td style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--mid)' }}>{t.category}</td>
+                <td>
+                  <div className="sla-w">
+                    <div className="sla-tr"><div className={`sla-fl ${slaClass}`} /></div>
+                    <span className="sla-t">{slaLabel}</span>
+                  </div>
+                </td>
+                <td><span className={`bdg ${statusCls}`}>{statusLabel}</span></td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -230,7 +266,49 @@ function DashboardView({ onReviewProforma }: { onReviewProforma: () => void }) {
 // ---------------------------------------------------------------------------
 // NEW TICKET
 // ---------------------------------------------------------------------------
-function TicketView() {
+const CATEGORY_MAP: Record<string, string> = {
+  'Web Development': 'web',
+  'Cloud Services': 'cloud',
+  'SEO': 'seo',
+  'Social Media': 'social',
+  'Domain / DNS': 'dns',
+  'Not sure': 'web',
+};
+const URGENCY_MAP: Record<string, string> = {
+  'Standard (within SLA)': 'standard',
+  'Elevated — within 48hrs': 'elevated',
+  'Urgent — within 24hrs': 'urgent',
+};
+
+function TicketView({ onSubmitted }: { onSubmitted: () => void }) {
+  const call = useApi();
+  const [desc, setDesc] = useState('');
+  const [category, setCategory] = useState('Web Development');
+  const [urgency, setUrgency] = useState('Standard (within SLA)');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async () => {
+    if (!desc.trim() || submitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      await call('/v1/tickets', {
+        method: 'POST',
+        body: {
+          description: desc.trim(),
+          category: CATEGORY_MAP[category] ?? 'web',
+          urgency: URGENCY_MAP[urgency] ?? 'standard',
+        },
+      });
+      onSubmitted();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Submission failed');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="view">
       <div className="fsec">
@@ -240,12 +318,17 @@ function TicketView() {
         </div>
         <div className="fld">
           <label>Describe your request</label>
-          <textarea placeholder="e.g. I need to add a new services page to my website with 4 sections — intro, what we offer, a pricing table, and a contact form at the bottom." />
+          <textarea
+            placeholder="e.g. I need to add a new services page to my website with 4 sections — intro, what we offer, a pricing table, and a contact form at the bottom."
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+            disabled={submitting}
+          />
         </div>
         <div className="fg2">
           <div className="fld">
             <label>Service category</label>
-            <select>
+            <select value={category} onChange={(e) => setCategory(e.target.value)} disabled={submitting}>
               <option>Web Development</option>
               <option>Cloud Services</option>
               <option>SEO</option>
@@ -256,7 +339,7 @@ function TicketView() {
           </div>
           <div className="fld">
             <label>Urgency</label>
-            <select>
+            <select value={urgency} onChange={(e) => setUrgency(e.target.value)} disabled={submitting}>
               <option>Standard (within SLA)</option>
               <option>Elevated — within 48hrs</option>
               <option>Urgent — within 24hrs</option>
@@ -270,7 +353,10 @@ function TicketView() {
         <div className="ai-note">
           After submission, our AI engine decomposes your request into sub-tasks and generates a proforma with line-item pricing. You receive the proforma within 24 hours. <strong>Work begins only once you approve.</strong>
         </div>
-        <button type="button" className="btn-sub">Submit request →</button>
+        {error && <div className="lg-error">{error}</div>}
+        <button type="button" className="btn-sub" disabled={submitting || !desc.trim()} onClick={() => void handleSubmit()}>
+          {submitting ? 'Submitting…' : 'Submit request →'}
+        </button>
       </div>
     </div>
   );
@@ -376,27 +462,40 @@ function ProformaView({ paid, onApprove }: ProformaProps) {
 // ---------------------------------------------------------------------------
 // INVOICES
 // ---------------------------------------------------------------------------
-function InvoicesView() {
+function InvoicesView({ invoices, loading }: { invoices: ClientInvoice[] | null; loading: boolean }) {
   const [filter, setFilter] = useState<'all' | 'retainer' | 'task' | 'pending'>('all');
+  const d = '—';
+  const rows = invoices ?? [];
+  const filtered = rows.filter((i) => {
+    if (filter === 'all') return true;
+    if (filter === 'pending') return !i.paid_at;
+    return i.kind === filter;
+  });
+  const year = new Date().getFullYear();
+  const yearInvoices = rows.filter((i) => new Date(i.issued_at).getFullYear() === year);
+  const totalPaid = yearInvoices.filter((i) => i.paid_at).reduce((s, i) => s + i.total_kes, 0);
+  const retainerSpend = yearInvoices.filter((i) => i.kind === 'retainer').reduce((s, i) => s + i.total_kes, 0);
+  const taskSpend = yearInvoices.filter((i) => i.kind === 'task').reduce((s, i) => s + i.total_kes, 0);
+
   return (
     <div className="view">
       <div className="greeting" style={{ fontSize: 22, marginBottom: 3 }}>Invoice <em>History</em></div>
       <div className="g-sub">All retainer charges and approved task invoices.</div>
       <div className="inv-summary">
         <div className="sc">
-          <div className="sc-lbl">Total paid · 2026</div>
-          <div className="sc-val" style={{ color: 'var(--teal-deep)', fontSize: 20 }}>KES 48,247</div>
+          <div className="sc-lbl">Total paid · {year}</div>
+          <div className="sc-val" style={{ color: 'var(--teal-deep)', fontSize: 20 }}>{loading ? d : `KES ${formatKes(totalPaid)}`}</div>
           <div className="sc-note">Retainer + task charges</div>
         </div>
         <div className="sc">
           <div className="sc-lbl">Retainer spend</div>
-          <div className="sc-val" style={{ fontSize: 20 }}>KES 39,996</div>
-          <div className="sc-note">4 months × KES 9,999</div>
+          <div className="sc-val" style={{ fontSize: 20 }}>{loading ? d : `KES ${formatKes(retainerSpend)}`}</div>
+          <div className="sc-note">{loading ? d : `${yearInvoices.filter((i) => i.kind === 'retainer').length} invoices`}</div>
         </div>
         <div className="sc">
           <div className="sc-lbl">Task charges</div>
-          <div className="sc-val" style={{ fontSize: 20 }}>KES 8,251</div>
-          <div className="sc-note">3 approved tasks</div>
+          <div className="sc-val" style={{ fontSize: 20 }}>{loading ? d : `KES ${formatKes(taskSpend)}`}</div>
+          <div className="sc-note">{loading ? d : `${yearInvoices.filter((i) => i.kind === 'task').length} tasks`}</div>
         </div>
       </div>
       <div className="inv-filter">
@@ -409,101 +508,24 @@ function InvoicesView() {
         <span>Invoice</span><span>Description</span><span>Type</span><span>Date</span>
         <span style={{ textAlign: 'right', display: 'block' }}>Amount</span>
       </div>
-      <div className="inv-row">
-        <span className="inv-id">RET-2026-04</span>
-        <span className="inv-desc">Growth Plan retainer · April 2026</span>
-        <span><div className="bdg bdg-t" style={{ display: 'inline-block' }}>Retainer</div></span>
-        <span className="inv-date">1 Apr 2026</span>
-        <span className="inv-amt">KES 9,999</span>
-      </div>
-      <div className="inv-row">
-        <span className="inv-id">TSK-2026-039</span>
-        <span className="inv-desc">SEO audit — homepage & 4 service pages</span>
-        <span><div className="bdg bdg-k" style={{ display: 'inline-block' }}>Task</div></span>
-        <span className="inv-date">28 Mar 2026</span>
-        <span className="inv-amt">KES 5,220</span>
-      </div>
-      <div className="inv-row">
-        <span className="inv-id">RET-2026-03</span>
-        <span className="inv-desc">Growth Plan retainer · March 2026</span>
-        <span><div className="bdg bdg-t" style={{ display: 'inline-block' }}>Retainer</div></span>
-        <span className="inv-date">1 Mar 2026</span>
-        <span className="inv-amt">KES 9,999</span>
-      </div>
-      <div className="inv-row">
-        <span className="inv-id">TSK-2026-031</span>
-        <span className="inv-desc">Contact form rebuild + spam protection</span>
-        <span><div className="bdg bdg-k" style={{ display: 'inline-block' }}>Task</div></span>
-        <span className="inv-date">18 Feb 2026</span>
-        <span className="inv-amt">KES 2,088</span>
-      </div>
-      <div className="inv-row">
-        <span className="inv-id">TSK-2026-027</span>
-        <span className="inv-desc">Google Workspace setup · 5 users</span>
-        <span><div className="bdg bdg-k" style={{ display: 'inline-block' }}>Task</div></span>
-        <span className="inv-date">9 Feb 2026</span>
-        <span className="inv-amt">KES 943</span>
-      </div>
-      <div className="inv-row">
-        <span className="inv-id">RET-2026-02</span>
-        <span className="inv-desc">Growth Plan retainer · February 2026</span>
-        <span><div className="bdg bdg-t" style={{ display: 'inline-block' }}>Retainer</div></span>
-        <span className="inv-date">1 Feb 2026</span>
-        <span className="inv-amt">KES 9,999</span>
-      </div>
-      <div className="inv-row">
-        <span className="inv-id">RET-2026-01</span>
-        <span className="inv-desc">Growth Plan retainer · January 2026</span>
-        <span><div className="bdg bdg-t" style={{ display: 'inline-block' }}>Retainer</div></span>
-        <span className="inv-date">1 Jan 2026</span>
-        <span className="inv-amt">KES 9,999</span>
-      </div>
-      <div style={{ background: '#fff', border: '1px solid var(--border)', borderTop: 'none', padding: '14px 16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--mid)' }}>
-            Payments via M-Pesa STK Push
-          </span>
-          <button
-            type="button"
-            style={{ fontFamily: 'var(--mono)', fontSize: 8, letterSpacing: 2, textTransform: 'uppercase', background: 'transparent', color: 'var(--teal-deep)', border: '1px solid var(--teal-deep)', padding: '7px 14px', cursor: 'pointer' }}
-          >
-            Download all PDF
-          </button>
-        </div>
-      </div>
-      <div className="spend-bar-wrap">
-        <div className="spend-lbl">Monthly spend · Jan – Apr 2026</div>
-        <div className="spend-months">
-          <div className="spend-col">
-            <div className="spend-bar-outer" style={{ height: 40 }}>
-              <div className="spend-bar-inner dim" style={{ height: 40 }} />
-            </div>
-            <div className="spend-mo">Jan</div>
-            <div className="spend-val" style={{ color: 'var(--mid)' }}>9.9K</div>
+      {loading ? (
+        <div className="inv-row"><span style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--mid)' }}>Loading…</span></div>
+      ) : filtered.length === 0 ? (
+        <div className="inv-row"><span style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--mid)' }}>No invoices</span></div>
+      ) : filtered.map((inv) => {
+        const kindCls = inv.kind === 'retainer' ? 'bdg-t' : inv.kind === 'onboarding' ? 'bdg-a' : 'bdg-k';
+        const kindLabel = inv.kind === 'retainer' ? 'Retainer' : inv.kind === 'onboarding' ? 'Onboarding' : 'Task';
+        const dateStr = new Date(inv.issued_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        return (
+          <div key={inv.id} className="inv-row">
+            <span className="inv-id">{inv.ref}</span>
+            <span className="inv-desc">{inv.ref}</span>
+            <span><div className={`bdg ${kindCls}`} style={{ display: 'inline-block' }}>{kindLabel}</div></span>
+            <span className="inv-date">{dateStr}</span>
+            <span className="inv-amt">KES {formatKes(inv.total_kes)}</span>
           </div>
-          <div className="spend-col">
-            <div className="spend-bar-outer" style={{ height: 60 }}>
-              <div className="spend-bar-inner" style={{ height: 60 }} />
-            </div>
-            <div className="spend-mo">Feb</div>
-            <div className="spend-val">13.0K</div>
-          </div>
-          <div className="spend-col">
-            <div className="spend-bar-outer" style={{ height: 70 }}>
-              <div className="spend-bar-inner" style={{ height: 70 }} />
-            </div>
-            <div className="spend-mo">Mar</div>
-            <div className="spend-val">15.2K</div>
-          </div>
-          <div className="spend-col">
-            <div className="spend-bar-outer" style={{ height: 40 }}>
-              <div className="spend-bar-inner dim" style={{ height: 40 }} />
-            </div>
-            <div className="spend-mo">Apr</div>
-            <div className="spend-val" style={{ color: 'var(--mid)' }}>9.9K</div>
-          </div>
-        </div>
-      </div>
+        );
+      })}
     </div>
   );
 }
@@ -511,114 +533,73 @@ function InvoicesView() {
 // ---------------------------------------------------------------------------
 // SERVICES
 // ---------------------------------------------------------------------------
-function ServicesView({ onRenewDomain }: { onRenewDomain: () => void }) {
+function ServicesView({ services, loading, onRenewDomain }: { services: ClientService[] | null; loading: boolean; onRenewDomain: () => void }) {
+  const d = '—';
+  const rows = services ?? [];
+
   return (
     <div className="view">
       <div className="greeting" style={{ fontSize: 22, marginBottom: 3 }}>Your <em>Services</em></div>
       <div className="g-sub">Manage active services, view health status, and add new services.</div>
 
-      {/* Hosting */}
-      <div className="svc-card">
-        <div className="svc-card-hd">
-          <div>
-            <div className="svc-card-title">Managed Hosting</div>
-            <div className="svc-card-sub">janewanjiru-logistics.co.ke · GCP af-south-1</div>
-          </div>
-          <div className="bdg bdg-t">Active</div>
-        </div>
-        <div style={{ marginBottom: 10 }}>
-          <div style={{ fontFamily: 'var(--mono)', fontSize: 8, letterSpacing: 3, textTransform: 'uppercase', color: 'var(--mid)', marginBottom: 6 }}>
-            Uptime · last 30 days
-          </div>
-          <div className="uptime-row">
-            {Array.from({ length: 30 }).map((_, i) => (
-              <div key={i} className={`uptime-block ${i === 15 ? 'down' : ''}`} />
-            ))}
-          </div>
-          <div className="uptime-lbl">99.6% uptime · 1 incident 26 Mar · resolved in 58 min</div>
-        </div>
-        <div className="svc-detail-grid">
-          <div className="svc-detail">
-            <div className="svc-dl">Plan</div>
-            <div className="svc-dv">Managed · 5GB</div>
-          </div>
-          <div className="svc-detail">
-            <div className="svc-dl">Monthly cost</div>
-            <div className="svc-dv mono">KES 2,500</div>
-          </div>
-          <div className="svc-detail">
-            <div className="svc-dl">Next renewal</div>
-            <div className="svc-dv">1 May 2026</div>
-          </div>
-        </div>
-        <div className="svc-actions">
-          <button type="button" className="btn-svc btn-svc-o">View logs</button>
-          <button type="button" className="btn-svc btn-svc-o">Upgrade storage</button>
-        </div>
-      </div>
+      {loading ? (
+        <div style={{ padding: 40, textAlign: 'center', color: 'var(--mid)' }}>Loading…</div>
+      ) : rows.length === 0 ? (
+        <div style={{ padding: 40, textAlign: 'center', color: 'var(--mid)' }}>No services provisioned yet</div>
+      ) : rows.map((svc) => {
+        const meta = svc.metadata as Record<string, unknown>;
+        const domain = meta.domain as string | undefined;
+        const description = meta.description as string | undefined;
+        const isExpiring = svc.status === 'expiring';
+        const isExpired = svc.status === 'expired';
+        const isDomain = svc.service_type === 'domain';
+        const renewalDate = svc.renewal_at ? new Date(svc.renewal_at) : null;
+        const daysUntilRenewal = renewalDate ? Math.ceil((renewalDate.getTime() - Date.now()) / 86_400_000) : null;
+        const renewalLabel = renewalDate ? renewalDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : d;
+        const statusCls = isExpiring || isExpired ? 'bdg-a' : svc.status === 'suspended' ? 'bdg-o' : 'bdg-t';
+        const statusLabel = isExpiring ? 'Renew soon' : isExpired ? 'Expired' : svc.status === 'suspended' ? 'Suspended' : 'Active';
 
-      {/* Domain — warn */}
-      <div className="svc-card warn-card">
-        <div className="svc-card-hd">
-          <div>
-            <div className="svc-card-title">Domain Registration</div>
-            <div className="svc-card-sub">jwlogistics.co.ke · Cloudflare DNS</div>
+        return (
+          <div key={svc.id} className={`svc-card ${isExpiring ? 'warn-card' : ''}`}>
+            <div className="svc-card-hd">
+              <div>
+                <div className="svc-card-title">{serviceTypeLabel(svc.service_type)}</div>
+                <div className="svc-card-sub">{domain ?? description ?? svc.service_type}</div>
+              </div>
+              <div className={`bdg ${statusCls}`}>{statusLabel}</div>
+            </div>
+            <div className="svc-detail-grid">
+              <div className="svc-detail">
+                <div className="svc-dl">Type</div>
+                <div className="svc-dv">{serviceTypeLabel(svc.service_type)}</div>
+              </div>
+              <div className="svc-detail">
+                <div className="svc-dl">Monthly cost</div>
+                <div className="svc-dv mono">KES {formatKes(svc.monthly_cost_kes)}</div>
+              </div>
+              {renewalDate && (
+                <div className="svc-detail" style={isExpiring ? { background: 'var(--amber-light)', border: '1px solid var(--amber)' } : undefined}>
+                  <div className="svc-dl" style={isExpiring ? { color: 'var(--amber-deep)' } : undefined}>{isExpiring ? 'Expires' : 'Next renewal'}</div>
+                  <div className="svc-dv" style={isExpiring ? { color: 'var(--amber-deep)', fontWeight: 500 } : undefined}>
+                    {renewalLabel}{daysUntilRenewal !== null && daysUntilRenewal > 0 && daysUntilRenewal <= 60 ? ` · ${daysUntilRenewal} days` : ''}
+                  </div>
+                </div>
+              )}
+            </div>
+            {isExpiring && isDomain && (
+              <div style={{ background: 'var(--amber-light)', borderLeft: '3px solid var(--amber-deep)', padding: '10px 14px', fontSize: 12, color: 'var(--amber-deep)', marginBottom: 12, lineHeight: 1.6 }}>
+                Your domain expires in {daysUntilRenewal} days. If not renewed, your website and email will go offline.
+              </div>
+            )}
+            <div className="svc-actions">
+              {isExpiring && isDomain && (
+                <button type="button" className="btn-svc btn-svc-a" onClick={onRenewDomain}>Pay renewal →</button>
+              )}
+            </div>
           </div>
-          <div className="bdg bdg-a">Renew soon</div>
-        </div>
-        <div className="svc-detail-grid">
-          <div className="svc-detail">
-            <div className="svc-dl">Registrar</div>
-            <div className="svc-dv">KWS via Cloudflare</div>
-          </div>
-          <div className="svc-detail">
-            <div className="svc-dl">Renewal cost</div>
-            <div className="svc-dv mono">KES 1,800 / yr</div>
-          </div>
-          <div className="svc-detail" style={{ background: 'var(--amber-light)', border: '1px solid var(--amber)' }}>
-            <div className="svc-dl" style={{ color: 'var(--amber-deep)' }}>Expires</div>
-            <div className="svc-dv" style={{ color: 'var(--amber-deep)', fontWeight: 500 }}>22 May 2026 · 42 days</div>
-          </div>
-        </div>
-        <div style={{ background: 'var(--amber-light)', borderLeft: '3px solid var(--amber-deep)', padding: '10px 14px', fontSize: 12, color: 'var(--amber-deep)', marginBottom: 12, lineHeight: 1.6 }}>
-          Your domain expires in 42 days. If not renewed, your website and email will go offline.
-        </div>
-        <div className="svc-actions">
-          <button type="button" className="btn-svc btn-svc-a" onClick={onRenewDomain}>Pay renewal — KES 1,800 →</button>
-          <button type="button" className="btn-svc btn-svc-o">View DNS records</button>
-        </div>
-      </div>
+        );
+      })}
 
-      {/* Workspace */}
-      <div className="svc-card">
-        <div className="svc-card-hd">
-          <div>
-            <div className="svc-card-title">Google Workspace</div>
-            <div className="svc-card-sub">Business Starter · 5 user licences</div>
-          </div>
-          <div className="bdg bdg-t">Active</div>
-        </div>
-        <div className="svc-detail-grid">
-          <div className="svc-detail">
-            <div className="svc-dl">Users</div>
-            <div className="svc-dv">5 of 10 licences used</div>
-          </div>
-          <div className="svc-detail">
-            <div className="svc-dl">Monthly cost</div>
-            <div className="svc-dv mono">KES 3,500</div>
-          </div>
-          <div className="svc-detail">
-            <div className="svc-dl">Primary admin</div>
-            <div className="svc-dv mono" style={{ fontSize: 10 }}>jane@jwlogistics.co.ke</div>
-          </div>
-        </div>
-        <div className="svc-actions">
-          <button type="button" className="btn-svc btn-svc-o">Manage users</button>
-          <button type="button" className="btn-svc btn-svc-o">Add licences</button>
-        </div>
-      </div>
-
-      {/* Add service */}
       <div className="add-svc">
         <div>
           <div style={{ fontSize: 13, color: 'var(--ink)', fontWeight: 500, marginBottom: 3 }}>Add a service</div>

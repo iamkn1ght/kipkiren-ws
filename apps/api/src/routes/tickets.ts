@@ -173,6 +173,66 @@ ticketsRouter.post(
 );
 
 // ----------------------------------------------------------------------------
+// GET /v1/tickets — list tickets for the authenticated user.
+// Client: own tickets only. Admin/delivery_lead: all tickets.
+// ----------------------------------------------------------------------------
+ticketsRouter.get(
+  '/',
+  requireAuth,
+  requireRole('client', 'delivery_lead', 'admin'),
+  async (req: Request, res: Response) => {
+    const sb = getServiceClient();
+    let query = sb
+      .from('tickets')
+      .select(
+        `id, ref, description, category, urgency, status, sla_deadline_at, assigned_to, created_at,
+         clients ( id, business_name )`,
+      )
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    if (req.auth!.role === 'client') {
+      if (!req.auth!.clientId) throw new HttpError(403, 'client_context_missing');
+      query = query.eq('client_id', req.auth!.clientId);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    res.json({ tickets: data ?? [] });
+  },
+);
+
+// ----------------------------------------------------------------------------
+// GET /v1/tickets/:id — single ticket detail.
+// Client: own ticket only. Admin: any ticket.
+// ----------------------------------------------------------------------------
+ticketsRouter.get(
+  '/:id',
+  requireAuth,
+  requireRole('client', 'delivery_lead', 'admin'),
+  async (req: Request, res: Response) => {
+    const sb = getServiceClient();
+    let query = sb
+      .from('tickets')
+      .select(
+        `id, ref, description, category, urgency, status, sla_deadline_at, assigned_to, created_at,
+         clients ( id, business_name ),
+         proformas ( id, ref, status, subtotal_kes, discount_kes, vat_kes, total_kes, content_hash, dispatched_at )`,
+      )
+      .eq('id', req.params.id);
+
+    if (req.auth!.role === 'client') {
+      if (!req.auth!.clientId) throw new HttpError(403, 'client_context_missing');
+      query = query.eq('client_id', req.auth!.clientId);
+    }
+
+    const { data, error } = await query.single();
+    if (error || !data) throw new HttpError(404, 'ticket_not_found');
+    res.json({ ticket: data });
+  },
+);
+
+// ----------------------------------------------------------------------------
 // PUT /v1/tickets/:id/assign — assign a ticket to a technical_delivery user.
 // KWS-SEC-007 + ADR-KWS-003: only delivery_lead / admin can call this.
 // The assignee must be a technical_delivery user; we enforce that server-side.

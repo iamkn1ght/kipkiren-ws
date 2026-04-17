@@ -17,7 +17,6 @@ import { tasksRouter } from './routes/tasks.js';
 import { servicesRouter } from './routes/services.js';
 import { onboardingRouter } from './routes/onboarding.js';
 import { errorHandler, notFound } from './middleware/error.js';
-import { requireAuth, requireRole } from './middleware/auth.js';
 
 /**
  * Build the Express app. No `listen` here — `index.ts` binds the port,
@@ -71,16 +70,6 @@ export function buildApp(): Express {
   app.use('/v1/tasks', tasksRouter);
   app.use('/v1/services', servicesRouter);
   app.use('/v1/onboarding', onboardingRouter);
-
-  // ----------------------------------------------------------------------
-  // Stubs for read-side listing endpoints that the Kamau-403 penetration
-  // suite asserts MUST return 403. Real list/detail handlers land in a
-  // follow-up ticket — the role guards here are the contract that matters.
-  // ----------------------------------------------------------------------
-  const ok = (_req: express.Request, res: express.Response) => res.json({ ok: true });
-  app.get('/v1/tickets',       requireAuth, requireRole('client', 'delivery_lead', 'admin'), ok);
-  app.get('/v1/tickets/:id',   requireAuth, requireRole('client', 'delivery_lead', 'admin'), ok);
-  app.get('/v1/proformas/:id', requireAuth, requireRole('client', 'delivery_lead', 'admin'), ok);
 
   app.use(notFound);
   app.use(errorHandler);

@@ -30,6 +30,46 @@ export function setPaymentClientsForTest(p: { kipkirenPay?: KipkirenPayClient; p
 function kp(): KipkirenPayClient { return kipkirenPayClient ?? getKipkirenPayClient(); }
 function ps(): PaystackClient { return paystackClient ?? getPaystackClient(); }
 
+// ----------------------------------------------------------------------------
+// GET /v1/proformas/:id — proforma with line items.
+// Client: own proforma only (via ticket → client join).
+// Admin/delivery_lead: any proforma.
+// ----------------------------------------------------------------------------
+proformasRouter.get(
+  '/:id',
+  requireAuth,
+  requireRole('client', 'delivery_lead', 'admin'),
+  async (req: Request, res: Response) => {
+    const sb = getServiceClient();
+    const { data, error } = await sb
+      .from('proformas')
+      .select(
+        `id, ref, status, ai_confidence_score, ai_flag_reason,
+         subtotal_kes, discount_kes, vat_kes, total_kes,
+         content_hash, dispatched_at, created_at,
+         tickets ( id, ref, description, urgency, client_id,
+           clients ( id, business_name, retainer_plans ( name, task_discount_pct ) )
+         ),
+         proforma_line_items ( id, task_name, task_description, estimated_hours, rate_kes_per_hour, amount_kes, position )`,
+      )
+      .eq('id', req.params.id)
+      .single();
+    if (error || !data) throw new HttpError(404, 'proforma_not_found');
+
+    // Client role: verify ownership
+    if (req.auth!.role === 'client') {
+      type PfRow = { tickets: { client_id: string } | { client_id: string }[] | null };
+      const ticketRel = (data as PfRow).tickets;
+      const ticket = Array.isArray(ticketRel) ? ticketRel[0] : ticketRel;
+      if (ticket?.client_id !== req.auth!.clientId) {
+        throw new HttpError(404, 'proforma_not_found');
+      }
+    }
+
+    res.json({ proforma: data });
+  },
+);
+
 const ReviewLineEdit = z.object({
   id: z.string().uuid(),
   amount_kes: z.number().int().positive().optional(),
