@@ -26,6 +26,7 @@ const CONTAMINATED_ROW = {
   description: 'Add a new staff member to the team page',
   sla_deadline_at: '2026-04-13T08:00:00Z',
   created_at: '2026-04-12T08:00:00Z',
+  updated_at: '2026-04-12T09:30:00Z',
   // Forbidden keys — must NOT appear
   client_id: '00000000-0000-0000-0000-000000000bbb',
   business_name: 'Jane Wanjiru Logistics Ltd',
@@ -50,12 +51,14 @@ vi.mock('../src/lib/supabase.js', () => {
     select: () => typeof chain;
     eq: () => typeof chain;
     not: () => typeof chain;
+    in: () => typeof chain;
     order: () => Promise<{ data: unknown; error: null }>;
     single: () => Promise<{ data: unknown; error: { message: string } | null }>;
   } = {
     select: () => chain,
     eq: () => chain,
     not: () => chain,
+    in: () => chain,
     order: async () => ({
       data: listMode === 'many' ? [CONTAMINATED_ROW] : [],
       error: null,
@@ -86,6 +89,7 @@ const ALLOWED_KEYS = [
   'description',
   'sla_deadline_at',
   'created_at',
+  'updated_at',
 ].sort();
 
 const FORBIDDEN_KEYS = [
@@ -116,6 +120,21 @@ describe('ADR-KWS-003 — Kamau task serializer strips PII', () => {
     const res = await request(app).get('/v1/tasks').set(auth(mintTestToken('technical_delivery')));
     expect(res.status).toBe(200);
     expect(Array.isArray(res.body.tasks)).toBe(true);
+    expect(res.body.tasks).toHaveLength(1);
+
+    const task = res.body.tasks[0];
+    expect(Object.keys(task).sort()).toEqual(ALLOWED_KEYS);
+    for (const k of FORBIDDEN_KEYS) {
+      expect(task).not.toHaveProperty(k);
+    }
+  });
+
+  it('GET /v1/tasks?view=completed returns ONLY the allowed key set', async () => {
+    listMode = 'many';
+    const res = await request(app)
+      .get('/v1/tasks?view=completed')
+      .set(auth(mintTestToken('technical_delivery')));
+    expect(res.status).toBe(200);
     expect(res.body.tasks).toHaveLength(1);
 
     const task = res.body.tasks[0];

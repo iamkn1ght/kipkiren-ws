@@ -22,6 +22,8 @@ export const tasksRouter: Router = Router();
  */
 
 // The entire safe surface — if you add a column here, update the test.
+// `updated_at` is a non-PII timestamp; it powers the task-view Completed
+// tab (when a task was last moved, e.g. marked complete).
 interface KamauTask {
   id: string;
   ref: string;
@@ -31,6 +33,7 @@ interface KamauTask {
   description: string;
   sla_deadline_at: string | null;
   created_at: string;
+  updated_at: string;
 }
 
 function toKamauTask(row: {
@@ -42,6 +45,7 @@ function toKamauTask(row: {
   description: string;
   sla_deadline_at: string | null;
   created_at: string;
+  updated_at: string;
 }): KamauTask {
   return {
     id: row.id,
@@ -52,11 +56,20 @@ function toKamauTask(row: {
     description: row.description,
     sla_deadline_at: row.sla_deadline_at,
     created_at: row.created_at,
+    updated_at: row.updated_at,
   };
 }
 
+// Allow-listed columns — the ONLY columns this router ever selects.
+const SAFE_COLUMNS =
+  'id, ref, category, urgency, status, description, sla_deadline_at, created_at, updated_at';
+
 // ----------------------------------------------------------------------------
-// GET /v1/tasks — list tasks assigned to the caller
+// GET /v1/tasks — list tasks assigned to the caller.
+//   ?view=completed → finished work (complete/closed), newest first.
+//   default         → active work, soonest SLA deadline first.
+// Both views serialise through toKamauTask, so the PII allow-list holds
+// regardless of which branch runs.
 // ----------------------------------------------------------------------------
 tasksRouter.get(
   '/',
@@ -64,12 +77,18 @@ tasksRouter.get(
   requireRole('technical_delivery'),
   async (req: Request, res: Response) => {
     const sb = getServiceClient();
-    const { data, error } = await sb
+    const completed = req.query.view === 'completed';
+    const base = sb
       .from('tickets')
-      .select('id, ref, category, urgency, status, description, sla_deadline_at, created_at')
-      .eq('assigned_to', req.auth!.sub)
-      .not('status', 'in', '("complete","closed")')
-      .order('sla_deadline_at', { ascending: true, nullsFirst: false });
+      .select(SAFE_COLUMNS)
+      .eq('assigned_to', req.auth!.sub);
+    const { data, error } = completed
+      ? await base
+          .in('status', ['complete', 'closed'])
+          .order('updated_at', { ascending: false })
+      : await base
+          .not('status', 'in', '("complete","closed")')
+          .order('sla_deadline_at', { ascending: true, nullsFirst: false });
     if (error) throw new HttpError(500, 'tasks_query_failed');
     const tasks = (data ?? []).map(toKamauTask);
     res.json({ tasks });
@@ -89,7 +108,7 @@ tasksRouter.get(
     const sb = getServiceClient();
     const { data, error } = await sb
       .from('tickets')
-      .select('id, ref, category, urgency, status, description, sla_deadline_at, created_at, assigned_to')
+      .select(`${SAFE_COLUMNS}, assigned_to`)
       .eq('id', id)
       .single();
     if (error || !data) throw new HttpError(404, 'task_not_found');

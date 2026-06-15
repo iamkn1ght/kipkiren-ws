@@ -232,7 +232,7 @@ onboardingRouter.get(
 <ul>
 <li><strong>Kipkiren Pay / LipaPlus:</strong> M-Pesa payment processing (phone number + amount)</li>
 <li><strong>Paystack:</strong> Card payment processing (handled by Paystack — we never see raw card data)</li>
-<li><strong>Supabase:</strong> Database hosting in af-south-1 (Cape Town) for CBK compliance</li>
+<li><strong>Supabase:</strong> Database hosting in the EU (eu-west-1, Ireland). This is a cross-border transfer of your data outside Kenya, made under the safeguards in the Kenya Data Protection Act 2019 (Sections 48&ndash;49).</li>
 <li><strong>Google Cloud / Microsoft:</strong> When provisioning cloud services on your behalf (S5)</li>
 </ul>
 

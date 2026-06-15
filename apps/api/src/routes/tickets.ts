@@ -335,7 +335,9 @@ ticketsRouter.put(
       }
     }
 
-    const update: Record<string, unknown> = { status: target };
+    // Stamp updated_at so the task-view Completed tab can show when a task
+    // was last moved (no DB trigger maintains this column).
+    const update: Record<string, unknown> = { status: target, updated_at: new Date().toISOString() };
     const { data: updated, error: uErr } = await sb
       .from('tickets')
       .update(update)

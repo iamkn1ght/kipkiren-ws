@@ -6,7 +6,7 @@ This is the exact click-path for the first Railway deploy. Do it once.
 
 You will be 500-ing until all four of these are true. Railway **will** build and start the service before these are set, but every request will fail at `loadEnv()` until they land.
 
-1. **Supabase project provisioned in `af-south-1`** (Cape Town). Region is non-negotiable — KWS-SEC-014 and CBK compliance. You cannot change it later without a full migration.
+1. **Supabase project provisioned in `eu-west-1`** (Ireland). This is the resolved region (Option B — see `DECISION_REGION_DIVERGENCE.md`), aligned to the platform standard and superseding the original af-south-1 / KWS-SEC-014 position. The cross-border transfer is disclosed under KDPA 2019 §48–49 (wording pending counsel review). You cannot change region later without a full migration.
 2. **Migrations applied** to that Supabase project, in order:
    ```
    apps/api/db/migrations/0001_schema.sql

@@ -11,7 +11,7 @@ kws/
 ├─ apps/
 │  ├─ api/                Express 5 + TS API (Railway)
 │  │  ├─ src/             code
-│  │  ├─ db/migrations/   Postgres SQL — apply to Supabase af-south-1
+│  │  ├─ db/migrations/   Postgres SQL — apply to Supabase eu-west-1
 │  │  └─ db/seeds/
 │  └─ client-portal/      React + Vite — ws.kipkiren.co.ke/portal
 └─ packages/
@@ -27,7 +27,7 @@ The client portal is ported **verbatim** from `kipkiren web services - inaugaral
 ## Locked stack
 
 - **Node 22 LTS · TypeScript 5 strict · Express 5**
-- **Supabase / Postgres** in `af-south-1` (Cape Town) — eu-west-1 prohibited (CBK / KWS-SEC-014)
+- **Supabase / Postgres** in `eu-west-1` (Ireland) — aligned to the platform region standard. Resolves the af-south-1 vs eu-west-1 divergence in favour of Option B; see `DECISION_REGION_DIVERGENCE.md`. Supersedes the original af-south-1 / KWS-SEC-014 position. Cross-border transfer disclosed under KDPA 2019 §48–49 (wording pending counsel review).
 - **Railway** for API hosting · **Cloudflare Pages** for portals
 - **Anthropic Claude** (`claude-sonnet-4-6`) — dedicated KWS API key, never shared
 - **Kipkiren Pay (LipaPlus)** for M-Pesa · **Paystack** direct for cards · never call Daraja directly (ADR-KWS-005)
@@ -55,7 +55,7 @@ The client portal is ported **verbatim** from `kipkiren web services - inaugaral
 | Kamau PII-stripping regression test (exact key-set allow-list) | ✅ |
 | Role-gate tests for assign + status transition | ✅ |
 | Admin portal React app | ⏳ blocked on canonical `kws_admin_portal.html` |
-| Task view React app (Kamau) | ⏳ blocked on canonical mockup |
+| Task view React app (Kamau) | ✅ `apps/task-view` — ported from `kws_task_view.html`, gated to technical_delivery |
 | Background job runner (inline decomposition OK for MVP) | ⏳ deferred to v2 |
 
 ## Sprint 3 status — Approval, Payments, Scope Lock
@@ -112,7 +112,7 @@ The client portal is ported **verbatim** from `kipkiren web services - inaugaral
 | Vitest: Kamau 403 penetration suite + HS256 rejection + role matrix | ✅ |
 | Vitest: billing math + canonical content-hash determinism | ✅ |
 | Vitest: RLS cross-client isolation (skips unless `KWS_RLS_TEST_*` env set) | ✅ |
-| Supabase project provisioned in af-south-1 | ⏳ Chamia |
+| Supabase project provisioned in eu-west-1 | ✅ live (`qderqzcyyhnfphrswexm`) |
 | Railway project provisioned + secrets loaded | ⏳ Chamia |
 | RS256 keypair generated and base64 in Railway env | ⏳ Chamia |
 | RLS test fixtures applied to staging Supabase | ⏳ Chamia |
@@ -160,7 +160,7 @@ Point those at a staging Supabase project that has migrations 0001..0003 applied
 
 ## Applying migrations
 
-Migrations are plain SQL — apply via Supabase SQL editor or `psql` against the af-south-1 project, in numerical order:
+Migrations are plain SQL — apply via Supabase SQL editor or `psql` against the eu-west-1 project, in numerical order:
 
 ```
 apps/api/db/migrations/0001_schema.sql
@@ -170,7 +170,7 @@ apps/api/db/seeds/retainer_plans.sql
 apps/api/db/seeds/rate_card_v1.sql
 ```
 
-**Verify the project region is `af-south-1` before running anything.** Region cannot be changed post-launch (KWS-SEC-014).
+**The project region is `eu-west-1` (Ireland)** per the resolved region decision (Option B — see `DECISION_REGION_DIVERGENCE.md`), which supersedes the original af-south-1 / KWS-SEC-014 requirement. Region cannot be changed post-launch without a full migration.
 
 ## Architectural invariants — do not break
 
