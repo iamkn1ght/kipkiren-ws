@@ -15,6 +15,7 @@ import { invoicesRouter } from './routes/invoices.js';
 import { adminRouter } from './routes/admin.js';
 import { tasksRouter } from './routes/tasks.js';
 import { servicesRouter } from './routes/services.js';
+import { dnsRouter } from './routes/dns.js';
 import { onboardingRouter } from './routes/onboarding.js';
 import { errorHandler, notFound } from './middleware/error.js';
 
@@ -69,6 +70,7 @@ export function buildApp(): Express {
   app.use('/v1/admin', adminRouter);
   app.use('/v1/tasks', tasksRouter);
   app.use('/v1/services', servicesRouter);
+  app.use('/v1/dns', dnsRouter);
   app.use('/v1/onboarding', onboardingRouter);
 
   app.use(notFound);

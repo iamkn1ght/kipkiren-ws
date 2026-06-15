@@ -52,6 +52,10 @@ const CoreEnvSchema = z.object({
 
   PAYSTACK_SECRET_KEY: z.string().optional().default(''),
   PAYSTACK_WEBHOOK_SECRET: z.string().optional().default(''),
+
+  // Cloudflare DNS (S6) — manage client domain/dns records via the CF API.
+  CLOUDFLARE_API_TOKEN: z.string().optional().default(''),
+  CLOUDFLARE_ACCOUNT_ID: z.string().optional().default(''),
 });
 
 export type Env = z.infer<typeof CoreEnvSchema> & {
@@ -89,12 +93,14 @@ export function loadEnv(): Env {
  *   requireFeatureEnv('kipkiren_pay');
  *   requireFeatureEnv('paystack');
  */
-export type Feature = 'anthropic' | 'kipkiren_pay' | 'paystack';
+export type Feature = 'anthropic' | 'kipkiren_pay' | 'paystack' | 'cloudflare';
 
 const FEATURE_REQUIRED: Record<Feature, (keyof z.infer<typeof CoreEnvSchema>)[]> = {
   anthropic: ['ANTHROPIC_API_KEY'],
   kipkiren_pay: ['KIPKIREN_PAY_BASE_URL', 'KIPKIREN_PAY_API_KEY', 'KIPKIREN_PAY_HMAC_SECRET'],
   paystack: ['PAYSTACK_SECRET_KEY', 'PAYSTACK_WEBHOOK_SECRET'],
+  // Account id is optional — the scoped API token already identifies the zone.
+  cloudflare: ['CLOUDFLARE_API_TOKEN'],
 };
 
 export class FeatureUnavailableError extends Error {

@@ -37,4 +37,7 @@ process.env.KIPKIREN_PAY_HMAC_SECRET ??= 'test-hmac-secret';
 process.env.PAYSTACK_SECRET_KEY ??= 'test-paystack-secret';
 process.env.PAYSTACK_WEBHOOK_SECRET ??= 'test-paystack-webhook';
 
+process.env.CLOUDFLARE_API_TOKEN ??= 'test-cf-token';
+process.env.CLOUDFLARE_ACCOUNT_ID ??= 'test-cf-account';
+
 process.env.ALLOWED_ORIGINS ??= 'http://localhost:5173,http://localhost:5174';

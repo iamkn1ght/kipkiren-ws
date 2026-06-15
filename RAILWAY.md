@@ -59,6 +59,9 @@ KIPKIREN_PAY_HMAC_SECRET=<Kipkiren Pay webhook HMAC secret>
 PAYSTACK_SECRET_KEY=<sk_live_... from Paystack dashboard>
 PAYSTACK_WEBHOOK_SECRET=<webhook secret from Paystack → Settings → Webhooks>
 
+CLOUDFLARE_API_TOKEN=<scoped DNS-edit token — Cloudflare → My Profile → API Tokens>
+CLOUDFLARE_ACCOUNT_ID=<Cloudflare account id (optional — token scopes the zone)>
+
 ALLOWED_ORIGINS=https://ws.kipkiren.co.ke,https://admin.ws.kipkiren.co.ke
 ```
 
