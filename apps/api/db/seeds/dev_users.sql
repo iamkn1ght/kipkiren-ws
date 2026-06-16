@@ -1,68 +1,58 @@
 -- ============================================================================
--- KWS — bootstrap login users (dev / first-admin setup)
+-- KWS — bootstrap login users for BOTH portals (admin + client) + task view
 -- ============================================================================
 -- Login = Supabase Auth (password, in auth.users) + an app profile row
--- (public.users, same UUID). This seed creates both for two test logins:
---   • admin@ws.kipkiren.co.ke          role: admin
---   • kamau@ws.kipkiren.co.ke          role: technical_delivery  (task-view)
+-- (public.users, same UUID). A `client`-role login also needs a clients row
+-- (with a retainer_plan_id) and client_id on its profile.
 --
--- ⚠️ CHANGE THE PASSWORDS below before running, and rotate after first login.
--- Run in the Supabase SQL Editor of the KWS project (eu-west-1).
+-- HOW TO RUN (reliable, no DB password needed — uses your dashboard session):
+--   STEP 1 — Supabase → Authentication → Users → "Add user" (tick Auto Confirm)
+--            for each of these (CHANGE the passwords after first login):
+--              admin@ws.kipkiren.co.ke     →  KwsAdmin#2026      (admin portal)
+--              client@demo.co.ke           →  KwsClient#2026     (client portal)
+--              kamau@ws.kipkiren.co.ke     →  KwsKamau#2026      (task view)
+--   STEP 2 — Supabase → SQL Editor → paste & run everything below.
+--            (It links profiles to the auth users by email — no UUID copying.)
 --
--- A `client`-role login additionally needs a public.clients row (with a
--- retainer_plan_id) and client_id set on its profile — not covered here.
+-- Requires migrations 0001–0004 applied. If these tables don't exist, run the
+-- migrations in apps/api/db/migrations first.
 -- ============================================================================
 
--- ----------------------------------------------------------------------------
--- OPTION A (RECOMMENDED — version-independent, reliable)
---   1. Supabase Dashboard → Authentication → Users → "Add user":
---      create each email + password, tick "Auto Confirm User".
---   2. Then run THIS to create the matching app profile (looks up the UUID by
---      email, so you never copy UUIDs by hand). Safe to re-run.
--- ----------------------------------------------------------------------------
+-- 1) Ensure a retainer plan exists (the client must reference one).
+insert into public.retainer_plans
+  (name, monthly_fee_kes, included_hours, max_open_tickets, sla_response_hours, task_discount_pct, active)
+select 'Starter', 15000, 5, 5, 48, 0, true
+where not exists (select 1 from public.retainer_plans where name = 'Starter');
+
+-- 2) Demo client business, linked to the Starter plan.
+insert into public.clients
+  (business_name, contact_name, email, phone, retainer_plan_id, status)
+select 'Demo SME Ltd', 'Demo Client', 'client@demo.co.ke', '+254700000000', rp.id, 'active'
+from public.retainer_plans rp
+where rp.name = 'Starter'
+  and not exists (select 1 from public.clients where email = 'client@demo.co.ke');
+
+-- 3) Admin profile (auth user created in STEP 1).
 insert into public.users (id, email, full_name, role, client_id)
 select id, email, 'KWS Admin', 'admin', null
 from auth.users where email = 'admin@ws.kipkiren.co.ke'
 on conflict (id) do update set role = excluded.role, full_name = excluded.full_name;
 
+-- 4) Kamau — technical_delivery (task view).
 insert into public.users (id, email, full_name, role, client_id)
 select id, email, 'Kamau Waweru', 'technical_delivery', null
 from auth.users where email = 'kamau@ws.kipkiren.co.ke'
 on conflict (id) do update set role = excluded.role, full_name = excluded.full_name;
 
--- ----------------------------------------------------------------------------
--- OPTION B (FULLY SQL — no dashboard; auth.identities shape can vary by
---   GoTrue version, so if either INSERT errors, use Option A instead).
---   Uncomment to use. Edit the two passwords first.
--- ----------------------------------------------------------------------------
--- create extension if not exists pgcrypto;
---
--- do $$
--- declare
---   v_admin uuid := gen_random_uuid();
---   v_kamau uuid := gen_random_uuid();
--- begin
---   -- auth users (bcrypt password, email pre-confirmed)
---   insert into auth.users (instance_id, id, aud, role, email, encrypted_password,
---       email_confirmed_at, created_at, updated_at, raw_app_meta_data, raw_user_meta_data)
---   values
---     ('00000000-0000-0000-0000-000000000000', v_admin, 'authenticated', 'authenticated',
---      'admin@ws.kipkiren.co.ke', crypt('CHANGE_ME_admin', gen_salt('bf')),
---      now(), now(), now(), '{"provider":"email","providers":["email"]}', '{}'),
---     ('00000000-0000-0000-0000-000000000000', v_kamau, 'authenticated', 'authenticated',
---      'kamau@ws.kipkiren.co.ke', crypt('CHANGE_ME_kamau', gen_salt('bf')),
---      now(), now(), now(), '{"provider":"email","providers":["email"]}', '{}');
---
---   -- email identities (required by GoTrue for password sign-in)
---   insert into auth.identities (provider_id, user_id, identity_data, provider, created_at, updated_at)
---   values
---     ('admin@ws.kipkiren.co.ke', v_admin,
---      jsonb_build_object('sub', v_admin::text, 'email', 'admin@ws.kipkiren.co.ke'), 'email', now(), now()),
---     ('kamau@ws.kipkiren.co.ke', v_kamau,
---      jsonb_build_object('sub', v_kamau::text, 'email', 'kamau@ws.kipkiren.co.ke'), 'email', now(), now());
---
---   -- app profiles
---   insert into public.users (id, email, full_name, role) values
---     (v_admin, 'admin@ws.kipkiren.co.ke', 'KWS Admin', 'admin'),
---     (v_kamau, 'kamau@ws.kipkiren.co.ke', 'Kamau Waweru', 'technical_delivery');
--- end $$;
+-- 5) Client profile, linked to the demo client business.
+insert into public.users (id, email, full_name, role, client_id)
+select au.id, au.email, 'Demo Client', 'client', c.id
+from auth.users au
+join public.clients c on c.email = 'client@demo.co.ke'
+where au.email = 'client@demo.co.ke'
+on conflict (id) do update set role = excluded.role, client_id = excluded.client_id;
+
+-- Verify:
+--   select u.email, u.role, c.business_name
+--   from public.users u left join public.clients c on c.id = u.client_id
+--   order by u.role;
