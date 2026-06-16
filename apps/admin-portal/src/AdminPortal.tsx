@@ -58,6 +58,9 @@ export function AdminPortal() {
   const [actionBusy, setActionBusy] = useState(false);
   const [showAddService, setShowAddService] = useState(false);
   const [newSvc, setNewSvc] = useState({ client_id: '', service_type: 'hosting', monthly_cost_kes: '', renewal_at: '', domain: '' });
+  const [showRaiseTicket, setShowRaiseTicket] = useState(false);
+  const [newTicket, setNewTicket] = useState({ client_id: '', category: 'web', urgency: 'standard', description: '' });
+  const [raiseResult, setRaiseResult] = useState<string | null>(null);
 
   const displayName = session?.email || 'Signed-in user';
   const displayEmail = session?.email ?? '';
@@ -168,6 +171,35 @@ export function AdminPortal() {
       reload();
     } catch {
       // Error already surfaced via ApiError
+    } finally {
+      setActionBusy(false);
+    }
+  };
+
+  const raiseValid = !!newTicket.client_id && newTicket.description.trim().length >= 10;
+  const handleRaiseTicket = async () => {
+    if (actionBusy || !raiseValid) return;
+    setActionBusy(true);
+    setRaiseResult(null);
+    try {
+      const res = await call<{ ref: string; proforma_id: string | null }>('/v1/admin/tickets', {
+        method: 'POST',
+        body: {
+          client_id: newTicket.client_id,
+          description: newTicket.description.trim(),
+          category: newTicket.category,
+          urgency: newTicket.urgency,
+        },
+      });
+      setRaiseResult(
+        res.proforma_id
+          ? `Raised ${res.ref} — proforma drafted and sent to the client to approve.`
+          : `Raised ${res.ref} — awaiting review (AI decomposition not available).`,
+      );
+      setNewTicket({ client_id: '', category: 'web', urgency: 'standard', description: '' });
+      reload();
+    } catch {
+      setRaiseResult('Could not raise the ticket — please try again.');
     } finally {
       setActionBusy(false);
     }
@@ -351,8 +383,13 @@ export function AdminPortal() {
 
         {/* ═════════════ TICKET QUEUE ════════════════ */}
         <section className={`view ${tab === 'queue' ? 'active' : ''}`} id="queue">
-          <h1 className="greeting">Ticket queue</h1>
-          <p className="g-sub">{queueRows.length} open · {unassignedCount} awaiting assignment · sorted by SLA proximity</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <h1 className="greeting">Ticket queue</h1>
+              <p className="g-sub">{queueRows.length} open · {unassignedCount} awaiting assignment · sorted by SLA proximity</p>
+            </div>
+            <button type="button" className="btn-tb" onClick={() => { setRaiseResult(null); setShowRaiseTicket(true); }}>+ Raise ticket</button>
+          </div>
 
           <div className="qfilters">
             <button type="button" className={`filter-btn ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>All</button>
@@ -612,6 +649,67 @@ export function AdminPortal() {
             </>
           )}
         </section>
+      </div>
+
+      {/* ── RAISE TICKET MODAL (admin raises a ticket for a client) ── */}
+      <div className={`rev-overlay ${showRaiseTicket ? 'open' : ''}`} onClick={(e) => { if (e.target === e.currentTarget) setShowRaiseTicket(false); }}>
+        {showRaiseTicket && (
+          <div className="rev-modal" style={{ maxWidth: 520 }}>
+            <div className="rev-hd">
+              <div className="rev-title">Raise a ticket for a client</div>
+              <button type="button" className="rev-close" onClick={() => setShowRaiseTicket(false)}>CLOSE ✕</button>
+            </div>
+            <div className="rev-body">
+              <div className="rev-meta">Runs the same flow as a client ticket — AI decomposes it into a proforma the client approves before any work begins.</div>
+
+              <div className="rev-line" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--mid)', minWidth: 100 }}>Client</span>
+                <select className="rev-inp" value={newTicket.client_id} onChange={(e) => setNewTicket({ ...newTicket, client_id: e.target.value })}>
+                  <option value="">Select client…</option>
+                  {(clients ?? []).map((c) => <option key={c.id} value={c.id}>{c.business_name}</option>)}
+                </select>
+              </div>
+              <div className="rev-line" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--mid)', minWidth: 100 }}>Category</span>
+                <select className="rev-inp" value={newTicket.category} onChange={(e) => setNewTicket({ ...newTicket, category: e.target.value })}>
+                  <option value="web">Web</option>
+                  <option value="cloud">Cloud</option>
+                  <option value="seo">SEO</option>
+                  <option value="social">Social</option>
+                  <option value="dns">DNS</option>
+                  <option value="general">General</option>
+                </select>
+              </div>
+              <div className="rev-line" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--mid)', minWidth: 100 }}>Urgency</span>
+                <select className="rev-inp" value={newTicket.urgency} onChange={(e) => setNewTicket({ ...newTicket, urgency: e.target.value })}>
+                  <option value="standard">Standard · 1.0×</option>
+                  <option value="elevated">Elevated · 1.25×</option>
+                  <option value="urgent">Urgent · 1.5×</option>
+                </select>
+              </div>
+              <div className="rev-line" style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--mid)', minWidth: 100, paddingTop: 8 }}>Scope</span>
+                <textarea
+                  className="rev-inp"
+                  style={{ minHeight: 96, resize: 'vertical', fontFamily: 'var(--sans)' }}
+                  placeholder="Describe the work the client needs (min 10 characters)…"
+                  value={newTicket.description}
+                  onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
+                />
+              </div>
+
+              {raiseResult && <div className="rev-meta" style={{ color: 'var(--teal-deep)' }}>{raiseResult}</div>}
+
+              <div className="rev-acts">
+                <button type="button" className="btn-mod btn-cancel" onClick={() => setShowRaiseTicket(false)}>Close</button>
+                <button type="button" className="btn-mod btn-disp" disabled={actionBusy || !raiseValid} onClick={() => void handleRaiseTicket()}>
+                  {actionBusy ? 'Raising…' : 'Raise & send to client'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── ADD SERVICE MODAL ── */}

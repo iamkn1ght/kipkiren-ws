@@ -1,9 +1,11 @@
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
+import { CreateTicketInput } from '@kws/shared';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { HttpError } from '../middleware/error.js';
 import { getServiceClient } from '../lib/supabase.js';
 import { writeAuditEvent } from '../services/audit.js';
+import { intakeTicket } from '../services/ticket-intake.js';
 import { loadQueue, loadClientAccounts, loadCapacitySnapshot, loadReviewQueue, loadCapacityDetail, loadRecentDispatches } from '../services/admin-views.js';
 import { runUptimeChecks } from '../services/uptime.js';
 import { logger } from '../lib/logger.js';
@@ -161,5 +163,50 @@ adminRouter.post(
   async (_req: Request, res: Response) => {
     const results = await runUptimeChecks();
     res.json({ checked: results.length, results });
+  },
+);
+
+// ----------------------------------------------------------------------------
+// POST /v1/admin/tickets — raise a ticket ON BEHALF OF a client.
+//
+// Delivery lead / admin can open a ticket for a client (e.g. work scoped on a
+// call, or a proactive recommendation). It runs the SAME intake pipeline as a
+// client-submitted ticket — AI decomposition → draft proforma — so the client
+// then sees the proforma in their portal and approves it. The proforma
+// invariant is unchanged: nothing executes until the client approves.
+// ----------------------------------------------------------------------------
+const AdminCreateTicketInput = CreateTicketInput.extend({
+  client_id: z.string().uuid(),
+});
+
+adminRouter.post(
+  '/tickets',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (req: Request, res: Response) => {
+    const parsed = AdminCreateTicketInput.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: 'invalid_input', issues: parsed.error.flatten() });
+      return;
+    }
+    const { client_id, ...ticketInput } = parsed.data;
+
+    // Confirm the client exists before intake (intakeTicket also 404s, but a
+    // clear up-front check keeps the error obvious).
+    const sb = getServiceClient();
+    const { data: client, error: cErr } = await sb
+      .from('clients')
+      .select('id')
+      .eq('id', client_id)
+      .single();
+    if (cErr || !client) throw new HttpError(404, 'client_not_found');
+
+    const result = await intakeTicket({
+      clientId: client_id,
+      submittedBy: req.auth!.sub,
+      actorRole: req.auth!.role,
+      input: ticketInput,
+    });
+    res.status(201).json(result);
   },
 );
