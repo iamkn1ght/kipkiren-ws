@@ -42,6 +42,8 @@ export type AuditEventType =
   | 'dns_record_created'
   | 'dns_record_updated'
   | 'dns_record_deleted'
+  | 'todoku_message_sent'
+  | 'todoku_delivery_failed'
   | 'onboarding_invoice_created'
   | 'consent_recorded'
   | 'dsar_fulfilled'

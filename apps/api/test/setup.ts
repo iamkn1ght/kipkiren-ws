@@ -40,4 +40,10 @@ process.env.PAYSTACK_WEBHOOK_SECRET ??= 'test-paystack-webhook';
 process.env.CLOUDFLARE_API_TOKEN ??= 'test-cf-token';
 process.env.CLOUDFLARE_ACCOUNT_ID ??= 'test-cf-account';
 
+process.env.TODOKU_API_BASE ??= 'https://todoku.test/v1';
+process.env.TODOKU_KWS_API_KEY ??= 'test-todoku-app-id';
+process.env.TODOKU_KWS_HMAC_SECRET ??= 'dGVzdC10b2Rva3UtaG1hYy1zZWNyZXQtMDAwMDAwMDA=';
+process.env.TODOKU_KWS_WEBHOOK_SECRET ??= 'dGVzdC10b2Rva3Utd2ViaG9vay1zZWNyZXQtMDAwMDA=';
+process.env.TODOKU_KWS_SENDER_ID ??= 'KIPS-WS';
+
 process.env.ALLOWED_ORIGINS ??= 'http://localhost:5173,http://localhost:5174';

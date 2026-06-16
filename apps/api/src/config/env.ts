@@ -56,6 +56,14 @@ const CoreEnvSchema = z.object({
   // Cloudflare DNS (S6) — manage client domain/dns records via the CF API.
   CLOUDFLARE_API_TOKEN: z.string().optional().default(''),
   CLOUDFLARE_ACCOUNT_ID: z.string().optional().default(''),
+
+  // Todoku SMS (S9-003) — transactional SMS on 5 KWS events. Todoku signs
+  // with base64 HMAC-SHA256 (NOT hex — distinct from KP/Paystack).
+  TODOKU_API_BASE: z.string().optional().default(''),
+  TODOKU_KWS_API_KEY: z.string().optional().default(''),
+  TODOKU_KWS_HMAC_SECRET: z.string().optional().default(''),
+  TODOKU_KWS_WEBHOOK_SECRET: z.string().optional().default(''),
+  TODOKU_KWS_SENDER_ID: z.string().optional().default(''),
 });
 
 export type Env = z.infer<typeof CoreEnvSchema> & {
@@ -93,7 +101,7 @@ export function loadEnv(): Env {
  *   requireFeatureEnv('kipkiren_pay');
  *   requireFeatureEnv('paystack');
  */
-export type Feature = 'anthropic' | 'kipkiren_pay' | 'paystack' | 'cloudflare';
+export type Feature = 'anthropic' | 'kipkiren_pay' | 'paystack' | 'cloudflare' | 'todoku';
 
 const FEATURE_REQUIRED: Record<Feature, (keyof z.infer<typeof CoreEnvSchema>)[]> = {
   anthropic: ['ANTHROPIC_API_KEY'],
@@ -101,6 +109,13 @@ const FEATURE_REQUIRED: Record<Feature, (keyof z.infer<typeof CoreEnvSchema>)[]>
   paystack: ['PAYSTACK_SECRET_KEY', 'PAYSTACK_WEBHOOK_SECRET'],
   // Account id is optional — the scoped API token already identifies the zone.
   cloudflare: ['CLOUDFLARE_API_TOKEN'],
+  todoku: [
+    'TODOKU_API_BASE',
+    'TODOKU_KWS_API_KEY',
+    'TODOKU_KWS_HMAC_SECRET',
+    'TODOKU_KWS_WEBHOOK_SECRET',
+    'TODOKU_KWS_SENDER_ID',
+  ],
 };
 
 export class FeatureUnavailableError extends Error {
@@ -116,4 +131,15 @@ export function requireFeatureEnv(feature: Feature): void {
   if (missing.length > 0) {
     throw new FeatureUnavailableError(feature, missing);
   }
+}
+
+/**
+ * Non-throwing variant — for code paths that must NOT fail the primary
+ * operation when a feature is unconfigured (e.g. fire-and-forget SMS, where a
+ * missing Todoku credential must not break proforma dispatch). Returns true
+ * only when every required var for the feature is present.
+ */
+export function isFeatureConfigured(feature: Feature): boolean {
+  const env = loadEnv();
+  return FEATURE_REQUIRED[feature].every((k) => env[k] && env[k] !== '');
 }

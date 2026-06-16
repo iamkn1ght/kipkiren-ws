@@ -2,7 +2,7 @@ import { Router, type Request, type Response } from 'express';
 import { createHash } from 'node:crypto';
 import { loadEnv, requireFeatureEnv } from '../config/env.js';
 import { getServiceClient } from '../lib/supabase.js';
-import { verifyKipkirenPaySignature, verifyPaystackSignature } from '../lib/hmac.js';
+import { verifyKipkirenPaySignature, verifyPaystackSignature, verifyTodokuSignature } from '../lib/hmac.js';
 import { writeAuditEvent } from '../services/audit.js';
 import { logger } from '../lib/logger.js';
 
@@ -323,5 +323,40 @@ webhooksRouter.post('/paystack', async (req: RawBodyRequest, res: Response) => {
     res.status(400).json({ error: result.reason });
     return;
   }
+  res.status(200).json({ ok: true });
+});
+
+// ----------------------------------------------------------------------------
+// POST /v1/webhooks/todoku/delivery — Todoku SMS delivery-status acks (S9-003).
+// Verifies the base64 HMAC-SHA256 signature, records the outcome to audit_log,
+// and acks 200. Delivery acks never touch payment/proforma state.
+// ----------------------------------------------------------------------------
+webhooksRouter.post('/todoku/delivery', async (req: RawBodyRequest, res: Response) => {
+  requireFeatureEnv('todoku');
+  const env = loadEnv();
+  const raw = req.rawBody ?? '';
+  const sig = req.header('x-todoku-signature') ?? undefined;
+
+  if (!verifyTodokuSignature(raw, sig, env.TODOKU_KWS_WEBHOOK_SECRET)) {
+    res.status(400).json({ error: 'invalid_signature' });
+    return;
+  }
+
+  const body = req.body as { message_id?: string; status?: string };
+  if (!body.message_id || !body.status) {
+    res.status(400).json({ error: 'invalid_payload' });
+    return;
+  }
+
+  const delivered = body.status === 'delivered' || body.status === 'success';
+  await writeAuditEvent({
+    actor_id: null,
+    actor_role: null,
+    event_type: delivered ? 'todoku_message_sent' : 'todoku_delivery_failed',
+    entity_type: 'notification',
+    entity_id: body.message_id,
+    payload_snapshot: { provider_ref: body.message_id, status: body.status },
+  });
+
   res.status(200).json({ ok: true });
 });

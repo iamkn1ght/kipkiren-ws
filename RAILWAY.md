@@ -62,6 +62,12 @@ PAYSTACK_WEBHOOK_SECRET=<webhook secret from Paystack → Settings → Webhooks>
 CLOUDFLARE_API_TOKEN=<scoped DNS-edit token — Cloudflare → My Profile → API Tokens>
 CLOUDFLARE_ACCOUNT_ID=<Cloudflare account id (optional — token scopes the zone)>
 
+TODOKU_API_BASE=<Todoku v1 base URL — confirm host with operator>
+TODOKU_KWS_API_KEY=<kws tenant app_id — from operator handover>
+TODOKU_KWS_HMAC_SECRET=<base64 HMAC secret — request signing>
+TODOKU_KWS_WEBHOOK_SECRET=<base64 HMAC secret — inbound webhook verification>
+TODOKU_KWS_SENDER_ID=<KIPS-WS or carrier-approved sender id>
+
 ALLOWED_ORIGINS=https://ws.kipkiren.co.ke,https://admin.ws.kipkiren.co.ke
 ```
 

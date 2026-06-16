@@ -43,3 +43,19 @@ export function verifyPaystackSignature(
   const expected = createHmac('sha512', secret).update(rawBody, 'utf8').digest('hex');
   return constantTimeEquals(expected, headerSignature.trim());
 }
+
+/**
+ * S9-003 — Todoku webhook signature (`X-Todoku-Signature`).
+ * Algorithm: HMAC-SHA256 of raw body, **base64** digest (NOT hex — Todoku's
+ * CONTRACT.md uses base64, distinct from Kipkiren Pay / Paystack which use hex),
+ * secret = TODOKU_KWS_WEBHOOK_SECRET.
+ */
+export function verifyTodokuSignature(
+  rawBody: string,
+  headerSignature: string | undefined,
+  secret: string,
+): boolean {
+  if (!headerSignature) return false;
+  const expected = createHmac('sha256', secret).update(rawBody, 'utf8').digest('base64');
+  return constantTimeEquals(expected, headerSignature.trim());
+}

@@ -24,7 +24,7 @@
 | **S6** | Hosting, Domain & Uptime | 8 | 🟡 PARTIAL | `services/uptime.ts` + add-service form shipped (`b8a82cd`). ✅ **Cloudflare DNS adapter** built 15 Jun 2026 (`services/cloudflare.ts` + `routes/dns.ts`, admin-only CRUD, env-gated `requireFeatureEnv('cloudflare')`, live when `CLOUDFLARE_API_TOKEN` set). ⏳ Domain *registration* (registrar — out of scope) · monthly cost real-time on `client_services` (S9 dependency) |
 | **S7** | SEO, Social & KDPA | 8 | 🟡 PARTIAL | DSAR + privacy policy + SEO/social display shipped + migration 0004 onboarding consent. ⏳ KWS-S7-005 Privacy Policy legal review (CEO) |
 | **S8** | First 5 Clients & Beta Close | 6 | ⚪ NOT STARTED | Recruit 5 beta SMEs (CEO) · SLA audit · AI decomposition accuracy iteration. Mix: 1+ Growth, 1+ Business, 1+ Mwangi P3 |
-| **S9** | **Agentic Execution Tier & Scale 1** | 9 | ⚪ NOT STARTED | Helpan KWS Phase 1 + agent_registry + helpan-kws-service JWT + Todoku SMS upgrade + DNS/SSL autonomous scaffold (feature-flagged) + observability + GCP cost scan. See `kws_sprint_9.md` for ticket-level detail. |
+| **S9** | **Agentic Execution Tier & Scale 1** | 9 | ⚪ MOSTLY NOT STARTED | ✅ **S9-003 Todoku SMS scaffold** built 16 Jun 2026 (`services/notifications.ts` fire-and-forget `sendSms` + `/v1/webhooks/todoku/delivery`, env-gated, placeholder ULIDs → `TEMPLATE_NOT_READY`; live when creds + ULIDs land). ⏳ S9-002 Helpan service role (needs Identiti signing-key spec) · agent_registry · DNS/SSL autonomous scaffold · observability · GCP cost scan. See `kws_sprint_9.md`. |
 
 **Total scope:** 87 tickets across 9 sprints. ~60% shipped · ~25% blocked on CEO actions · ~15% net-new (S9).
 
@@ -45,7 +45,7 @@
 | Tier 2 env: Anthropic | ✅ |
 | Tier 2 env: Kipkiren Pay sandbox | ✅ (real STK + B2C client adapter — KP-3/4/5 live since 21 May) |
 | Tier 2 env: Paystack sandbox | ✅ |
-| Tier 2 env: Todoku (S9 dep) | ⚪ Pending OPERATOR_REQUEST_TODOKU.md |
+| Tier 2 env: Todoku (S9 dep) | 🟡 Scaffold built (`notifications.ts` + `/v1/webhooks/todoku/delivery`, env-gated). Pending creds + template ULIDs per OPERATOR_REQUEST_TODOKU.md |
 | Tier 2 env: Helpan KWS service JWT (S9 dep) | ⚪ Pending OPERATOR_REQUEST_HELPAN.md |
 
 ---
