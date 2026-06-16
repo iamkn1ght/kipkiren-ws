@@ -22,10 +22,16 @@ import { z } from 'zod';
  * their credentials later.
  */
 
+// Railway (and some env sources) can present an unset variable as an empty
+// string rather than undefined. Zod's `.default()` only fills in `undefined`,
+// so a blank value like NODE_ENV="" would otherwise fail the enum and
+// crash-loop the service on boot. Treat empty strings as unset.
+const emptyToUndefined = (v: unknown) => (typeof v === 'string' && v.trim() === '' ? undefined : v);
+
 const CoreEnvSchema = z.object({
-  NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  PORT: z.coerce.number().int().nonnegative().default(8080),
-  LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
+  NODE_ENV: z.preprocess(emptyToUndefined, z.enum(['development', 'test', 'production']).default('development')),
+  PORT: z.preprocess(emptyToUndefined, z.coerce.number().int().nonnegative().default(8080)),
+  LOG_LEVEL: z.preprocess(emptyToUndefined, z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info')),
 
   // Tier 1 — required
   SUPABASE_URL: z.string().url(),
