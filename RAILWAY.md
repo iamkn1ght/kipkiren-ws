@@ -68,7 +68,7 @@ TODOKU_KWS_HMAC_SECRET=<base64 HMAC secret — request signing>
 TODOKU_KWS_WEBHOOK_SECRET=<base64 HMAC secret — inbound webhook verification>
 TODOKU_KWS_SENDER_ID=<KIPS-WS or carrier-approved sender id>
 
-ALLOWED_ORIGINS=https://ws.kipkiren.co.ke,https://admin.ws.kipkiren.co.ke
+ALLOWED_ORIGINS=https://ws.kipkiren.co.ke,https://admin.ws.kipkiren.co.ke,https://tasks.ws.kipkiren.co.ke
 ```
 
 Any missing or malformed value causes the Zod env loader to throw at startup — the service logs will tell you exactly which variable is missing.
