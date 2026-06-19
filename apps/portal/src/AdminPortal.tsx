@@ -242,7 +242,7 @@ export function AdminPortal() {
   }, [editLines, discountPct]);
 
   return (
-    <div className="kwsp">
+    <div className="kwsp app-admin">
       {/* ── SIDEBAR ── */}
       <aside className="sb">
         <div className="sb-logo">

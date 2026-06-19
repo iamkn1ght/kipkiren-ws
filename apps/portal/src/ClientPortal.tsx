@@ -83,7 +83,7 @@ export function ClientPortal() {
   };
 
   return (
-    <div className="kwsp">
+    <div className="kwsp app-client">
       {/* SIDEBAR */}
       <div className="sb">
         <div className="sb-logo">

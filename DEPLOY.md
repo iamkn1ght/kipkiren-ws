@@ -1,35 +1,34 @@
 # Kipkiren WS — Deployment
 
-Production topology. The API runs on Railway; each React portal is a separate
-Cloudflare Pages project, git-connected to `iamkn1ght/kipkiren-ws` `main` and
-auto-deploying on push.
+Production topology. The API runs on Railway; the **single portal** (role
+picker → shared login → client / admin / task view) is one Cloudflare Pages
+project, git-connected to `iamkn1ght/kipkiren-ws` `main`, auto-deploying on push.
 
 | Surface | Host | Domain | Status |
 |---|---|---|---|
 | API | Railway | `api.ws.kipkiren.co.ke` | ✅ live |
-| Client portal | Cloudflare Pages | `ws.kipkiren.co.ke` | ✅ live |
-| Admin portal | Cloudflare Pages | `admin.ws.kipkiren.co.ke` | ⏳ create (below) |
-| Task view | Cloudflare Pages | `tasks.ws.kipkiren.co.ke` | ⏳ create (below) |
+| Portal (all roles) | Cloudflare Pages | `ws.kipkiren.co.ke` | ⏳ create / re-point (below) |
 
-All three portals are the same shape (Vite + React 18, read `VITE_API_BASE`
-at build time). Each lives in the pnpm workspace, so the build runs from the
-repo root and builds `@kws/shared` first.
+The portal is `apps/portal` — one Vite + React 18 app that internally routes to
+the client, admin, or task-view experience based on the signed-in user's role.
+(The former three separate apps — client-portal, admin-portal, task-view — were
+merged into it.)
 
 ---
 
-## Cloudflare Pages — create the Admin portal project
+## Cloudflare Pages — the portal project
 
 Cloudflare → **Workers & Pages → Create → Pages → Connect to Git** → pick
 `iamkn1ght/kipkiren-ws`, then:
 
 | Setting | Value |
 |---|---|
-| Project name | `kipkiren-ws-admin` |
+| Project name | `kipkiren-ws-portal` |
 | Production branch | `main` |
 | Framework preset | None |
 | Root directory | *(leave blank — repo root, so pnpm workspace resolves)* |
-| Build command | `pnpm install --frozen-lockfile=false && pnpm --filter @kws/shared build && pnpm --filter @kws/admin-portal build` |
-| Build output directory | `apps/admin-portal/dist` |
+| Build command | `pnpm install --frozen-lockfile=false && pnpm --filter @kws/shared build && pnpm --filter @kws/portal build` |
+| Build output directory | `apps/portal/dist` |
 
 **Environment variables** (Settings → Environment variables, Production):
 | Var | Value |
@@ -37,54 +36,41 @@ Cloudflare → **Workers & Pages → Create → Pages → Connect to Git** → p
 | `VITE_API_BASE` | `https://api.ws.kipkiren.co.ke` |
 | `NODE_VERSION` | `22` |
 
-Then **Custom domains → Set up a domain → `admin.ws.kipkiren.co.ke`** (Cloudflare
-auto-creates the CNAME since the zone is on Cloudflare).
+> Do **not** set `VITE_DEV_AUTH_BYPASS` in production — it's dev-only (local
+> `.env.local`). Without it, the portal requires real login.
 
-## Cloudflare Pages — create the Task-view project
-
-Same steps, with:
-| Setting | Value |
-|---|---|
-| Project name | `kipkiren-ws-tasks` |
-| Build command | `pnpm install --frozen-lockfile=false && pnpm --filter @kws/shared build && pnpm --filter @kws/task-view build` |
-| Build output directory | `apps/task-view/dist` |
-| `VITE_API_BASE` | `https://api.ws.kipkiren.co.ke` |
-| `NODE_VERSION` | `22` |
-| Custom domain | `tasks.ws.kipkiren.co.ke` |
+Then **Custom domains → `ws.kipkiren.co.ke`** (Cloudflare auto-creates the CNAME).
+If a previous client-portal Pages project already owns `ws.kipkiren.co.ke`,
+either point this project's build at the new `@kws/portal` target or move the
+custom domain over.
 
 ---
 
-## API CORS — allow the portal origins (required)
-
-The API rejects cross-origin requests from origins not in `ALLOWED_ORIGINS`
-(see `apps/api/src/app.ts`). After the domains exist, set this on **Railway →
-service → Variables** and redeploy:
+## API CORS + env (Railway → Variables, then redeploy)
 
 ```
-ALLOWED_ORIGINS=https://ws.kipkiren.co.ke,https://admin.ws.kipkiren.co.ke,https://tasks.ws.kipkiren.co.ke
+ALLOWED_ORIGINS=https://ws.kipkiren.co.ke
+NODE_ENV=production
 ```
 
-While also set `NODE_ENV=production` (turns on the `Secure` flag on the refresh
-cookie — `apps/api/src/routes/auth.ts`).
+Only one portal origin is needed now. `NODE_ENV=production` turns on the
+`Secure` flag on the refresh cookie (`apps/api/src/routes/auth.ts`).
 
 ---
 
 ## Verify after deploy
 
 ```
-# portals serve
-curl -I https://admin.ws.kipkiren.co.ke    # 200
-curl -I https://tasks.ws.kipkiren.co.ke     # 200
-
-# API reachable + CORS allows the portal
+curl -I https://ws.kipkiren.co.ke          # 200 — role picker
 curl -s https://api.ws.kipkiren.co.ke/v1/health
 ```
 
-Then log in: admin portal with an `admin` user, task view with a
-`technical_delivery` user (see `apps/api/db/seeds/dev_users.sql`).
+Then: pick a role → log in → land in the matching portal. Users are created in
+Supabase (`apps/api/db/seeds/dev_users.sql`); a user's `role` in `public.users`
+decides which portal they get.
 
 ## Notes
-- Auto-deploy: every push to `main` rebuilds all connected Pages projects + the
-  Railway API. No manual step after the projects exist.
-- These portals have no client-side router (single view, in-app tabs), so no SPA
-  `_redirects` fallback is required.
+- Auto-deploy: every push to `main` rebuilds the Pages project + the Railway API.
+- One role per user (from the JWT). Multi-role accounts are out of scope.
+- Local dev: `VITE_PROXY_TARGET=https://api.ws.kipkiren.co.ke pnpm --filter @kws/portal dev`
+  (port 5173). `apps/portal/.env.local` carries `VITE_DEV_AUTH_BYPASS=1` for UI work.

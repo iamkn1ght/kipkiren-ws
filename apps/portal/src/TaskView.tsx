@@ -120,7 +120,7 @@ export function TaskView() {
   };
 
   return (
-    <div className="kwsp">
+    <div className="kwsp app-task">
       {/* ── SIDEBAR ── */}
       <aside className="sb">
         <div className="sb-logo">
