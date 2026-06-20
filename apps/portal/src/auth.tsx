@@ -111,14 +111,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     const boot = async () => {
-      const storedPick = readStored(PICKED_KEY) as PortalRole | null;
-      if (storedPick) setPicked(storedPick);
-
       if (DEV_AUTH_BYPASS) {
-        if (storedPick) signInAs(storedPick);
+        // Clean start in dev so the public landing is the entry point;
+        // a role is chosen fresh each session via the picker.
         setBootstrapping(false);
         return;
       }
+
+      const storedPick = readStored(PICKED_KEY) as PortalRole | null;
+      if (storedPick) setPicked(storedPick);
 
       const stored = readStored(STORAGE_KEY);
       if (stored) {

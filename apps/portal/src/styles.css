@@ -844,3 +844,104 @@ html, body, #root { height: 100%; background: var(--bg); font-family: var(--sans
 .rp-card-go { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--teal-deep); }
 .rp-foot { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); margin-top: 24px; }
 @media (max-width: 720px) { .rp-grid { grid-template-columns: 1fr; } }
+
+/* ============================================================================
+ * THEME SYSTEM — modern smoothness always on; color palette toggles light ⇆
+ * dark via [data-theme] on <html>. Uber-style geometric type, big radius, soft
+ * depth; Kipkiren green + brown accents in both modes.
+ * ========================================================================== */
+
+/* Always-on (both modes): geometric type, radius, motion, light-mode elevation */
+:root {
+  --serif: 'Space Grotesk', sans-serif;
+  --sans:  'DM Sans', sans-serif;
+  --mono:  'DM Mono', 'JetBrains Mono', monospace;
+  --radius-sm: 10px; --radius: 16px; --radius-lg: 22px;
+  --shadow-1: 0 1px 2px rgba(17,16,8,.05), 0 4px 14px rgba(17,16,8,.06);
+  --shadow-2: 0 10px 30px rgba(17,16,8,.10);
+}
+html, body, #root { background: var(--bg); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+.greeting, .rp-title, .ftit, .pf-tit, .lg-title, .svc-card-title, .ai-title, .gate-title { font-weight: 600; letter-spacing: -0.01em; }
+.sc, .ai-card, .client-card, .task, .rp-card, .svc-card { transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease; }
+
+/* ── DARK PALETTE ── */
+[data-theme="dark"] {
+  --bg:        #0E1110;
+  --surface:   #181C1A;
+  --surface-2: #222826;
+  --ink:       #F3F1EA;
+  --slate:     #CFCDC4;
+  --mid:       #9A968B;
+  --border:    rgba(243,241,234,0.10);
+  --teal:        #34C6A6;
+  --teal-deep:   #0E7A68;
+  --teal-light:  rgba(52,198,166,0.14);
+  --amber:       #F2B45A;
+  --amber-deep:  #C47A1A;
+  --amber-light: rgba(242,180,90,0.14);
+  --shadow-1: 0 1px 2px rgba(0,0,0,.45), 0 4px 14px rgba(0,0,0,.30);
+  --shadow-2: 0 10px 34px rgba(0,0,0,.50);
+}
+
+/* ── DARK re-skins (light theme keeps its original surfaces) ── */
+[data-theme="dark"] .topbar, [data-theme="dark"] .sc, [data-theme="dark"] .task,
+[data-theme="dark"] .done-row, [data-theme="dark"] .lg-card, [data-theme="dark"] .gate-card,
+[data-theme="dark"] .tbl, [data-theme="dark"] .svc-list, [data-theme="dark"] .fsec,
+[data-theme="dark"] .pf-hd, [data-theme="dark"] .pft, [data-theme="dark"] .pf-tots,
+[data-theme="dark"] .inv-row, [data-theme="dark"] .spend-bar-wrap, [data-theme="dark"] .svc-card,
+[data-theme="dark"] .pay-modal, [data-theme="dark"] .q-row, [data-theme="dark"] .ai-card,
+[data-theme="dark"] .ai-flag, [data-theme="dark"] .client-card, [data-theme="dark"] .cap-people,
+[data-theme="dark"] .cap-box, [data-theme="dark"] .rev-modal, [data-theme="dark"] .rp-card,
+[data-theme="dark"] .ptab, [data-theme="dark"] .svc-detail, [data-theme="dark"] .order-item,
+[data-theme="dark"] .mini-order { background: var(--surface); }
+
+[data-theme="dark"] .sb { background: #0A0D0C; }
+[data-theme="dark"] .tbl th, [data-theme="dark"] .q-row-hd, [data-theme="dark"] .done-row-hd,
+[data-theme="dark"] .toast, [data-theme="dark"] .modal-hd, [data-theme="dark"] .rev-hd,
+[data-theme="dark"] .n-hd { background: var(--surface-2); }
+
+[data-theme="dark"] .btn-done { background: var(--teal-deep); color: #fff; }
+[data-theme="dark"] .filter-btn.active { background: var(--teal-deep); color: #fff; border-color: var(--teal-deep); }
+[data-theme="dark"] .bdg-k { background: var(--surface-2); color: var(--ink); border-color: var(--border); }
+
+[data-theme="dark"] .task, [data-theme="dark"] .ai-card, [data-theme="dark"] .client-card,
+[data-theme="dark"] .svc-card, [data-theme="dark"] .rp-card { border-top-color: var(--teal); }
+[data-theme="dark"] .greeting em, [data-theme="dark"] .rp-title em, [data-theme="dark"] .ai-conf-val,
+[data-theme="dark"] .tid, [data-theme="dark"] .done-tid, [data-theme="dark"] .pf-ref,
+[data-theme="dark"] .inv-id, [data-theme="dark"] .sb-mark, [data-theme="dark"] .lg-mark,
+[data-theme="dark"] .rp-mark { color: var(--teal); }
+
+[data-theme="dark"] .lg-input, [data-theme="dark"] .qsearch, [data-theme="dark"] .rev-inp,
+[data-theme="dark"] .pfield input, [data-theme="dark"] .fld input, [data-theme="dark"] .fld select,
+[data-theme="dark"] .fld textarea, [data-theme="dark"] .n-ta { background: var(--surface-2); color: var(--ink); }
+[data-theme="dark"] .lg-input:focus, [data-theme="dark"] .qsearch:focus, [data-theme="dark"] .rev-inp:focus,
+[data-theme="dark"] .pfield input:focus, [data-theme="dark"] .fld input:focus, [data-theme="dark"] .fld select:focus,
+[data-theme="dark"] .fld textarea:focus, [data-theme="dark"] .n-ta:focus { background: #2B322F; }
+
+/* ── THEME TOGGLE (fixed, on every screen) ── */
+.theme-toggle { position: fixed; top: 9px; right: 16px; z-index: 150; width: 34px; height: 34px; border-radius: 999px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--surface, #fff); border: 1px solid var(--border); color: var(--ink); box-shadow: var(--shadow-1); transition: transform .15s ease, box-shadow .15s ease; }
+.theme-toggle:active { transform: scale(.94); }
+/* Clear the top-right corner in every portal topbar so the toggle never overlaps controls */
+.topbar { padding-right: 64px; }
+.theme-toggle:hover { transform: translateY(-1px); box-shadow: var(--shadow-2); }
+.theme-toggle svg { width: 18px; height: 18px; display: block; }
+
+/* ── Rails health panel (admin) ── */
+.rails-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.rail-card { background: var(--surface, #fff); border: 1px solid var(--border); border-top: 3px solid var(--teal-deep); border-radius: var(--radius); box-shadow: var(--shadow-1); padding: 20px 22px; transition: box-shadow .2s ease, transform .2s ease; }
+.rail-card:hover { box-shadow: var(--shadow-2); transform: translateY(-1px); }
+.rail-card.s-live { border-top-color: #22c55e; }
+.rail-card.s-degraded, .rail-card.s-pending { border-top-color: var(--amber-deep); }
+.rail-card.s-unconfigured { border-top-color: var(--border); opacity: .9; }
+.rail-card-hd { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.rail-name { font-family: var(--serif); font-size: 18px; font-weight: 600; color: var(--ink); }
+.rail-purpose { font-size: 12px; color: var(--mid); margin: 4px 0 14px; }
+.rail-reach { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; margin-bottom: 12px; }
+.rail-reach.up { color: #1a9a5a; } .rail-reach.down { color: var(--amber-deep); } .rail-reach.na { color: var(--mid); }
+.rail-metrics { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.rail-metric { background: var(--surface, #fff); padding: 10px 12px; }
+.rail-metric .l { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); }
+.rail-metric .v { font-family: var(--mono); font-size: 14px; color: var(--ink); margin-top: 3px; }
+.rail-metric .v.ok { color: #1a9a5a; } .rail-metric .v.warn { color: var(--amber-deep); } .rail-metric .v.mut { color: var(--mid); }
+.rail-note { font-size: 11px; color: var(--mid); margin-top: 12px; line-height: 1.55; border-left: 2px solid var(--border); padding-left: 10px; }
+@media (max-width: 720px) { .rails-grid, .rail-metrics { grid-template-columns: 1fr; } }
