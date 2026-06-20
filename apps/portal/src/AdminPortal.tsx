@@ -25,9 +25,10 @@ import {
   slaLabel,
   type QueueRow,
   type ReviewQueueItem,
+  type RailHealth,
 } from './useAdminData.ts';
 
-type Tab = 'dashboard' | 'queue' | 'review' | 'clients' | 'capacity' | 'services';
+type Tab = 'dashboard' | 'queue' | 'review' | 'clients' | 'capacity' | 'services' | 'rails';
 type QueueFilter = 'all' | 'awaiting' | 'progress' | 'review' | 'flagged';
 
 const TAB_LABELS: Record<Tab, string> = {
@@ -37,6 +38,7 @@ const TAB_LABELS: Record<Tab, string> = {
   clients: 'Client Accounts',
   capacity: 'Capacity',
   services: 'Services',
+  rails: 'Rails',
 };
 
 interface EditLine {
@@ -66,7 +68,7 @@ export function AdminPortal() {
   const displayEmail = session?.email ?? '';
   const roleLabel = session?.claims.role === 'admin' ? 'Admin' : 'Delivery Lead';
 
-  const { queue, capacity, clients, reviewQueue, recentDispatches, capacityDetail, services, loading, reload } = useAdminData();
+  const { queue, capacity, clients, reviewQueue, recentDispatches, capacityDetail, services, rails, railsProbing, probeRails, loading, reload } = useAdminData();
   const d = '—';
 
   const queueRows = queue ?? [];
@@ -268,6 +270,9 @@ export function AdminPortal() {
           </button>
           <button type="button" className={`sni ${tab === 'services' ? 'active' : ''}`} onClick={() => setTab('services')}>
             <span className="sni-dot"></span>Services{(services?.length ?? 0) > 0 && <span className="sni-badge">{services!.length}</span>}
+          </button>
+          <button type="button" className={`sni ${tab === 'rails' ? 'active' : ''}`} onClick={() => setTab('rails')}>
+            <span className="sni-dot"></span>Rails{(rails?.length ?? 0) > 0 && <span className="sni-badge">{rails!.length}</span>}
           </button>
         </nav>
         <div className="sb-foot">
@@ -649,6 +654,29 @@ export function AdminPortal() {
             </>
           )}
         </section>
+
+        {/* ═════════════ RAILS ════════════════ */}
+        <section className={`view ${tab === 'rails' ? 'active' : ''}`} id="rails">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div>
+              <h1 className="greeting">Platform rails</h1>
+              <p className="g-sub">KWS-side view — throughput that flows through KWS plus each rail's config &amp; reachability. KWS is an app, not a rail, so this isn't the rails' internal dashboards.</p>
+            </div>
+            <button type="button" className="btn-tb" disabled={railsProbing} onClick={() => void probeRails()}>
+              {railsProbing ? 'Pinging…' : '↻ Check reachability'}
+            </button>
+          </div>
+
+          {loading ? (
+            <div style={{ textAlign: 'center', color: 'var(--mid)', padding: 40 }}>Loading…</div>
+          ) : !rails?.length ? (
+            <div style={{ textAlign: 'center', color: 'var(--mid)', padding: 40 }}>No rail data</div>
+          ) : (
+            <div className="rails-grid">
+              {rails.map((r) => <RailCard key={r.key} rail={r} />)}
+            </div>
+          )}
+        </section>
       </div>
 
       {/* ── RAISE TICKET MODAL (admin raises a ticket for a client) ── */}
@@ -841,6 +869,41 @@ export function AdminPortal() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+const RAIL_BADGE: Record<RailHealth['status'], { cls: string; label: string }> = {
+  live: { cls: 'bdg-t', label: 'Live' },
+  configured: { cls: 'bdg-o', label: 'Configured' },
+  pending: { cls: 'bdg-a', label: 'Pending' },
+  degraded: { cls: 'bdg-a', label: 'Degraded' },
+  unconfigured: { cls: 'bdg-o', label: 'Not configured' },
+};
+
+function RailCard({ rail }: { rail: RailHealth }) {
+  const b = RAIL_BADGE[rail.status];
+  return (
+    <div className={`rail-card s-${rail.status}`}>
+      <div className="rail-card-hd">
+        <div className="rail-name">{rail.name}</div>
+        <span className={`bdg ${b.cls}`}>{b.label}</span>
+      </div>
+      <div className="rail-purpose">{rail.purpose}</div>
+      {rail.reachable !== null && (
+        <div className={`rail-reach ${rail.reachable ? 'up' : 'down'}`}>
+          {rail.reachable ? `● reachable${rail.latency_ms != null ? ` · ${rail.latency_ms}ms` : ''}` : '✕ unreachable'}
+        </div>
+      )}
+      <div className="rail-metrics">
+        {rail.metrics.map((m) => (
+          <div key={m.label} className="rail-metric">
+            <div className="l">{m.label}</div>
+            <div className={`v ${m.tone ?? ''}`}>{m.value}</div>
+          </div>
+        ))}
+      </div>
+      {rail.note && <div className="rail-note">{rail.note}</div>}
     </div>
   );
 }

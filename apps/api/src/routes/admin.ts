@@ -8,6 +8,7 @@ import { writeAuditEvent } from '../services/audit.js';
 import { intakeTicket } from '../services/ticket-intake.js';
 import { loadQueue, loadClientAccounts, loadCapacitySnapshot, loadReviewQueue, loadCapacityDetail, loadRecentDispatches } from '../services/admin-views.js';
 import { runUptimeChecks } from '../services/uptime.js';
+import { loadRailsHealth } from '../services/rails.js';
 import { logger } from '../lib/logger.js';
 
 export const adminRouter: Router = Router();
@@ -163,6 +164,21 @@ adminRouter.post(
   async (_req: Request, res: Response) => {
     const results = await runUptimeChecks();
     res.json({ checked: results.length, results });
+  },
+);
+
+// ----------------------------------------------------------------------------
+// GET /v1/admin/rails — platform-rails health, KWS-side view.
+// ?probe=1 also live-pings the rails KWS has a base URL for (KP, Todoku).
+// ----------------------------------------------------------------------------
+adminRouter.get(
+  '/rails',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (req: Request, res: Response) => {
+    const probe = req.query.probe === '1';
+    const result = await loadRailsHealth(probe);
+    res.json(result);
   },
 );
 

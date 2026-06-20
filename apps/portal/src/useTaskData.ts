@@ -11,6 +11,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { apiRequest, ApiError } from './api.ts';
+import { mockTasks } from './mockData.ts';
 
 export interface Task {
   id: string;
@@ -38,6 +39,8 @@ export interface TaskData {
   refresh: () => Promise<void>;
 }
 
+const DEV_AUTH_BYPASS = import.meta.env.VITE_DEV_AUTH_BYPASS === '1';
+
 async function setStatus(id: string, status: 'in_progress' | 'complete'): Promise<void> {
   await apiRequest(`/v1/tickets/${id}/status`, { method: 'PUT', body: { status } });
 }
@@ -51,6 +54,12 @@ export function useTaskData(): TaskData {
   const refresh = useCallback(async () => {
     setError(null);
     try {
+      if (DEV_AUTH_BYPASS) {
+        setActive(mockTasks.active);
+        setCompleted(mockTasks.completed);
+        setLoading(false);
+        return;
+      }
       const [a, c] = await Promise.all([
         apiRequest<TasksResponse>('/v1/tasks'),
         apiRequest<TasksResponse>('/v1/tasks?view=completed'),
@@ -70,11 +79,13 @@ export function useTaskData(): TaskData {
   }, [refresh]);
 
   const startTask = useCallback(async (id: string) => {
+    if (DEV_AUTH_BYPASS) return; // mock mode — no real mutation
     await setStatus(id, 'in_progress');
     await refresh();
   }, [refresh]);
 
   const completeTask = useCallback(async (id: string) => {
+    if (DEV_AUTH_BYPASS) return;
     await setStatus(id, 'complete');
     await refresh();
   }, [refresh]);

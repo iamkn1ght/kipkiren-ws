@@ -70,3 +70,14 @@ describe('POST /v1/admin/tickets — input validation (admin token)', () => {
     expect(res.status).toBe(400);
   });
 });
+
+describe('GET /v1/admin/rails — role gate', () => {
+  it('forbids client + technical_delivery, requires auth', async () => {
+    for (const role of ['client', 'technical_delivery'] as const) {
+      const res = await request(app).get('/v1/admin/rails').set(auth(mintTestToken(role)));
+      expect(res.status).toBe(403);
+    }
+    const noauth = await request(app).get('/v1/admin/rails');
+    expect(noauth.status).toBe(401);
+  });
+});

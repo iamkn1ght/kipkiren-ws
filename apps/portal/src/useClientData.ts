@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useApi } from './auth.tsx';
+import { mockClient } from './mockData.ts';
+
+const DEV_AUTH_BYPASS = import.meta.env.VITE_DEV_AUTH_BYPASS === '1';
 
 export interface ClientTicket {
   id: string;
@@ -56,6 +59,11 @@ export function useClientData(): ClientData {
     setLoading(true);
     setError(null);
     try {
+      if (DEV_AUTH_BYPASS) {
+        setTickets(mockClient.tickets); setInvoices(mockClient.invoices); setServices(mockClient.services);
+        setLoading(false);
+        return;
+      }
       const [tRes, iRes, sRes] = await Promise.all([
         call<{ tickets: ClientTicket[] }>('/v1/tickets'),
         call<{ invoices: ClientInvoice[] }>('/v1/invoices'),

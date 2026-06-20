@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useApi } from './auth.tsx';
+import { mockAdmin } from './mockData.ts';
+
+const DEV_AUTH_BYPASS = import.meta.env.VITE_DEV_AUTH_BYPASS === '1';
 
 export type SlaState = 'clear' | 'warn' | 'breached';
 
@@ -129,6 +132,20 @@ export interface AdminServiceRow {
   client_name: string;
 }
 
+export interface RailMetric { label: string; value: string; tone?: 'ok' | 'warn' | 'mut'; }
+export interface RailHealth {
+  key: string;
+  name: string;
+  purpose: string;
+  configured: boolean;
+  status: 'live' | 'configured' | 'pending' | 'degraded' | 'unconfigured';
+  reachable: boolean | null;
+  latency_ms: number | null;
+  metrics: RailMetric[];
+  note?: string;
+}
+interface RailsResult { rails: RailHealth[]; generated_at: string }
+
 interface AdminData {
   queue: QueueRow[] | null;
   capacity: CapacitySnapshot | null;
@@ -137,6 +154,9 @@ interface AdminData {
   recentDispatches: RecentDispatch[] | null;
   capacityDetail: CapacityDetail | null;
   services: AdminServiceRow[] | null;
+  rails: RailHealth[] | null;
+  railsProbing: boolean;
+  probeRails: () => void;
   loading: boolean;
   error: string | null;
   reload: () => void;
@@ -151,6 +171,8 @@ export function useAdminData(): AdminData {
   const [recentDispatches, setRecentDispatches] = useState<RecentDispatch[] | null>(null);
   const [capacityDetail, setCapacityDetail] = useState<CapacityDetail | null>(null);
   const [services, setServices] = useState<AdminServiceRow[] | null>(null);
+  const [rails, setRails] = useState<RailHealth[] | null>(null);
+  const [railsProbing, setRailsProbing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -158,7 +180,14 @@ export function useAdminData(): AdminData {
     setLoading(true);
     setError(null);
     try {
-      const [qRes, capRes, cliRes, revRes, dispRes, capDet, svcRes] = await Promise.all([
+      if (DEV_AUTH_BYPASS) {
+        setQueue(mockAdmin.queue); setCapacity(mockAdmin.capacity); setClients(mockAdmin.clients);
+        setReviewQueue(mockAdmin.reviewQueue); setRecentDispatches(mockAdmin.recentDispatches);
+        setCapacityDetail(mockAdmin.capacityDetail); setServices(mockAdmin.services); setRails(mockAdmin.rails);
+        setLoading(false);
+        return;
+      }
+      const [qRes, capRes, cliRes, revRes, dispRes, capDet, svcRes, railRes] = await Promise.all([
         call<{ queue: QueueRow[] }>('/v1/admin/queue'),
         call<CapacitySnapshot>('/v1/admin/capacity'),
         call<{ clients: ClientSummaryRow[] }>('/v1/admin/clients'),
@@ -166,6 +195,7 @@ export function useAdminData(): AdminData {
         call<{ dispatches: RecentDispatch[] }>('/v1/admin/recent-dispatches'),
         call<CapacityDetail>('/v1/admin/capacity-detail'),
         call<{ services: AdminServiceRow[] }>('/v1/services/admin/all'),
+        call<RailsResult>('/v1/admin/rails'),
       ]);
       setQueue(qRes.queue);
       setCapacity(capRes);
@@ -174,6 +204,7 @@ export function useAdminData(): AdminData {
       setRecentDispatches(dispRes.dispatches);
       setCapacityDetail(capDet);
       setServices(svcRes.services);
+      setRails(railRes.rails);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load admin data');
     } finally {
@@ -181,11 +212,24 @@ export function useAdminData(): AdminData {
     }
   }, [call]);
 
+  // Live-ping the reachable rails (KP, Todoku) — on demand (slower).
+  const probeRails = useCallback(async () => {
+    setRailsProbing(true);
+    try {
+      const r = await call<RailsResult>('/v1/admin/rails?probe=1');
+      setRails(r.rails);
+    } catch {
+      // error surfaced via the main load path
+    } finally {
+      setRailsProbing(false);
+    }
+  }, [call]);
+
   useEffect(() => {
     void load();
   }, [load]);
 
-  return { queue, capacity, clients, reviewQueue, recentDispatches, capacityDetail, services, loading, error, reload: load };
+  return { queue, capacity, clients, reviewQueue, recentDispatches, capacityDetail, services, rails, railsProbing, probeRails, loading, error, reload: load };
 }
 
 export function formatSlaTime(msUntilBreach: number | null): string {
