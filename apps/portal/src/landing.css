@@ -31,10 +31,11 @@
 .lp-brand { display: flex; align-items: baseline; gap: 10px; }
 .lp-brand-mark { font-family: var(--mono); font-size: 13px; letter-spacing: 4px; font-weight: 700; color: var(--ink); }
 .lp-brand-sub { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; color: var(--teal2); }
-.lp-navlinks { display: flex; gap: 26px; }
-.lp-navlink { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); cursor: pointer; background: none; border: none; padding: 0; transition: color .2s; }
+.lp-navlinks { display: flex; gap: 32px; }
+.lp-navlink { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); cursor: pointer; background: none; border: none; padding: 0; position: relative; transition: color .2s; }
+.lp-navlink::after { content: ''; position: absolute; left: 0; right: 0; bottom: -6px; height: 2px; border-radius: 2px; background: var(--teal2); transform: scaleX(0); transform-origin: left; transition: transform .24s ease; }
 .lp-navlink:hover, .lp-navlink.active { color: var(--ink); }
-.lp-navlink.active { border-bottom: 1px solid var(--teal2); padding-bottom: 4px; }
+.lp-navlink:hover::after, .lp-navlink.active::after { transform: scaleX(1); }
 .lp-booking { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 500; background: var(--ink); color: #fff; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 999px; box-shadow: 0 2px 10px rgba(17,16,8,.14); }
 .lp-booking:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(17,16,8,.22); }
 .lp-live { width: 7px; height: 7px; border-radius: 50%; background: var(--teal2); box-shadow: 0 0 0 3px rgba(14,122,104,.18); }
@@ -251,10 +252,10 @@
 
 /* ── larger type for readability (customer-facing legibility pass) ── */
 .lp-status { font-size: 11px; }
-.lp-navlink { font-size: 12px; }
+.lp-navlink { font-size: 14px; font-weight: 500; }
 .lp-booking { font-size: 12px; }
-.lp-brand-mark { font-size: 15px; }
-.lp-brand-sub { font-size: 9px; }
+.lp-brand-mark { font-size: 19px; letter-spacing: 5px; }
+.lp-brand-sub { font-size: 10px; }
 .lp-mono { font-size: 11px; }
 .lp-eyebrow .lp-num { font-size: 11px; }
 .lp-tagchip { font-size: 10px; }
@@ -280,3 +281,4 @@
 /* ── sign-in pill: white-on-dark in dark mode (overrides earlier teal color) ── */
 [data-theme="dark"] .lp-booking { background: #fff; color: #0B0B0C; box-shadow: 0 2px 14px rgba(0,0,0,.55); }
 [data-theme="dark"] .lp-brand-sub { color: #34C6A6; }
+[data-theme="dark"] .lp-navlink::after { background: #34C6A6; }
