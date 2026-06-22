@@ -46,7 +46,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
           </div>
           <div className="lp-nav-right">
             <ThemeToggle inline />
-            <button className="lp-booking" onClick={onSignIn}><span className="lp-live" /> Sign in · Booking Q3</button>
+            <button className="lp-booking" onClick={onSignIn}><span className="lp-live" /> Sign in</button>
           </div>
         </div>
       </nav>
