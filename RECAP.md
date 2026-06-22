@@ -3,9 +3,10 @@
 > Per-app sprint state, deployment state, test counts, blockers. Master cross-rail tracker at `C:\Projects\Platform Rails-instruction pack v1-reboot pack v1.2\RECAP.md`.
 
 **App:** Kipkiren WS (Kipkiren Teknolojia subsidiary · `ws.kipkiren.co.ke`)
-**Status:** 🟢 S1–S7 substantially shipped · 🟡 S5/S6 CEO actions outstanding · S8 + S9 not started
-**Repo:** local `C:\Projects\kipkiren_web_services\kws\` · GitHub `kipkiren-ws` (remote `origin/main`)
-**Latest commit:** `b8a82cd feat: S6 add-service form + uptime pinger, S7 DSAR + privacy policy + SEO/social display`
+**Status:** 🟢 S1–S7 substantially shipped · 🟡 S5/S6 CEO actions outstanding · S8 + S9 not started · 🎨 **portal redesign on branch `feat/portal-redesign`** (not yet deployed)
+**Repo:** local `C:\Projects\kipkiren_web_services\kws\` · GitHub `iamkn1ght/kipkiren-ws` (renamed from `thhvvv`)
+**Latest on main:** `b8a82cd` shipped; `main` is local-ahead by the portal-merge `b85064d` (unpushed). Active work on `feat/portal-redesign` (pushed): unified single portal (role-picker → login → client/admin/task), dark/light theme + toggle, editorial landing page (real plans, de-fabricated), admin **Rails health panel** (`GET /v1/admin/rails`), dev mock-data mode. typecheck clean · 125 api tests pass.
+**Deploy note:** the redesign needs a single Cloudflare Pages project pointed at `@kws/portal` (per DEPLOY.md) before go-live; the three old portal apps were merged into `apps/portal`.
 **Supabase project:** `qderqzcyyhnfphrswexm` in **eu-west-1** (Ireland) — region decision **RESOLVED to Option B** (see [DECISION_REGION_DIVERGENCE.md](./DECISION_REGION_DIVERGENCE.md)). The live DB and Railway deploy were already in Europe; docs reconciled 15 Jun 2026. Residual: counsel review of the KDPA §48–49 cross-border-transfer disclosure wording.
 **Railway:** service deployed per [RAILWAY.md](./RAILWAY.md)
 **Domain:** `ws.kipkiren.co.ke` · client portal `/portal` · admin `/admin` · API `api.ws.kipkiren.co.ke/v1`
@@ -125,6 +126,7 @@ _(Populate at every sprint close: date, summary, tests added, migrations applied
 
 ---
 
-*Kipkiren WS · RECAP v1.2 · 13 June 2026 · Confidential · Update at every sprint close.*
+*Kipkiren WS · RECAP v1.3 · 22 June 2026 · Confidential · Update at every sprint close.*
+*v1.3 — portal redesign on `feat/portal-redesign`: 3 apps merged into one (`apps/portal`, role-picker → login → portal); dark/light theme + toggle; editorial landing page rebuilt from the brand guide, de-fabricated + real MVP plans; admin Rails health panel (`/v1/admin/rails`); dev mock-data mode; polish pass. typecheck clean, 125 api tests pass. Not deployed — needs Cloudflare Pages project for `@kws/portal` + merge to main. Outstanding (you): rotate the exposed Postgres password, create Supabase Auth users (`dev_users.sql`), privacy-policy counsel review, S5 registrations.*
 *v1.1 — reconciled against repo (HEAD `b8a82cd`, working tree has untracked tracker/operator docs): typecheck re-verified clean; test suite run (101 passed / 5 skipped, 10 files); migrations 0001–0004 present; all referenced docs present in repo except `kws_sprint_9.md` (lives in canonical docs folder, not this repo).*
 *v1.2 — closed S4: built the Kamau task-view React app (`apps/task-view`, ported verbatim from `kws_task_view.html`, gated to `technical_delivery`). Backend: `GET /v1/tasks?view=completed` + `updated_at` added to the PII-safe surface; `PUT /v1/tickets/:id/status` now stamps `updated_at`. typecheck clean, 102 tests pass, production build OK. **Follow-up (deploy-time, not built):** Cloudflare Pages project for the task-view + add its origin to Railway `ALLOWED_ORIGINS`. Changes not yet committed.*

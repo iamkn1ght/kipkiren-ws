@@ -130,7 +130,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
           <div className="lp-split">
             <div>
               <h2 className="lp-h2">Six layers,<br />one <em>typed</em> seam.</h2>
-              <p className="lp-intro">A boring, well-loved stack. Stable choices at the edge, sharp tools at the surface. Every layer instrumented, every contract typed, every deploy reversible in under sixty seconds.</p>
+              <p className="lp-intro">A stable, well-understood stack — proven choices at the edge, sharp tools at the surface. Every layer instrumented, every contract typed, every deploy reversible in under a minute.</p>
               <div className="lp-badges">
                 {['100 LH', 'WCAG 2.2', 'OWASP', 'GDPR', 'OTEL', 'SOC2-Ready'].map((b) => <span key={b} className="lp-badge">{b}</span>)}
               </div>
@@ -179,7 +179,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
       <section className="lp-sec grid-bg" id="process">
         <div className="lp-wrap">
           <div className="lp-eyebrow"><span className="lp-mono">§04 · <span className="lp-diamond">process</span></span><span className="lp-rule" /><span className="lp-num">04 / 05</span></div>
-          <p className="lp-intro">A four-movement loop. Repeated slowly. Repeated well.</p>
+          <p className="lp-intro">A four-step loop we run on every engagement — and keep running for six months after launch.</p>
           <div className="lp-proc">
             {[
               ['01', 'KPKRN READ', 'Listen', 'We read your existing material, your analytics, your inbox. A brief is written together — small, honest, signed.'],
@@ -203,8 +203,8 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
           <div className="lp-eyebrow"><span className="lp-mono">§05 · <span className="lp-diamond">the studio</span></span><span className="lp-rule" /><span className="lp-num">05 / 05</span></div>
           <div className="lp-split">
             <div>
-              <h2 className="lp-h2">A small team. A long horizon.<br /><em>No growth hacking,</em> no headcount theatre.</h2>
-              <p className="lp-intro">Kipkiren grew out of a magazine and an engineering team that missed each other. We still think in spreads — pacing, hierarchy, the silence before a pull-quote — and in commits — typed, reviewed, reversible.</p>
+              <h2 className="lp-h2">A small team.<br />A <em>long horizon</em>.</h2>
+              <p className="lp-intro">We'd rather tend a handful of systems well than ship many and vanish. We think in spreads — pacing, hierarchy, the silence before a pull-quote — and in commits — typed, reviewed, reversible.</p>
               <div className="lp-tags">{['Editorial', 'Typed', 'Patient', 'Instrumented', 'Durable', 'Plain-spoken', 'Open-source-friendly'].map((t) => <span key={t} className="lp-tag">{t}</span>)}</div>
             </div>
             <div>
