@@ -6,7 +6,7 @@
 .lp {
   --cream: #F7F4EE; --paper: #FBFAF6; --ink: #111008; --slate: #2C2C2C; --mid: #6B6456;
   --line: #DDD8CC; --teal: #0D5C4E; --teal2: #0E7A68; --amber: #C47A1A; --amber2: #F5A623;
-  --dark: #0E1110; --dark2: #161A18;
+  --dark: #161616; --dark2: #1F1F1F;
   --serif: 'Playfair Display', Georgia, serif; --sans: 'DM Sans', system-ui, sans-serif;
   --mono: 'DM Mono', 'JetBrains Mono', monospace;
   background: var(--cream); color: var(--ink); font-family: var(--sans);
@@ -65,8 +65,8 @@
 .lp-scroll { font-family: var(--mono); font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--mid); }
 
 /* terminal */
-.lp-term { background: #1C1F1D; border: 1px solid #2A2F2C; border-radius: 12px; overflow: hidden; box-shadow: 0 24px 60px rgba(17,16,8,.18); font-family: var(--mono); font-size: 13px; }
-.lp-term-bar { display: flex; align-items: center; gap: 7px; padding: 12px 14px; border-bottom: 1px solid #2A2F2C; }
+.lp-term { background: #1E1E1E; border: 1px solid #333337; border-radius: 12px; overflow: hidden; box-shadow: 0 24px 60px rgba(17,16,8,.18); font-family: var(--mono); font-size: 13px; }
+.lp-term-bar { display: flex; align-items: center; gap: 7px; padding: 12px 14px; border-bottom: 1px solid #333337; }
 .lp-tl { width: 11px; height: 11px; border-radius: 50%; }
 .lp-tl.r { background: #FF5F57; } .lp-tl.y { background: #FEBC2E; } .lp-tl.g { background: #28C840; }
 .lp-term-title { margin-left: 10px; color: rgba(255,255,255,.45); font-size: 11px; letter-spacing: 2px; }
@@ -162,7 +162,7 @@
 .lp-send:hover { transform: translateY(-1px); background: var(--amber2); }
 
 /* ── footer ── */
-.lp-footer { background: #0A0C0B; color: rgba(255,255,255,.55); padding: 56px 0 40px; }
+.lp-footer { background: #141414; color: rgba(255,255,255,.55); padding: 56px 0 40px; }
 .lp-footer .lp-wrap { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 28px; }
 .lp-footer h4 { font-family: var(--mono); font-size: 12px; letter-spacing: 3px; color: #fff; margin: 0 0 14px; }
 .lp-footer p { font-size: 13px; max-width: 30em; }
@@ -203,13 +203,14 @@
 /* Flip the neutral palette only; keep --teal/--amber as deep fills (contact
    section bg, primary button) and brighten accent TEXT separately below. */
 [data-theme="dark"] .lp {
-  --cream: #0E1110; --paper: #181C1A; --ink: #F3F1EA; --slate: #C9C7BE; --mid: #9A968B;
-  --line: rgba(243,241,234,0.12);
+  --cream: #1E1E1E; --paper: #252526; --ink: #E4E4E4; --slate: #BFBFBF; --mid: #8C8C8C;
+  --line: rgba(255,255,255,0.09);
+  --dark: #181818; --dark2: #2D2D30;
 }
-[data-theme="dark"] .lp-nav { background: rgba(14,17,16,.82); border-bottom-color: rgba(243,241,234,0.10); }
-[data-theme="dark"] .lp-dtable th { background: #20251F; }
-[data-theme="dark"] .lp-dtable tbody tr:nth-child(even) td { background: #1F2522; }
-[data-theme="dark"] .lp-dtable tbody tr:hover td { background: #283029; }
+[data-theme="dark"] .lp-nav { background: rgba(30,30,30,.85); border-bottom-color: rgba(255,255,255,0.09); }
+[data-theme="dark"] .lp-dtable th { background: #2D2D30; }
+[data-theme="dark"] .lp-dtable tbody tr:nth-child(even) td { background: #2A2A2B; }
+[data-theme="dark"] .lp-dtable tbody tr:hover td { background: #333337; }
 [data-theme="dark"] .lp-card:hover { box-shadow: 0 12px 30px rgba(0,0,0,.45); }
 [data-theme="dark"] .lp-term { box-shadow: 0 24px 60px rgba(0,0,0,.5); }
 [data-theme="dark"] .lp-toggle:hover { border-color: #34C6A6; color: #34C6A6; }

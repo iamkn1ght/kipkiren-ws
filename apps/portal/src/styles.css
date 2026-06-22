@@ -866,13 +866,13 @@ html, body, #root { background: var(--bg); -webkit-font-smoothing: antialiased; 
 
 /* ── DARK PALETTE ── */
 [data-theme="dark"] {
-  --bg:        #0E1110;
-  --surface:   #181C1A;
-  --surface-2: #222826;
-  --ink:       #F3F1EA;
-  --slate:     #CFCDC4;
-  --mid:       #9A968B;
-  --border:    rgba(243,241,234,0.10);
+  --bg:        #1E1E1E;   /* VS Code editor */
+  --surface:   #252526;   /* VS Code panel / sidebar */
+  --surface-2: #2D2D30;   /* VS Code elevated / inputs */
+  --ink:       #E4E4E4;
+  --slate:     #BFBFBF;
+  --mid:       #8C8C8C;
+  --border:    rgba(255,255,255,0.09);
   --teal:        #34C6A6;
   --teal-deep:   #0E7A68;
   --teal-light:  rgba(52,198,166,0.14);
@@ -895,7 +895,7 @@ html, body, #root { background: var(--bg); -webkit-font-smoothing: antialiased; 
 [data-theme="dark"] .ptab, [data-theme="dark"] .svc-detail, [data-theme="dark"] .order-item,
 [data-theme="dark"] .mini-order { background: var(--surface); }
 
-[data-theme="dark"] .sb { background: #0A0D0C; }
+[data-theme="dark"] .sb { background: #181818; }
 [data-theme="dark"] .tbl th, [data-theme="dark"] .q-row-hd, [data-theme="dark"] .done-row-hd,
 [data-theme="dark"] .toast, [data-theme="dark"] .modal-hd, [data-theme="dark"] .rev-hd,
 [data-theme="dark"] .n-hd { background: var(--surface-2); }
@@ -916,7 +916,7 @@ html, body, #root { background: var(--bg); -webkit-font-smoothing: antialiased; 
 [data-theme="dark"] .fld textarea, [data-theme="dark"] .n-ta { background: var(--surface-2); color: var(--ink); }
 [data-theme="dark"] .lg-input:focus, [data-theme="dark"] .qsearch:focus, [data-theme="dark"] .rev-inp:focus,
 [data-theme="dark"] .pfield input:focus, [data-theme="dark"] .fld input:focus, [data-theme="dark"] .fld select:focus,
-[data-theme="dark"] .fld textarea:focus, [data-theme="dark"] .n-ta:focus { background: #2B322F; }
+[data-theme="dark"] .fld textarea:focus, [data-theme="dark"] .n-ta:focus { background: #3A3A3D; }
 
 /* ── THEME TOGGLE (fixed, on every screen) ── */
 .theme-toggle { position: fixed; top: 9px; right: 16px; z-index: 150; width: 34px; height: 34px; border-radius: 999px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--surface, #fff); border: 1px solid var(--border); color: var(--ink); box-shadow: var(--shadow-1); transition: transform .15s ease, box-shadow .15s ease; }
