@@ -21,14 +21,6 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
 
   return (
     <div className="lp">
-      {/* ── status bar ── */}
-      <div className="lp-status">
-        <div className="lp-wrap">
-          <span><b>● KIPKIREN</b> · WEB SERVICES&nbsp;&nbsp;·&nbsp;&nbsp;NAIROBI, KE&nbsp;&nbsp;·&nbsp;&nbsp;EDGE · eu-west-1&nbsp;&nbsp;·&nbsp;&nbsp;RETAINER + PROFORMA</span>
-          <span>M-PESA · PAYSTACK&nbsp;&nbsp;·&nbsp;&nbsp;NBO · EAT</span>
-        </div>
-      </div>
-
       {/* ── nav ── */}
       <nav className="lp-nav">
         <div className="lp-wrap">
