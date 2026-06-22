@@ -4,7 +4,7 @@
  * Rebuilt from the Lovable/brand-guide design.
  * ========================================================================== */
 .lp {
-  --cream: #F7F4EE; --paper: #FBFAF6; --ink: #111008; --slate: #2C2C2C; --mid: #6B6456;
+  --cream: #FFFFFF; --paper: #FFFFFF; --ink: #111008; --slate: #2C2C2C; --mid: #6B6456;
   --line: #DDD8CC; --teal: #0D5C4E; --teal2: #0E7A68; --amber: #C47A1A; --amber2: #F5A623;
   --dark: #161616; --dark2: #1F1F1F;
   --serif: 'Playfair Display', Georgia, serif; --sans: 'DM Sans', system-ui, sans-serif;
@@ -26,7 +26,7 @@
 .lp-status b { color: #34C6A6; font-weight: 500; }
 
 /* ── nav ── */
-.lp-nav { position: sticky; top: 0; z-index: 20; background: rgba(247,244,238,.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.lp-nav { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
 .lp-nav .lp-wrap { display: flex; align-items: center; justify-content: space-between; height: 68px; }
 .lp-brand { display: flex; align-items: baseline; gap: 10px; }
 .lp-brand-mark { font-family: var(--mono); font-size: 13px; letter-spacing: 4px; font-weight: 500; color: var(--ink); }
@@ -65,7 +65,7 @@
 .lp-scroll { font-family: var(--mono); font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--mid); }
 
 /* terminal */
-.lp-term { background: #121212; border: 1px solid #262628; border-radius: 12px; overflow: hidden; box-shadow: 0 24px 60px rgba(17,16,8,.18); font-family: var(--mono); font-size: 13px; }
+.lp-term { background: #0A0A0A; border: 1px solid #1F1F22; border-radius: 12px; overflow: hidden; box-shadow: 0 24px 60px rgba(17,16,8,.18); font-family: var(--mono); font-size: 13px; }
 .lp-term-bar { display: flex; align-items: center; gap: 7px; padding: 12px 14px; border-bottom: 1px solid #333337; }
 .lp-tl { width: 11px; height: 11px; border-radius: 50%; }
 .lp-tl.r { background: #FF5F57; } .lp-tl.y { background: #FEBC2E; } .lp-tl.g { background: #28C840; }
@@ -203,14 +203,14 @@
 /* Flip the neutral palette only; keep --teal/--amber as deep fills (contact
    section bg, primary button) and brighten accent TEXT separately below. */
 [data-theme="dark"] .lp {
-  --cream: #0A0A0A; --paper: #151618; --ink: #E6E6E6; --slate: #BDBDBD; --mid: #8A8A8A;
-  --line: rgba(255,255,255,0.11);
-  --dark: #000000; --dark2: #202022;
+  --cream: #000000; --paper: #0E0E10; --ink: #E6E6E6; --slate: #BDBDBD; --mid: #8A8A8A;
+  --line: rgba(255,255,255,0.12);
+  --dark: #000000; --dark2: #1B1B1E;
 }
-[data-theme="dark"] .lp-nav { background: rgba(10,10,10,.9); border-bottom-color: rgba(255,255,255,0.11); }
-[data-theme="dark"] .lp-dtable th { background: #202022; }
-[data-theme="dark"] .lp-dtable tbody tr:nth-child(even) td { background: #151618; }
-[data-theme="dark"] .lp-dtable tbody tr:hover td { background: #242426; }
+[data-theme="dark"] .lp-nav { background: rgba(0,0,0,.9); border-bottom-color: rgba(255,255,255,0.12); }
+[data-theme="dark"] .lp-dtable th { background: #1B1B1E; }
+[data-theme="dark"] .lp-dtable tbody tr:nth-child(even) td { background: #0E0E10; }
+[data-theme="dark"] .lp-dtable tbody tr:hover td { background: #1F1F22; }
 [data-theme="dark"] .lp-card:hover { box-shadow: 0 12px 30px rgba(0,0,0,.45); }
 [data-theme="dark"] .lp-term { box-shadow: 0 24px 60px rgba(0,0,0,.5); }
 [data-theme="dark"] .lp-toggle:hover { border-color: #34C6A6; color: #34C6A6; }
