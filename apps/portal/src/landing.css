@@ -226,3 +226,23 @@
 [data-theme="dark"] .lp-num,
 [data-theme="dark"] .lp-brand-mark { color: #34C6A6; }
 [data-theme="dark"] .lp-brand-mark { color: var(--ink); }
+
+/* ── plans ── */
+.lp-plans { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.lp-plan { position: relative; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 26px 22px; display: flex; flex-direction: column; transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease; }
+.lp-plan:hover { transform: translateY(-3px); box-shadow: 0 14px 34px rgba(17,16,8,.08); }
+[data-theme="dark"] .lp-plan:hover { box-shadow: 0 14px 34px rgba(0,0,0,.5); }
+.lp-plan.feat { border-color: var(--teal2); box-shadow: 0 10px 30px rgba(13,92,78,.12); }
+.lp-plan-flag { position: absolute; top: -10px; left: 22px; background: var(--teal); color: #fff; font-family: var(--mono); font-size: 8px; letter-spacing: 2px; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; }
+.lp-plan-name { font-family: var(--mono); font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--teal2); margin-bottom: 12px; }
+.lp-plan-price { font-family: var(--serif); font-size: 30px; font-weight: 700; color: var(--ink); line-height: 1; }
+.lp-plan-price span { font-family: var(--mono); font-size: 12px; font-weight: 400; color: var(--mid); letter-spacing: 1px; margin-left: 4px; }
+.lp-plan-target { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); margin: 8px 0 18px; }
+.lp-plan-feats { list-style: none; padding: 0; margin: 0 0 22px; flex: 1; }
+.lp-plan-feats li { font-size: 13px; color: var(--slate); padding: 7px 0 7px 20px; position: relative; border-top: 1px solid var(--line); }
+.lp-plan-feats li:first-child { border-top: none; }
+.lp-plan-feats li::before { content: '✓'; position: absolute; left: 0; color: var(--teal2); font-family: var(--mono); font-size: 11px; }
+.lp-plan .lp-btn { justify-content: center; }
+.lp-fineprint { font-size: 11px; color: var(--mid); margin-top: 18px; line-height: 1.6; }
+@media (max-width: 860px) { .lp-plans { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 520px) { .lp-plans { grid-template-columns: 1fr; } }

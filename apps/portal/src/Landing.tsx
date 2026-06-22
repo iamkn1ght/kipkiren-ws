@@ -8,6 +8,13 @@ import './landing.css';
  * light styling (landing.css, lp-* classes) — independent of the app theme.
  * CTAs call onSignIn() to enter the portal flow.
  */
+const PLANS = [
+  { name: 'Starter', price: 'KES 4,999', per: '/mo', target: 'Micro SME', feats: ['2 task-hours included / mo', 'Up to 3 open tickets', '48-hour SLA', 'Hosting · domain · email'], cta: 'Choose Starter', featured: false },
+  { name: 'Growth', price: 'KES 9,999', per: '/mo', target: 'Growing SME', feats: ['5 task-hours included / mo', 'Up to 5 open tickets', '24-hour SLA', 'SEO + social add-ons'], cta: 'Choose Growth', featured: true },
+  { name: 'Business', price: 'KES 24,999', per: '/mo', target: 'Mid-market', feats: ['12 task-hours included / mo', 'Up to 10 open tickets', '12-hour SLA', 'Priority delivery'], cta: 'Choose Business', featured: false },
+  { name: 'Enterprise', price: 'Custom', per: '', target: 'Govt / large business', feats: ['Dedicated capacity', 'Unlimited tickets', '4-hour SLA', 'Cloud provisioning + vendor reg.'], cta: 'Contact us', featured: false },
+];
+
 export function Landing({ onSignIn }: { onSignIn: () => void }) {
   const submit = (e: FormEvent) => { e.preventDefault(); onSignIn(); };
   const go = (id: string) => () => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -33,8 +40,8 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
           <div className="lp-navlinks">
             <button className="lp-navlink active" onClick={go('systems')}>01 Systems</button>
             <button className="lp-navlink" onClick={go('stack')}>02 Stack</button>
-            <button className="lp-navlink" onClick={go('process')}>03 Process</button>
-            <button className="lp-navlink" onClick={go('studio')}>04 Studio</button>
+            <button className="lp-navlink" onClick={go('plans')}>03 Plans</button>
+            <button className="lp-navlink" onClick={go('process')}>04 Process</button>
             <button className="lp-navlink" onClick={go('contact')}>05 Contact</button>
           </div>
           <div className="lp-nav-right">
@@ -50,10 +57,10 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
           <div>
             <span className="lp-tagchip">◆ V7.04 · WEB · SYSTEMS · INFRA · <span className="lp-diamond">● ACCEPTING PARTNERS</span></span>
             <h1 className="lp-h1">We engineer the quiet parts of the <em>modern web</em><span className="lp-dot">.</span></h1>
-            <p className="lp-lede">Kipkiren is a Nairobi studio shipping editorial websites, product UIs, and the platform infrastructure behind them — typed end-to-end, deployed at the edge, instrumented from day one.</p>
+            <p className="lp-lede">Managed web services for Kenya's SMEs — websites, hosting, SEO, email and cloud — on a monthly retainer, with <strong>every task priced and approved on a proforma before we build</strong>. No surprise invoices.</p>
             <div className="lp-cta-row">
-              <button className="lp-btn lp-btn-primary" onClick={onSignIn}>$ Init project →</button>
-              <button className="lp-btn lp-btn-ghost" onClick={onSignIn}>View systems →</button>
+              <button className="lp-btn lp-btn-primary" onClick={onSignIn}>Get started →</button>
+              <button className="lp-btn lp-btn-ghost" onClick={go('plans')}>See plans →</button>
             </div>
             <div className="lp-scroll">↓ Scroll · the stack</div>
 
@@ -73,7 +80,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
               <span className="lp-term-size">80×24</span>
             </div>
             <div className="lp-term-body">
-              <div><span className="pr">▸</span> kpkrn <b>init</b> --client maridadi-press</div>
+              <div><span className="pr">▸</span> kpkrn <b>init</b> --client your-brand</div>
               <div><span className="ok">✓</span> brief synced <span className="mut">(24 pages, 1.2k assets)</span></div>
               <div><span className="ok">✓</span> tokens generated <span className="mut">(palette · type · scale)</span></div>
               <div><span className="ok">✓</span> repo provisioned <span className="mut">(tanstack · sanity)</span></div>
@@ -83,7 +90,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
               <div><span className="ok">●</span> ship <span className="mut">···············</span> 11s</div>
               <div><span className="ok">●</span> warm <span className="mut">···············</span> 04s</div>
               <div style={{ height: 12 }} />
-              <div>live → <a>maridadi.press</a></div>
+              <div>live → <a>your-brand.co.ke</a></div>
               <div>lighthouse → <span className="amber">100 · 100 · 100 · 100</span></div>
               <div className="mut">next: tend — six month retainer</div>
               <div style={{ height: 10 }} /><div><span className="pr">▸</span> <span className="lp-term-cursor" /></div>
@@ -135,7 +142,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
                   ['00. Edge', 'Cloudflare Workers · Fastly · Vercel Edge', 'Render & route'],
                   ['01. App', 'TanStack Start · React 19 · Astro · Next', 'Compose'],
                   ['02. Data', 'Postgres · Supabase · Sanity · Payload', 'Persist'],
-                  ['03. AI', 'Lovable AI Gateway · OpenAI · Anthropic', 'Reason'],
+                  ['03. AI', 'Anthropic Claude · OpenAI', 'Reason'],
                   ['04. Obs', 'OpenTelemetry · Sentry · Axiom · Plausible', 'Watch'],
                   ['05. Quality', 'Vitest · Playwright · Zod · ESLint', 'Verify'],
                 ].map((r) => (
@@ -147,33 +154,24 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
         </div>
       </section>
 
-      {/* ── §03 deployments ── */}
-      <section className="lp-sec">
+      {/* ── §03 plans ── */}
+      <section className="lp-sec" id="plans">
         <div className="lp-wrap">
-          <div className="lp-eyebrow"><span className="lp-mono">§03 · <span className="lp-diamond">recent deployments</span></span><span className="lp-rule" /><span className="lp-num">03 / 05</span></div>
-          <p className="lp-intro">A small, well-tended portfolio. Each engagement carried for six months past launch.</p>
-          <table className="lp-dtable">
-            <thead><tr><th>#</th><th>Client</th><th>Engagement</th><th>Sector</th><th>Year</th><th>Status</th><th>LH</th></tr></thead>
-            <tbody>
-              {[
-                ['001', 'Maridadi Press', 'Editorial site', 'Publishing', '2026', 'live', '100'],
-                ['002', 'Acacia Capital', 'Brand + site', 'Finance', '2025', 'live', '99'],
-                ['003', 'Field Atlas', 'Product UI', 'Climate', '2025', 'live', '98'],
-                ['004', 'Otieno & Co.', 'Marketing site', 'Legal', '2024', 'live', '100'],
-                ['005', 'Stratum Health', 'Dashboard', 'Health', '2024', 'build', '—'],
-              ].map((r) => (
-                <tr key={r[0]}>
-                  <td className="mono">{r[0]}</td>
-                  <td className="cl">{r[1]}</td>
-                  <td>{r[2]}</td>
-                  <td><span className="lp-pill">{r[5] === 'build' ? r[4] : r[3]}</span></td>
-                  <td className="mono">{r[4]}</td>
-                  <td className="mono"><span className={`lp-stat-dot ${r[6] === '—' ? 'build' : ''}`}>●</span> {r[6] === '—' ? 'BUILD' : 'LIVE'}</td>
-                  <td className="mono">{r[6]}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="lp-eyebrow"><span className="lp-mono">§03 · <span className="lp-diamond">plans</span></span><span className="lp-rule" /><span className="lp-num">03 / 05</span></div>
+          <p className="lp-intro">A monthly retainer for access &amp; SLA — then every task priced on a proforma you approve before we build. No surprise invoices, ever.</p>
+          <div className="lp-plans">
+            {PLANS.map((p) => (
+              <div key={p.name} className={`lp-plan ${p.featured ? 'feat' : ''}`}>
+                {p.featured && <div className="lp-plan-flag">Most popular</div>}
+                <div className="lp-plan-name">{p.name}</div>
+                <div className="lp-plan-price">{p.price}<span>{p.per}</span></div>
+                <div className="lp-plan-target">{p.target}</div>
+                <ul className="lp-plan-feats">{p.feats.map((f) => <li key={f}>{f}</li>)}</ul>
+                <button type="button" className={`lp-btn ${p.featured ? 'lp-btn-primary' : 'lp-btn-ghost'}`} onClick={onSignIn}>{p.cta}</button>
+              </div>
+            ))}
+          </div>
+          <p className="lp-fineprint">Task-hours beyond the included allocation are quoted on the rate card and itemised on the proforma before you approve. One-time onboarding fee at activation. Prices in KES, VAT exclusive.</p>
         </div>
       </section>
 
@@ -212,7 +210,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
             <div>
               <div className="lp-mono" style={{ marginBottom: 14 }}>◆ telemetry · 12mo</div>
               <div className="lp-statgrid">
-                {[['07yr', 'In practice'], ['48', 'Systems shipped'], ['16', 'Long partners'], ['38ms', 'Median P50'], ['99.99%', 'Uptime'], ['100%', 'Referral']].map((s) => (
+                {[['2026', 'Launching'], ['Nairobi', '+ edge · eu-west-1'], ['4–48h', 'SLA by plan'], ['Per task', 'Proforma-priced'], ['M-Pesa', '+ Paystack card'], ['6 mo', 'Retainer horizon']].map((s) => (
                   <div key={s[1]} className="lp-statcard"><div className="n">{s[0]}</div><div className="l">{s[1]}</div></div>
                 ))}
               </div>
@@ -224,9 +222,9 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
       {/* ── testimonial ── */}
       <section className="lp-sec grid-bg">
         <div className="lp-wrap">
-          <div className="lp-eyebrow"><span className="lp-mono"><span className="lp-dot">●</span> word from a partner · git log -1</span><span className="lp-rule" /></div>
-          <blockquote className="lp-quote">"Kipkiren are the only studio I've worked with who treat a paragraph the way an editor does — and a build queue the way an engineer does. The rare <em>both</em>."</blockquote>
-          <div className="lp-quote-by">— A. Njoroge / Editor-in-Chief, Maridadi Press / commit 4f2a1c · 2026-05-18</div>
+          <div className="lp-eyebrow"><span className="lp-mono"><span className="lp-dot">●</span> the promise · why a proforma</span><span className="lp-rule" /></div>
+          <blockquote className="lp-quote">Every task is <em>priced, listed, and approved</em> before a line of work begins — a paragraph treated the way an editor would, a build queue the way an engineer would.</blockquote>
+          <div className="lp-quote-by">— how Kipkiren works · the proforma is the contract</div>
         </div>
       </section>
 
