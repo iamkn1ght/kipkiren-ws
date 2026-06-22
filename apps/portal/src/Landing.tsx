@@ -126,30 +126,33 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
       {/* ── §02 stack (dark) ── */}
       <section className="lp-sec dark" id="stack">
         <div className="lp-wrap">
-          <div className="lp-eyebrow"><span className="lp-mono" style={{ color: 'var(--amber2)' }}>§02 · the stack</span><span className="lp-rule" /><span className="lp-num">02 / 05</span></div>
+          <div className="lp-eyebrow"><span className="lp-mono" style={{ color: 'var(--amber2)' }}>§02 · what you get</span><span className="lp-rule" /><span className="lp-num">02 / 05</span></div>
           <div className="lp-split">
             <div>
-              <h2 className="lp-h2">Six layers,<br />one <em>typed</em> seam.</h2>
-              <p className="lp-intro">A stable, well-understood stack - proven choices at the edge, sharp tools at the surface. Every layer instrumented, every contract typed, every deploy reversible in under a minute.</p>
+              <h2 className="lp-h2">Built to load fast,<br />and <em>keep working</em>.</h2>
+              <p className="lp-intro">What this means for your business: pages that open in a couple of seconds on Kenyan mobile data, a site Google can actually find, email that reaches the inbox, and secure hosting with backups. If something breaks, we fix it fast - you never have to touch the technical side.</p>
               <div className="lp-badges">
-                {['WCAG 2.2 AA', 'KDPA', 'OWASP', 'OTEL', 'Typed', 'Reversible deploys'].map((b) => <span key={b} className="lp-badge">{b}</span>)}
+                {['Loads in seconds', 'Found on Google', 'Secure + backed up', 'Email that lands', 'Mobile-first', 'No lock-in'].map((b) => <span key={b} className="lp-badge">{b}</span>)}
               </div>
             </div>
-            <table className="lp-table">
-              <thead><tr><th>Layer</th><th>Tools</th><th>Role</th></tr></thead>
-              <tbody>
-                {[
-                  ['00. Edge', 'Cloudflare Workers · Fastly · Vercel Edge', 'Render & route'],
-                  ['01. App', 'TanStack Start · React 19 · Astro · Next', 'Compose'],
-                  ['02. Data', 'Postgres · Supabase · Sanity · Payload', 'Persist'],
-                  ['03. AI', 'Anthropic Claude · OpenAI', 'Reason'],
-                  ['04. Obs', 'OpenTelemetry · Sentry · Axiom · Plausible', 'Watch'],
-                  ['05. Quality', 'Vitest · Playwright · Zod · ESLint', 'Verify'],
-                ].map((r) => (
-                  <tr key={r[0]}><td className="layer">{r[0]}</td><td>{r[1]}</td><td className="role">{r[2]}</td></tr>
-                ))}
-              </tbody>
-            </table>
+            <div>
+              <div className="lp-mono" style={{ color: 'rgba(255,255,255,.45)', marginBottom: 12 }}>◆ for the technical · the stack behind it</div>
+              <table className="lp-table">
+                <thead><tr><th>Layer</th><th>Tools</th><th>Role</th></tr></thead>
+                <tbody>
+                  {[
+                    ['00. Edge', 'Cloudflare Workers · Vercel Edge', 'Render & route'],
+                    ['01. App', 'TanStack Start · React 19 · Astro', 'Compose'],
+                    ['02. Data', 'Postgres · Supabase · Sanity', 'Persist'],
+                    ['03. AI', 'Anthropic Claude · OpenAI', 'Reason'],
+                    ['04. Obs', 'OpenTelemetry · Sentry · Plausible', 'Watch'],
+                    ['05. Quality', 'Vitest · Playwright · Zod · ESLint', 'Verify'],
+                  ].map((r) => (
+                    <tr key={r[0]}><td className="layer">{r[0]}</td><td>{r[1]}</td><td className="role">{r[2]}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </section>
@@ -179,13 +182,13 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
       <section className="lp-sec grid-bg" id="process">
         <div className="lp-wrap">
           <div className="lp-eyebrow"><span className="lp-mono">§04 · <span className="lp-diamond">process</span></span><span className="lp-rule" /><span className="lp-num">04 / 05</span></div>
-          <p className="lp-intro">A four-step loop we run on every engagement - and keep running for six months after launch.</p>
+          <p className="lp-intro">A simple four-step loop we run on every job - and keep running for as long as you're with us.</p>
           <div className="lp-proc">
             {[
-              ['01', 'KPKRN READ', 'Listen', 'We read your existing material, your analytics, your inbox. A brief is written together - small, honest, signed.'],
-              ['02', 'KPKRN DRAFT', 'Sketch', 'Type studies, palette directions, two or three editorial routes. Always on a real page, never on a moodboard.'],
-              ['03', 'KPKRN SHIP', 'Build', 'Typed, accessible, edge-deployed. Your team is in the repo from week two. No hand-off, no surprise invoices.'],
-              ['04', 'KPKRN WATCH', 'Tend', 'Six months on retainer. Performance budgets, content updates, observability, and the small fixes that compound.'],
+              ['01', 'KPKRN READ', 'Listen', 'We learn your business - what you sell, who buys, and what is not working online today. We agree a short, honest brief together.'],
+              ['02', 'KPKRN PRICE', 'Approve', 'You get a proforma: each task, what it costs, and the deadline. Nothing starts until you approve it. No surprise invoices.'],
+              ['03', 'KPKRN SHIP', 'Build', 'We build it - fast, secure, mobile-first, on your own domain. You follow progress in your portal, never a black box.'],
+              ['04', 'KPKRN WATCH', 'Tend', 'We keep it running on retainer: updates, backups, monitoring, and quick fixes when you need them. No hand-off, no disappearing.'],
             ].map((p) => (
               <div key={p[0]} className="lp-proc-col">
                 <div className="lp-proc-top"><span>{p[0]}</span><span className="step">{p[1]}</span></div>
@@ -200,15 +203,15 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
       {/* ── §05 studio ── */}
       <section className="lp-sec" id="studio">
         <div className="lp-wrap">
-          <div className="lp-eyebrow"><span className="lp-mono">§05 · <span className="lp-diamond">the studio</span></span><span className="lp-rule" /><span className="lp-num">05 / 05</span></div>
+          <div className="lp-eyebrow"><span className="lp-mono">§05 · <span className="lp-diamond">who you work with</span></span><span className="lp-rule" /><span className="lp-num">05 / 05</span></div>
           <div className="lp-split">
             <div>
               <h2 className="lp-h2">A small team.<br />A <em>long horizon</em>.</h2>
-              <p className="lp-intro">We'd rather tend a handful of systems well than ship many and vanish. We think in spreads - pacing, hierarchy, the silence before a pull-quote - and in commits - typed, reviewed, reversible.</p>
-              <div className="lp-tags">{['Editorial', 'Typed', 'Patient', 'Instrumented', 'Durable', 'Plain-spoken', 'Open-source-friendly'].map((t) => <span key={t} className="lp-tag">{t}</span>)}</div>
+              <p className="lp-intro">We would rather look after a handful of businesses well than chase many and vanish. You get the same people each time, plain answers in plain language, and a price you agreed before any work begins.</p>
+              <div className="lp-tags">{['Honest pricing', 'Same team each time', 'Fast support', 'Secure & backed up', 'Kenyan-built', 'Plain-spoken', 'No lock-in'].map((t) => <span key={t} className="lp-tag">{t}</span>)}</div>
             </div>
             <div>
-              <div className="lp-mono" style={{ marginBottom: 14 }}>◆ telemetry · 12mo</div>
+              <div className="lp-mono" style={{ marginBottom: 14 }}>◆ at a glance</div>
               <div className="lp-statgrid">
                 {[['2026', 'Launching'], ['Nairobi', '+ edge · eu-west-1'], ['4-48h', 'SLA by plan'], ['Per task', 'Proforma-priced'], ['M-Pesa', '+ Paystack card'], ['6 mo', 'Retainer horizon']].map((s) => (
                   <div key={s[1]} className="lp-statcard"><div className="n">{s[0]}</div><div className="l">{s[1]}</div></div>
