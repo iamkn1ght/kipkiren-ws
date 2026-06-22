@@ -12,11 +12,11 @@ export const webhooksRouter: Router = Router();
  * Common webhook contract:
  *   1. Read the raw body (captured by express.json verify hook in app.ts).
  *   2. Verify HMAC signature against the raw bytes.
- *   3. Reject any payload older than 5 minutes (Paystack — KWS-SEC-006).
+ *   3. Reject any payload older than 5 minutes (Paystack - KWS-SEC-006).
  *   4. Compute webhook_payload_hash and reject duplicates.
  *   5. Look up the payment row by gateway_ref + idempotency_key.
  *   6. Verify amount matches the proforma total.
- *   7. INSERT proforma_approvals — the migration-0003 trigger
+ *   7. INSERT proforma_approvals - the migration-0003 trigger
  *      `trg_proforma_approvals_hash_match` re-verifies the content hash
  *      at the database layer. We do not pass the hash from outside; we
  *      read the dispatched value and write it through.
@@ -25,7 +25,7 @@ export const webhooksRouter: Router = Router();
  *   9. Write audit_log: payment_confirmed + scope_locked.
  *  10. Return 200 to the gateway.
  *
- * Any failure at steps 1–6 returns 400 / 401 with no state change.
+ * Any failure at steps 1-6 returns 400 / 401 with no state change.
  *
  * Idempotency: duplicate webhook with the same idempotency_key returns 200
  * silently. The unique index on payments.idempotency_key + the unique
@@ -165,7 +165,7 @@ async function recordConfirmedPayment(input: ConfirmInput): Promise<{ ok: boolea
 }
 
 // ----------------------------------------------------------------------------
-// POST /v1/webhooks/mpesa — Kipkiren Pay (LipaPlus) callback
+// POST /v1/webhooks/mpesa - Kipkiren Pay (LipaPlus) callback
 // ----------------------------------------------------------------------------
 const KipkirenPayPayloadSchema = (() => {
   // Inline schema to keep webhooks self-contained. Kipkiren Pay payload
@@ -212,14 +212,14 @@ webhooksRouter.post('/mpesa', async (req: RawBodyRequest, res: Response) => {
   }
 
   if (payload.status !== 'success' && payload.status !== 'confirmed') {
-    // Non-success callbacks (failed STK, user cancellation) — log + ack.
+    // Non-success callbacks (failed STK, user cancellation) - log + ack.
     res.status(200).json({ ok: true, ignored: payload.status });
     return;
   }
 
   const payload_hash = createHash('sha256').update(raw, 'utf8').digest('hex');
 
-  // Replay defence — same payload bytes seen before.
+  // Replay defence - same payload bytes seen before.
   const sb = getServiceClient();
   const { data: replayHit } = await sb
     .from('payments')
@@ -249,7 +249,7 @@ webhooksRouter.post('/mpesa', async (req: RawBodyRequest, res: Response) => {
 });
 
 // ----------------------------------------------------------------------------
-// POST /v1/webhooks/paystack — Paystack callback
+// POST /v1/webhooks/paystack - Paystack callback
 // ----------------------------------------------------------------------------
 webhooksRouter.post('/paystack', async (req: RawBodyRequest, res: Response) => {
   requireFeatureEnv('paystack');
@@ -262,12 +262,12 @@ webhooksRouter.post('/paystack', async (req: RawBodyRequest, res: Response) => {
     return;
   }
 
-  // KWS-SEC-006 — 5-minute timestamp window via Paystack's `data.paid_at`.
+  // KWS-SEC-006 - 5-minute timestamp window via Paystack's `data.paid_at`.
   const body = req.body as {
     event?: string;
     data?: {
       reference?: string;
-      amount?: number;            // subunits — divide by 100
+      amount?: number;            // subunits - divide by 100
       paid_at?: string;
       status?: string;
       metadata?: Record<string, unknown>;
@@ -327,7 +327,7 @@ webhooksRouter.post('/paystack', async (req: RawBodyRequest, res: Response) => {
 });
 
 // ----------------------------------------------------------------------------
-// POST /v1/webhooks/todoku/delivery — Todoku SMS delivery-status acks (S9-003).
+// POST /v1/webhooks/todoku/delivery - Todoku SMS delivery-status acks (S9-003).
 // Verifies the base64 HMAC-SHA256 signature, records the outcome to audit_log,
 // and acks 200. Delivery acks never touch payment/proforma state.
 // ----------------------------------------------------------------------------

@@ -6,7 +6,7 @@ import { getServiceClient } from '../lib/supabase.js';
 export const tasksRouter: Router = Router();
 
 /**
- * ADR-KWS-003 / KWS-SEC-007 — Kamau (technical_delivery) task view.
+ * ADR-KWS-003 / KWS-SEC-007 - Kamau (technical_delivery) task view.
  *
  * Kamau sees only tasks assigned to him. The response MUST NOT contain:
  *   - any client name, email, phone, business_name, contact_name
@@ -14,14 +14,14 @@ export const tasksRouter: Router = Router();
  *   - any billing or payment info
  *
  * RLS in migration 0002 already restricts row visibility to assigned
- * tickets. BUT RLS operates row-level — if we did a JOIN to clients and
+ * tickets. BUT RLS operates row-level - if we did a JOIN to clients and
  * selected `business_name`, Kamau would see it for any row RLS let
  * through. So we serialise through a dedicated function that picks
  * ONLY the safe columns. Tests verify that no PII keys appear in any
  * response shape reachable from this router.
  */
 
-// The entire safe surface — if you add a column here, update the test.
+// The entire safe surface - if you add a column here, update the test.
 // `updated_at` is a non-PII timestamp; it powers the task-view Completed
 // tab (when a task was last moved, e.g. marked complete).
 interface KamauTask {
@@ -60,12 +60,12 @@ function toKamauTask(row: {
   };
 }
 
-// Allow-listed columns — the ONLY columns this router ever selects.
+// Allow-listed columns - the ONLY columns this router ever selects.
 const SAFE_COLUMNS =
   'id, ref, category, urgency, status, description, sla_deadline_at, created_at, updated_at';
 
 // ----------------------------------------------------------------------------
-// GET /v1/tasks — list tasks assigned to the caller.
+// GET /v1/tasks - list tasks assigned to the caller.
 //   ?view=completed → finished work (complete/closed), newest first.
 //   default         → active work, soonest SLA deadline first.
 // Both views serialise through toKamauTask, so the PII allow-list holds
@@ -96,7 +96,7 @@ tasksRouter.get(
 );
 
 // ----------------------------------------------------------------------------
-// GET /v1/tasks/:id — single task
+// GET /v1/tasks/:id - single task
 // ----------------------------------------------------------------------------
 tasksRouter.get(
   '/:id',

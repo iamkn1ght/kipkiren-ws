@@ -2,13 +2,13 @@
  * Payment gateway adapters.
  *
  * Two rails (architecture doc §8):
- *   - M-Pesa via Kipkiren Pay (LipaPlus). ADR-KWS-005 — never call Daraja
+ *   - M-Pesa via Kipkiren Pay (LipaPlus). ADR-KWS-005 - never call Daraja
  *     directly. Kipkiren Pay handles STK push initiation; we call its
  *     internal API and receive a webhook callback at /v1/webhooks/mpesa.
  *   - Card via Paystack. We hand off to Paystack's hosted page (no raw card
  *     data ever touches KWS) and receive a webhook at /v1/webhooks/paystack.
  *
- * Both adapters are interface-shaped so tests inject fakes — production
+ * Both adapters are interface-shaped so tests inject fakes - production
  * wires the real HTTP clients in initiateApprovalPayment().
  */
 
@@ -16,7 +16,7 @@ import { loadEnv } from '../config/env.js';
 import { logger } from '../lib/logger.js';
 
 export interface StkPushInitInput {
-  phone_msisdn: string;          // 2547XXXXXXXX or 0722XXXXXX — gateway normalises
+  phone_msisdn: string;          // 2547XXXXXXXX or 0722XXXXXX - gateway normalises
   amount_kes: number;
   account_reference: string;     // proforma ref e.g. KWS-042
   description: string;
@@ -52,7 +52,7 @@ export interface PaystackClient {
 }
 
 // ---------------------------------------------------------------------------
-// Real-client wiring (lazy — tests bypass this entirely)
+// Real-client wiring (lazy - tests bypass this entirely)
 // ---------------------------------------------------------------------------
 
 let realKipkirenPay: KipkirenPayClient | null = null;
@@ -103,7 +103,7 @@ export function getPaystackClient(): PaystackClient {
         },
         body: JSON.stringify({
           email: input.email,
-          // Paystack denominates in subunits — KES has no subunits but the
+          // Paystack denominates in subunits - KES has no subunits but the
           // API still expects ×100. Paystack accepts integer KES this way.
           amount: input.amount_kes * 100,
           currency: 'KES',

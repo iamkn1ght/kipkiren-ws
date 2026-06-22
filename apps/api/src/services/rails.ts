@@ -1,9 +1,9 @@
 /**
- * Platform-rails health — KWS-side view.
+ * Platform-rails health - KWS-side view.
  *
  * KWS is an APP, not a rail, so it cannot see a rail's internal dashboards
  * (dead-letter queues, per-vendor splits, etc.). What it CAN report honestly:
- *   - Throughput that actually flows THROUGH KWS — Kipkiren Pay + Paystack
+ *   - Throughput that actually flows THROUGH KWS - Kipkiren Pay + Paystack
  *     payments (from `payments`), AI decomposition usage and Todoku sends
  *     (from `audit_log`). All derived from KWS's own tables.
  *   - Each rail's configuration status (is the Tier-2 env present).
@@ -35,7 +35,7 @@ export interface RailHealth {
 type Gateway = 'mpesa' | 'paystack';
 
 const sinceISO = (hours: number) => new Date(Date.now() - hours * 3_600_000).toISOString();
-const pct = (num: number, den: number) => (den === 0 ? '—' : `${Math.round((num / den) * 100)}%`);
+const pct = (num: number, den: number) => (den === 0 ? '-' : `${Math.round((num / den) * 100)}%`);
 const kes = (n: number) => `KES ${n.toLocaleString()}`;
 
 async function countPayments(gateway: Gateway, f: { status?: string; sinceH?: number } = {}): Promise<number> {
@@ -136,7 +136,7 @@ export async function loadRailsHealth(probe: boolean): Promise<{ rails: RailHeal
         { label: 'Confirmed volume', value: kes(mVol) },
         { label: 'Last 24h', value: String(m24h) },
       ],
-      ...(kpCfg ? {} : { note: 'Tier-2 credentials not set — payments 503 until configured.' }),
+      ...(kpCfg ? {} : { note: 'Tier-2 credentials not set - payments 503 until configured.' }),
     },
     {
       key: 'paystack', name: 'Paystack', purpose: 'Card payments (direct)',
@@ -159,9 +159,9 @@ export async function loadRailsHealth(probe: boolean): Promise<{ rails: RailHeal
         { label: 'Decompositions', value: String(aiOk), tone: 'ok' },
         { label: 'Failed', value: String(aiFail), tone: aiFail > 0 ? 'warn' : 'mut' },
         { label: 'Success rate', value: pct(aiOk, aiOk + aiFail) },
-        { label: 'Avg confidence', value: conf === null ? '—' : conf.toFixed(2) },
+        { label: 'Avg confidence', value: conf === null ? '-' : conf.toFixed(2) },
       ],
-      ...(aiCfg ? {} : { note: 'ANTHROPIC_API_KEY not set — decomposition 503 until configured.' }),
+      ...(aiCfg ? {} : { note: 'ANTHROPIC_API_KEY not set - decomposition 503 until configured.' }),
     },
     {
       key: 'todoku', name: 'Todoku · SMS', purpose: 'Transactional SMS on 5 KWS events (S9-003)',
@@ -172,13 +172,13 @@ export async function loadRailsHealth(probe: boolean): Promise<{ rails: RailHeal
         { label: 'Failed', value: String(tdFail), tone: tdFail > 0 ? 'warn' : 'mut' },
         { label: 'Delivery rate', value: pct(tdSent, tdSent + tdFail) },
       ],
-      note: tdCfg ? undefined : 'Scaffolded — awaiting Todoku tenant creds + template ULIDs (Sprint 9).',
+      note: tdCfg ? undefined : 'Scaffolded - awaiting Todoku tenant creds + template ULIDs (Sprint 9).',
     },
     {
       key: 'helpan', name: 'Helpan KWS · AI agent', purpose: 'Proforma enrichment + SLA early warning (Phase 1)',
       configured: false, status: 'pending', reachable: null, latency_ms: null,
       metrics: [{ label: 'Phase', value: '1 · enrichment' }, { label: 'Agent', value: 'helpan-kws-v1' }],
-      note: 'Sprint 9 — agent admitted to the registry; service JWT + consumption not wired yet.',
+      note: 'Sprint 9 - agent admitted to the registry; service JWT + consumption not wired yet.',
     },
   ];
 

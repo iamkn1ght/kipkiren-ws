@@ -10,7 +10,7 @@ export interface AccessTokenClaims {
 }
 
 /**
- * Mint an RS256 access token. KWS-SEC-001 — HS256 is not an option here.
+ * Mint an RS256 access token. KWS-SEC-001 - HS256 is not an option here.
  * The header `kid` lets verifiers pick the right key from JWKS during rotation.
  */
 export function signAccessToken(claims: AccessTokenClaims): string {
@@ -34,7 +34,7 @@ export function signAccessToken(claims: AccessTokenClaims): string {
 
 /**
  * Generate an opaque refresh token + its SHA-256 hash. We never store the
- * raw token — only the hash lives in `refresh_tokens`. Stolen DB rows can't
+ * raw token - only the hash lives in `refresh_tokens`. Stolen DB rows can't
  * be replayed.
  */
 export function generateRefreshToken(): { raw: string; hash: string } {

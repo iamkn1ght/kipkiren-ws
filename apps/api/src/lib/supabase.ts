@@ -4,7 +4,7 @@ import { loadEnv } from '../config/env.js';
 let serviceClient: SupabaseClient | null = null;
 
 /**
- * Service-role client. Bypasses RLS — use ONLY in trusted server contexts
+ * Service-role client. Bypasses RLS - use ONLY in trusted server contexts
  * (webhook handlers, admin actions). Never expose to a client request path
  * that hasn't been authenticated and authorised.
  */

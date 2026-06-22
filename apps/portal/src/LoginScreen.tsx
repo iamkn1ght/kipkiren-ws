@@ -63,7 +63,7 @@ export function LoginScreen({ role, onBack }: { role: PortalRole; onBack: () => 
         {error && <div className="lg-error">{error}</div>}
 
         <button type="submit" className="lg-submit" disabled={submitting}>
-          {submitting ? 'Signing in…' : 'Sign in'}
+          {submitting ? 'Signing in...' : 'Sign in'}
         </button>
 
         <div className="lg-foot">ws.kipkiren.co.ke</div>

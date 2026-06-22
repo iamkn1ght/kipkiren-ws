@@ -1,11 +1,11 @@
 /**
- * Task view — Kamau (technical_delivery).
+ * Task view - Kamau (technical_delivery).
  *
  * Ports the canonical kws_task_view.html layout. It binds ONLY the safe
  * fields the API exposes (ref, category, urgency, status, description, SLA
  * deadline, created/updated). The mockup's estimate/logged-hours, ref-docs
  * count, weekly-capacity stats, and the "Add note" modal are intentionally
- * omitted — there is no data source for them and the architecture forbids
+ * omitted - there is no data source for them and the architecture forbids
  * fabricating Kamau-facing detail. See ADR-KWS-003 / KWS-SEC-007.
  */
 
@@ -45,16 +45,16 @@ function categoryLabel(c: string): string {
 }
 
 function fmtDate(iso: string | null): string {
-  if (!iso) return '—';
+  if (!iso) return '-';
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
+  if (Number.isNaN(d.getTime())) return '-';
   return d.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
 }
 
 function fmtDateTime(iso: string | null): string {
-  if (!iso) return '—';
+  if (!iso) return '-';
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '—';
+  if (Number.isNaN(d.getTime())) return '-';
   return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 
@@ -176,10 +176,10 @@ export function TaskView() {
             Good day, <em>{displayName}</em>.
           </h1>
           <p className="g-sub">
-            {loading ? 'Loading tasks…' : `${active.length} active task${active.length === 1 ? '' : 's'} assigned to you`}
+            {loading ? 'Loading tasks...' : `${active.length} active task${active.length === 1 ? '' : 's'} assigned to you`}
           </p>
 
-          {error && <div className="lg-error">Couldn’t load tasks · {error}</div>}
+          {error && <div className="lg-error">Couldn't load tasks · {error}</div>}
 
           <div className="stats">
             <div className="sc">
@@ -244,7 +244,7 @@ export function TaskView() {
                         disabled={busy}
                         onClick={() => void runAction(t.id, startTask, `Started · ${t.ref}`)}
                       >
-                        {busy ? 'Starting…' : 'Start work'}
+                        {busy ? 'Starting...' : 'Start work'}
                       </button>
                     )}
                     {t.status === 'in_progress' && (
@@ -254,7 +254,7 @@ export function TaskView() {
                         disabled={busy}
                         onClick={() => void runAction(t.id, completeTask, `Marked complete · ${t.ref}`)}
                       >
-                        {busy ? 'Saving…' : 'Mark complete'}
+                        {busy ? 'Saving...' : 'Mark complete'}
                       </button>
                     )}
                   </div>

@@ -2,13 +2,13 @@
  * SLA deadline calculation + breach state.
  *
  * Retainer plans carry an SLA response window in hours (Starter 48, Growth 24,
- * Business 12, Enterprise 4 — see kws_architecture_v1.md §1 and the retainer_plans
+ * Business 12, Enterprise 4 - see kws_architecture_v1.md §1 and the retainer_plans
  * seed). Urgency flags override the plan window:
  *   - elevated → min(plan_hours, 48)
  *   - urgent   → min(plan_hours, 24)
  *
  * `sla_deadline_at` is stamped once at ticket creation from the client's plan
- * and the submitted urgency. It is NOT recomputed when plan upgrades happen —
+ * and the submitted urgency. It is NOT recomputed when plan upgrades happen -
  * the deadline at the time of submission is the contract.
  *
  * Breach state:
@@ -17,7 +17,7 @@
  *   - breached     : deadline is in the past and ticket is not closed
  *
  * The 20% warn threshold maps to the yellow/amber bar in the dashboard
- * mockups — matches `.fl-a` at 28% in kws_client_portal_v3.html SLA row.
+ * mockups - matches `.fl-a` at 28% in kws_client_portal_v3.html SLA row.
  */
 
 import type { TicketUrgency } from '@kws/shared';

@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// Dev proxy target — defaults to a local API; override to hit a remote API
+// Dev proxy target - defaults to a local API; override to hit a remote API
 // (e.g. VITE_PROXY_TARGET=https://api.ws.kipkiren.co.ke). The Origin header is
 // stripped so a remote API whose CORS allow-list omits localhost still accepts
 // the proxied request.

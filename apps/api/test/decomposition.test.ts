@@ -1,9 +1,9 @@
 /**
- * AI Decomposition Service — unit tests with a fake Claude client.
+ * AI Decomposition Service - unit tests with a fake Claude client.
  *
  * Verifies the layered KWS-SEC-005 + KWS-SEC-009 defences:
  *   1. Sanitiser runs before any model call (we assert the fake client
- *      saw the cleaned, redacted user message — not the raw attack).
+ *      saw the cleaned, redacted user message - not the raw attack).
  *   2. Schema validation rejects malformed model output.
  *   3. Reconciliation against the rate card drops fabricated tasks AND
  *      overwrites any model-supplied amount_kes with the canonical value.
@@ -52,7 +52,7 @@ function fakeClaude(jsonResponse: unknown): ClaudeMessageClient {
   };
 }
 
-describe('decomposeTicket — happy path', () => {
+describe('decomposeTicket - happy path', () => {
   it('produces reconciled line items with rate-card prices', async () => {
     const fake = fakeClaude({
       confidence: 0.92,
@@ -94,7 +94,7 @@ describe('decomposeTicket — happy path', () => {
   });
 });
 
-describe('decomposeTicket — pricing manipulation defence', () => {
+describe('decomposeTicket - pricing manipulation defence', () => {
   it('rewrites model-supplied amounts to canonical rate card values', async () => {
     const fake = fakeClaude({
       confidence: 0.99,
@@ -161,7 +161,7 @@ describe('decomposeTicket — pricing manipulation defence', () => {
   });
 });
 
-describe('decomposeTicket — invalid model output', () => {
+describe('decomposeTicket - invalid model output', () => {
   it('rejects malformed JSON', async () => {
     const fake: ClaudeMessageClient = {
       create: vi.fn(async () => ({
@@ -210,7 +210,7 @@ describe('decomposeTicket — invalid model output', () => {
   });
 });
 
-describe('decomposeTicket — sanitiser runs first', () => {
+describe('decomposeTicket - sanitiser runs first', () => {
   it('passes the cleaned (redacted) text to Claude, not the raw attack', async () => {
     const fake = fakeClaude({
       confidence: 0.9,

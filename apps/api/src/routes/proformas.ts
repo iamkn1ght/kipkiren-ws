@@ -19,7 +19,7 @@ import {
 
 export const proformasRouter: Router = Router();
 
-// Test seam — overrideable in vitest setup so webhook + approve tests don't
+// Test seam - overrideable in vitest setup so webhook + approve tests don't
 // need real gateway keys.
 let kipkirenPayClient: KipkirenPayClient | null = null;
 let paystackClient: PaystackClient | null = null;
@@ -31,7 +31,7 @@ function kp(): KipkirenPayClient { return kipkirenPayClient ?? getKipkirenPayCli
 function ps(): PaystackClient { return paystackClient ?? getPaystackClient(); }
 
 // ----------------------------------------------------------------------------
-// GET /v1/proformas/:id — proforma with line items.
+// GET /v1/proformas/:id - proforma with line items.
 // Client: own proforma only (via ticket → client join).
 // Admin/delivery_lead: any proforma.
 // ----------------------------------------------------------------------------
@@ -213,7 +213,7 @@ proformasRouter.put(
 // the proforma status to 'rejected' and reverts the ticket status so the
 // client can resubmit or clarify scope. Only works on pre-dispatch
 // proformas (ai_draft or under_review). Dispatched proformas are frozen
-// by migration 0003 triggers and cannot be rejected — they can only
+// by migration 0003 triggers and cannot be rejected - they can only
 // expire or be superseded.
 // ----------------------------------------------------------------------------
 const RejectInput = z.object({
@@ -275,12 +275,12 @@ proformasRouter.put(
 //
 // The client clicks "Approve & pay" in the portal. We:
 //   1. Re-fetch the proforma + lines and recompute the content hash.
-//   2. Verify it matches the dispatched hash (KWS-SEC-004 — application
+//   2. Verify it matches the dispatched hash (KWS-SEC-004 - application
 //      layer check; the migration-0003 trigger does the same at the DB
 //      layer when proforma_approvals is INSERTed).
 //   3. Generate an idempotency_key tied to this approval attempt.
 //   4. Initiate the chosen payment rail (M-Pesa STK push or Paystack
-//      hosted page) — we do NOT INSERT into proforma_approvals yet. The
+//      hosted page) - we do NOT INSERT into proforma_approvals yet. The
 //      INSERT only happens when the webhook fires with a confirmed
 //      payment, so an unpaid abandoned approval cannot lock scope.
 //
@@ -341,7 +341,7 @@ proformasRouter.post(
     }
     const recomputed = computeContentHash(lines);
     if (recomputed !== proforma.content_hash) {
-      // KWS-SEC-004 — tamper detected. Audit + abort.
+      // KWS-SEC-004 - tamper detected. Audit + abort.
       await writeAuditEvent({
         actor_id: req.auth.sub,
         actor_role: 'client',
@@ -354,7 +354,7 @@ proformasRouter.post(
     }
 
     // Generate the idempotency key for this approval attempt. The webhook
-    // handler uses this key when it INSERTs proforma_approvals — duplicate
+    // handler uses this key when it INSERTs proforma_approvals - duplicate
     // webhooks for the same key are silently discarded.
     const idempotencyKey = randomUUID();
     const env = loadEnv();

@@ -1,14 +1,14 @@
 /**
- * KWS-SEC-007 / ADR-KWS-003 — Kamau (technical_delivery) penetration suite.
+ * KWS-SEC-007 / ADR-KWS-003 - Kamau (technical_delivery) penetration suite.
  *
  * The UI restricts Kamau's view to assigned task rows only. UI-level
  * restrictions are not security. This suite verifies that a valid
  * technical_delivery JWT receives 403 on every admin endpoint, every
- * client-data endpoint, and every proforma endpoint — at the API layer,
+ * client-data endpoint, and every proforma endpoint - at the API layer,
  * regardless of what the UI shows.
  *
  * It also verifies that:
- *   - HS256 tokens (the prohibited algorithm — KWS-SEC-001) are rejected
+ *   - HS256 tokens (the prohibited algorithm - KWS-SEC-001) are rejected
  *   - Missing bearer tokens are rejected
  *   - Each role only reaches the endpoints it should
  */
@@ -61,7 +61,7 @@ describe('Kamau (technical_delivery) cannot reach restricted routes', () => {
   });
 });
 
-describe('KWS-SEC-001 — RS256 enforcement', () => {
+describe('KWS-SEC-001 - RS256 enforcement', () => {
   it('rejects an HS256-signed token even with the right claims', async () => {
     const forged = jwt.sign(
       { sub: '00000000-0000-0000-0000-000000000001', role: 'admin' },
@@ -90,7 +90,7 @@ describe('KWS-SEC-001 — RS256 enforcement', () => {
   });
 });
 
-describe('Role matrix on /v1/admin/rate-card/:id (KWS-SEC-009 — admin strict)', () => {
+describe('Role matrix on /v1/admin/rate-card/:id (KWS-SEC-009 - admin strict)', () => {
   const path = '/v1/admin/rate-card/00000000-0000-0000-0000-000000000099';
 
   it('client → 403', async () => {
@@ -101,14 +101,14 @@ describe('Role matrix on /v1/admin/rate-card/:id (KWS-SEC-009 — admin strict)'
     const res = await request(app).put(path).set(auth(mintTestToken('technical_delivery')));
     expect(res.status).toBe(403);
   });
-  it('delivery_lead → 403 (NOT enough — must be strict admin)', async () => {
+  it('delivery_lead → 403 (NOT enough - must be strict admin)', async () => {
     const res = await request(app).put(path).set(auth(mintTestToken('delivery_lead')));
     expect(res.status).toBe(403);
   });
   it('admin → passes role gate (not 403)', async () => {
     // The real handler calls Supabase beyond this point and will 500 in
     // the test env without a real database. The assertion that matters
-    // for KWS-SEC-009 is that the role gate lets admin through — any
+    // for KWS-SEC-009 is that the role gate lets admin through - any
     // response other than 403/401 proves that.
     const res = await request(app).put(path).set(auth(mintTestToken('admin')));
     expect(res.status).not.toBe(403);

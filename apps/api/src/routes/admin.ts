@@ -14,7 +14,7 @@ import { logger } from '../lib/logger.js';
 export const adminRouter: Router = Router();
 
 // ----------------------------------------------------------------------------
-// GET /v1/admin/queue — SLA-sorted ticket queue
+// GET /v1/admin/queue - SLA-sorted ticket queue
 // ----------------------------------------------------------------------------
 adminRouter.get(
   '/queue',
@@ -27,7 +27,7 @@ adminRouter.get(
 );
 
 // ----------------------------------------------------------------------------
-// GET /v1/admin/clients — client accounts summary
+// GET /v1/admin/clients - client accounts summary
 // ----------------------------------------------------------------------------
 adminRouter.get(
   '/clients',
@@ -40,7 +40,7 @@ adminRouter.get(
 );
 
 // ----------------------------------------------------------------------------
-// GET /v1/admin/recent-dispatches — last 5 dispatched proformas for dashboard
+// GET /v1/admin/recent-dispatches - last 5 dispatched proformas for dashboard
 // ----------------------------------------------------------------------------
 adminRouter.get(
   '/recent-dispatches',
@@ -53,7 +53,7 @@ adminRouter.get(
 );
 
 // ----------------------------------------------------------------------------
-// GET /v1/admin/review-queue — proformas awaiting review with line items
+// GET /v1/admin/review-queue - proformas awaiting review with line items
 // ----------------------------------------------------------------------------
 adminRouter.get(
   '/review-queue',
@@ -66,7 +66,7 @@ adminRouter.get(
 );
 
 // ----------------------------------------------------------------------------
-// GET /v1/admin/capacity — snapshot for the Capacity tab
+// GET /v1/admin/capacity - snapshot for the Capacity tab
 // ----------------------------------------------------------------------------
 adminRouter.get(
   '/capacity',
@@ -79,7 +79,7 @@ adminRouter.get(
 );
 
 // ----------------------------------------------------------------------------
-// GET /v1/admin/capacity-detail — per-staff utilisation, SLA trend, deadlines
+// GET /v1/admin/capacity-detail - per-staff utilisation, SLA trend, deadlines
 // ----------------------------------------------------------------------------
 adminRouter.get(
   '/capacity-detail',
@@ -92,8 +92,8 @@ adminRouter.get(
 );
 
 // ----------------------------------------------------------------------------
-// PUT /v1/admin/rate-card/:id — update a rate card entry
-// KWS-SEC-009 — writes require STRICT admin role, not delivery_lead.
+// PUT /v1/admin/rate-card/:id - update a rate card entry
+// KWS-SEC-009 - writes require STRICT admin role, not delivery_lead.
 // Every update writes audit_log rate_card_modified with before/after.
 // Old versions are deactivated, never deleted (ADR-KWS-004).
 // ----------------------------------------------------------------------------
@@ -153,7 +153,7 @@ adminRouter.put(
 );
 
 // ----------------------------------------------------------------------------
-// POST /v1/admin/uptime-check — run uptime checks on all hosting services
+// POST /v1/admin/uptime-check - run uptime checks on all hosting services
 // Pings each hosting service domain and records results in metadata.
 // Can be called manually or wired to a cron schedule.
 // ----------------------------------------------------------------------------
@@ -168,7 +168,7 @@ adminRouter.post(
 );
 
 // ----------------------------------------------------------------------------
-// GET /v1/admin/rails — platform-rails health, KWS-side view.
+// GET /v1/admin/rails - platform-rails health, KWS-side view.
 // ?probe=1 also live-pings the rails KWS has a base URL for (KP, Todoku).
 // ----------------------------------------------------------------------------
 adminRouter.get(
@@ -183,11 +183,11 @@ adminRouter.get(
 );
 
 // ----------------------------------------------------------------------------
-// POST /v1/admin/tickets — raise a ticket ON BEHALF OF a client.
+// POST /v1/admin/tickets - raise a ticket ON BEHALF OF a client.
 //
 // Delivery lead / admin can open a ticket for a client (e.g. work scoped on a
 // call, or a proactive recommendation). It runs the SAME intake pipeline as a
-// client-submitted ticket — AI decomposition → draft proforma — so the client
+// client-submitted ticket - AI decomposition → draft proforma - so the client
 // then sees the proforma in their portal and approves it. The proforma
 // invariant is unchanged: nothing executes until the client approves.
 // ----------------------------------------------------------------------------

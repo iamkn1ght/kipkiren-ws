@@ -23,7 +23,7 @@ declare global {
 const ALLOWED_ALGS = ['RS256'] as const;
 
 /**
- * KWS-SEC-001 — verify access tokens with RS256 only.
+ * KWS-SEC-001 - verify access tokens with RS256 only.
  * HS256 is rejected by jsonwebtoken because we pass `algorithms: ['RS256']`.
  */
 export function requireAuth(req: Request, res: Response, next: NextFunction): void {
@@ -60,7 +60,7 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): vo
 }
 
 /**
- * KWS-SEC-007 — role enforcement at the API layer (not just UI).
+ * KWS-SEC-007 - role enforcement at the API layer (not just UI).
  * Kamau (`technical_delivery`) MUST never reach client-data, admin, or proforma
  * review/approve endpoints. Test suite verifies a Kamau JWT returns 403 here.
  */

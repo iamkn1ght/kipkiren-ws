@@ -1,5 +1,5 @@
 /**
- * S9-003 — Todoku SMS scaffold.
+ * S9-003 - Todoku SMS scaffold.
  *
  * Verifies the fire-and-forget contract: placeholder templates return
  * TEMPLATE_NOT_READY, a configured send goes through the injected client and
@@ -44,7 +44,7 @@ beforeEach(() => {
   setTodokuClientForTest(null);
 });
 
-describe('S9-003 — sendSms scaffold', () => {
+describe('S9-003 - sendSms scaffold', () => {
   it('returns template_not_ready for a placeholder template', async () => {
     const res = await sendSms({
       template: 'kws_sla_breach',
@@ -71,7 +71,7 @@ describe('S9-003 — sendSms scaffold', () => {
     expect(res).toEqual({ status: 'sent', provider_ref: 'tdk-msg-123' });
   });
 
-  it('never throws on client failure — returns failed', async () => {
+  it('never throws on client failure - returns failed', async () => {
     setTemplateUlidForTest('kws_payment_confirmed', '01HZZZREALULID0000000001');
     setTodokuClientForTest({
       send: async () => {
@@ -88,7 +88,7 @@ describe('S9-003 — sendSms scaffold', () => {
   });
 });
 
-describe('S9-003 — Todoku delivery webhook', () => {
+describe('S9-003 - Todoku delivery webhook', () => {
   const sign = (raw: string) => createHmac('sha256', WEBHOOK_SECRET).update(raw, 'utf8').digest('base64');
 
   it('rejects a missing/invalid signature', async () => {
@@ -125,7 +125,7 @@ describe('S9-003 — Todoku delivery webhook', () => {
   });
 });
 
-describe('S9-003 — feature gate', () => {
+describe('S9-003 - feature gate', () => {
   it('isFeatureConfigured(todoku) is false when a var is missing', async () => {
     vi.resetModules();
     const prev = process.env.TODOKU_API_BASE;

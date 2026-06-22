@@ -1,8 +1,8 @@
 -- ============================================================================
--- KWS Migration 0001 — Core schema
+-- KWS Migration 0001 - Core schema
 -- Architecture ref: kws_architecture_v1.md §4 (15 core tables)
 -- Sprint gate: KWS-S1
--- Region: af-south-1 ONLY (KWS-SEC-014) — verify project region before applying
+-- Region: af-south-1 ONLY (KWS-SEC-014) - verify project region before applying
 -- ============================================================================
 
 -- Extensions
@@ -259,7 +259,7 @@ create table if not exists public.notifications (
 create index if not exists idx_notifications_user_unread on public.notifications(user_id) where read_at is null;
 
 -- ----------------------------------------------------------------------------
--- 14. refresh_tokens  (rotating refresh family — KWS-SEC-001)
+-- 14. refresh_tokens  (rotating refresh family - KWS-SEC-001)
 -- ----------------------------------------------------------------------------
 create table if not exists public.refresh_tokens (
   id              uuid primary key default uuid_generate_v4(),

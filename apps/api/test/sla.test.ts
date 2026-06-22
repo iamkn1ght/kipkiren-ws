@@ -1,5 +1,5 @@
 /**
- * SLA math — pure-function tests for services/sla.ts.
+ * SLA math - pure-function tests for services/sla.ts.
  * Pins the plan × urgency matrix from kws_architecture_v1.md §1.
  */
 
@@ -12,7 +12,7 @@ import {
 
 const HR = 60 * 60 * 1000;
 
-describe('computeSlaDeadline — plan × urgency matrix', () => {
+describe('computeSlaDeadline - plan × urgency matrix', () => {
   const submittedAt = new Date('2026-04-12T08:00:00Z');
 
   it('Starter · standard → 48h deadline', () => {
@@ -55,7 +55,7 @@ describe('slaStateFromDeadline', () => {
   const deadline = new Date('2026-04-13T08:00:00Z'); // 24h window
 
   it('clear when plenty of time left', () => {
-    const now = new Date('2026-04-12T10:00:00Z'); // 2h in — 22h remaining
+    const now = new Date('2026-04-12T10:00:00Z'); // 2h in - 22h remaining
     expect(slaStateFromDeadline({ now, deadline, submittedAt, isTerminal: false })).toBe('clear');
   });
   it('warn when inside the last 20% of the window', () => {

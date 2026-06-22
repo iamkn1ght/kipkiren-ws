@@ -1,5 +1,5 @@
 /**
- * S6 — Cloudflare DNS routes.
+ * S6 - Cloudflare DNS routes.
  *
  * Verifies the admin-only DNS surface: role gate, the feature gate (503 when
  * no Cloudflare token), service→zone resolution 404s, CRUD happy paths through
@@ -79,7 +79,7 @@ beforeEach(() => {
   setCloudflareClientForTest(makeFakeClient());
 });
 
-describe('S6 — Cloudflare DNS routes', () => {
+describe('S6 - Cloudflare DNS routes', () => {
   it('role gate: client and technical_delivery are forbidden', async () => {
     for (const role of ['client', 'technical_delivery'] as const) {
       const res = await request(app)
@@ -174,7 +174,7 @@ describe('S6 — Cloudflare DNS routes', () => {
   });
 });
 
-describe('S6 — Cloudflare feature gate', () => {
+describe('S6 - Cloudflare feature gate', () => {
   it('requireFeatureEnv(cloudflare) throws when the token is missing', async () => {
     vi.resetModules();
     const prev = process.env.CLOUDFLARE_API_TOKEN;

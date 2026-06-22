@@ -7,7 +7,7 @@ import { logger } from '../lib/logger.js';
 import { HttpError } from '../middleware/error.js';
 
 /**
- * S2 — proforma lifecycle service.
+ * S2 - proforma lifecycle service.
  *
  * Two operations exposed here:
  *   - createDraftProforma(): persists an ai_draft proforma + line items.
@@ -127,7 +127,7 @@ interface DispatchResult {
  *
  * After this call returns, the migration-0003 triggers (frt_proforma_post_dispatch_guard
  * + trg_proforma_line_items_frozen) make any further modification impossible
- * — even by the service role. The proforma is locked.
+ * - even by the service role. The proforma is locked.
  */
 export async function dispatchProforma(input: DispatchInput): Promise<DispatchResult> {
   const sb = getServiceClient();

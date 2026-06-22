@@ -212,7 +212,7 @@ export function useAdminData(): AdminData {
     }
   }, [call]);
 
-  // Live-ping the reachable rails (KP, Todoku) — on demand (slower).
+  // Live-ping the reachable rails (KP, Todoku) - on demand (slower).
   const probeRails = useCallback(async () => {
     setRailsProbing(true);
     try {
@@ -233,7 +233,7 @@ export function useAdminData(): AdminData {
 }
 
 export function formatSlaTime(msUntilBreach: number | null): string {
-  if (msUntilBreach === null) return '—';
+  if (msUntilBreach === null) return '-';
   if (msUntilBreach <= 0) return 'Breached';
   const totalMin = Math.floor(msUntilBreach / 60_000);
   const h = Math.floor(totalMin / 60);

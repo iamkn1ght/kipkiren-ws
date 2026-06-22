@@ -1,5 +1,5 @@
 /**
- * Client Portal — ported verbatim from kws_client_portal_v3.html.
+ * Client Portal - ported verbatim from kws_client_portal_v3.html.
  *
  * The HTML mockup is the canonical design output of the founding session.
  * Markup, copy, class names, and visual states match it character-for-character.
@@ -13,7 +13,7 @@
  * The data shown is intentionally the same demo data as the canonical mockup
  * (Jane Wanjiru, Growth Plan, KWS-042 KES 13,705). Real data lands when the
  * portal is wired to /v1/auth, /v1/tickets, /v1/proformas, /v1/invoices in
- * a follow-up ticket. The wiring happens against THIS markup — never replace
+ * a follow-up ticket. The wiring happens against THIS markup - never replace
  * the markup with a "data-driven" rewrite.
  */
 
@@ -57,7 +57,7 @@ export function ClientPortal() {
   const [proformaPaid, setProformaPaid] = useState(false);
 
   const displayName = session?.email?.split('@')[0] ?? 'there';
-  const d = '—';
+  const d = '-';
 
   const openPayModal = (context: PayContext) => {
     setModal({
@@ -159,7 +159,7 @@ interface DashboardProps {
   onReviewProforma: () => void;
 }
 function DashboardView({ name, tickets, services, invoices, loading, onReviewProforma }: DashboardProps) {
-  const d = '—';
+  const d = '-';
   const openTickets = tickets?.filter((t) => t.status !== 'complete' && t.status !== 'closed') ?? [];
   const activeServices = services?.filter((s) => s.status === 'active' || s.status === 'expiring') ?? [];
   const thisMonthTotal = (invoices ?? [])
@@ -178,7 +178,7 @@ function DashboardView({ name, tickets, services, invoices, loading, onReviewPro
       {openTickets.some((t) => t.status === 'ai_draft' || t.status === 'dispatched') && (
         <div className="alert">
           <div className="alert-txt">
-            <strong>Proforma awaiting review</strong> — approve before work begins.
+            <strong>Proforma awaiting review</strong> - approve before work begins.
           </div>
           <button type="button" className="btn-rev" onClick={onReviewProforma}>Review →</button>
         </div>
@@ -208,7 +208,7 @@ function DashboardView({ name, tickets, services, invoices, loading, onReviewPro
       <div className="shd">Active services</div>
       <div className="svc-list">
         {loading ? (
-          <div style={{ padding: 20, textAlign: 'center', color: 'var(--mid)' }}>Loading…</div>
+          <div style={{ padding: 20, textAlign: 'center', color: 'var(--mid)' }}>Loading...</div>
         ) : activeServices.length === 0 ? (
           <div style={{ padding: 20, textAlign: 'center', color: 'var(--mid)' }}>No active services</div>
         ) : activeServices.map((s) => {
@@ -233,7 +233,7 @@ function DashboardView({ name, tickets, services, invoices, loading, onReviewPro
         </thead>
         <tbody>
           {loading ? (
-            <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--mid)' }}>Loading…</td></tr>
+            <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--mid)' }}>Loading...</td></tr>
           ) : openTickets.length === 0 ? (
             <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--mid)' }}>No open tickets</td></tr>
           ) : openTickets.map((t) => {
@@ -276,8 +276,8 @@ const CATEGORY_MAP: Record<string, string> = {
 };
 const URGENCY_MAP: Record<string, string> = {
   'Standard (within SLA)': 'standard',
-  'Elevated — within 48hrs': 'elevated',
-  'Urgent — within 24hrs': 'urgent',
+  'Elevated - within 48hrs': 'elevated',
+  'Urgent - within 24hrs': 'urgent',
 };
 
 function TicketView({ onSubmitted }: { onSubmitted: () => void }) {
@@ -314,12 +314,12 @@ function TicketView({ onSubmitted }: { onSubmitted: () => void }) {
       <div className="fsec">
         <div className="ftit">Submit a new request</div>
         <div className="fsub">
-          Describe what you need in plain language. Our AI engine will decompose and price it within 24 hours — you approve before anything starts.
+          Describe what you need in plain language. Our AI engine will decompose and price it within 24 hours - you approve before anything starts.
         </div>
         <div className="fld">
           <label>Describe your request</label>
           <textarea
-            placeholder="e.g. I need to add a new services page to my website with 4 sections — intro, what we offer, a pricing table, and a contact form at the bottom."
+            placeholder="e.g. I need to add a new services page to my website with 4 sections - intro, what we offer, a pricing table, and a contact form at the bottom."
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
             disabled={submitting}
@@ -341,8 +341,8 @@ function TicketView({ onSubmitted }: { onSubmitted: () => void }) {
             <label>Urgency</label>
             <select value={urgency} onChange={(e) => setUrgency(e.target.value)} disabled={submitting}>
               <option>Standard (within SLA)</option>
-              <option>Elevated — within 48hrs</option>
-              <option>Urgent — within 24hrs</option>
+              <option>Elevated - within 48hrs</option>
+              <option>Urgent - within 24hrs</option>
             </select>
           </div>
         </div>
@@ -355,7 +355,7 @@ function TicketView({ onSubmitted }: { onSubmitted: () => void }) {
         </div>
         {error && <div className="lg-error">{error}</div>}
         <button type="button" className="btn-sub" disabled={submitting || !desc.trim()} onClick={() => void handleSubmit()}>
-          {submitting ? 'Submitting…' : 'Submit request →'}
+          {submitting ? 'Submitting...' : 'Submit request →'}
         </button>
       </div>
     </div>
@@ -401,13 +401,13 @@ function ProformaView({ paid, onApprove }: ProformaProps) {
             <td className="pf-am">1,750</td>
           </tr>
           <tr>
-            <td><div className="pf-tn">Copy update — headline & subheadline</div><div className="pf-td">Rewrite hero headline, subheadline, and CTA text</div></td>
+            <td><div className="pf-tn">Copy update - headline & subheadline</div><div className="pf-td">Rewrite hero headline, subheadline, and CTA text</div></td>
             <td><span className="pf-hr">0.5 hrs</span></td>
             <td><span className="pf-rt">3,500</span></td>
             <td className="pf-am">1,750</td>
           </tr>
           <tr>
-            <td><div className="pf-tn">Visual redesign — hero layout</div><div className="pf-td">Implement new layout, typography, image placement</div></td>
+            <td><div className="pf-tn">Visual redesign - hero layout</div><div className="pf-td">Implement new layout, typography, image placement</div></td>
             <td><span className="pf-hr">2.0 hrs</span></td>
             <td><span className="pf-rt">3,500</span></td>
             <td className="pf-am">7,000</td>
@@ -464,7 +464,7 @@ function ProformaView({ paid, onApprove }: ProformaProps) {
 // ---------------------------------------------------------------------------
 function InvoicesView({ invoices, loading }: { invoices: ClientInvoice[] | null; loading: boolean }) {
   const [filter, setFilter] = useState<'all' | 'retainer' | 'task' | 'pending'>('all');
-  const d = '—';
+  const d = '-';
   const rows = invoices ?? [];
   const filtered = rows.filter((i) => {
     if (filter === 'all') return true;
@@ -509,7 +509,7 @@ function InvoicesView({ invoices, loading }: { invoices: ClientInvoice[] | null;
         <span style={{ textAlign: 'right', display: 'block' }}>Amount</span>
       </div>
       {loading ? (
-        <div className="inv-row"><span style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--mid)' }}>Loading…</span></div>
+        <div className="inv-row"><span style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--mid)' }}>Loading...</span></div>
       ) : filtered.length === 0 ? (
         <div className="inv-row"><span style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--mid)' }}>No invoices</span></div>
       ) : filtered.map((inv) => {
@@ -534,7 +534,7 @@ function InvoicesView({ invoices, loading }: { invoices: ClientInvoice[] | null;
 // SERVICES
 // ---------------------------------------------------------------------------
 function ServicesView({ services, loading, onRenewDomain }: { services: ClientService[] | null; loading: boolean; onRenewDomain: () => void }) {
-  const d = '—';
+  const d = '-';
   const rows = services ?? [];
 
   return (
@@ -543,7 +543,7 @@ function ServicesView({ services, loading, onRenewDomain }: { services: ClientSe
       <div className="g-sub">Manage active services, view health status, and add new services.</div>
 
       {loading ? (
-        <div style={{ padding: 40, textAlign: 'center', color: 'var(--mid)' }}>Loading…</div>
+        <div style={{ padding: 40, textAlign: 'center', color: 'var(--mid)' }}>Loading...</div>
       ) : rows.length === 0 ? (
         <div style={{ padding: 40, textAlign: 'center', color: 'var(--mid)' }}>No services provisioned yet</div>
       ) : rows.map((svc) => {
@@ -650,7 +650,7 @@ function ServicesView({ services, loading, onRenewDomain }: { services: ClientSe
 }
 
 // ---------------------------------------------------------------------------
-// PAYMENT MODAL — 4 states
+// PAYMENT MODAL - 4 states
 // ---------------------------------------------------------------------------
 interface PaymentModalProps {
   modal: ModalConfig;
@@ -698,8 +698,8 @@ function PaymentModal(p: PaymentModalProps) {
                       <div className="oi-meta">Proforma KWS-042 · Web Development · 3.75 hrs</div>
                       <div className="oi-tasks">
                         <div className="oi-task-row"><span className="oi-task-name">Brief review & wireframe</span><span className="oi-task-amt">1,750</span></div>
-                        <div className="oi-task-row"><span className="oi-task-name">Copy — headline & subheadline</span><span className="oi-task-amt">1,750</span></div>
-                        <div className="oi-task-row"><span className="oi-task-name">Visual redesign — hero layout</span><span className="oi-task-amt">7,000</span></div>
+                        <div className="oi-task-row"><span className="oi-task-name">Copy - headline & subheadline</span><span className="oi-task-amt">1,750</span></div>
+                        <div className="oi-task-row"><span className="oi-task-name">Visual redesign - hero layout</span><span className="oi-task-amt">7,000</span></div>
                         <div className="oi-task-row"><span className="oi-task-name">Mobile responsiveness fix</span><span className="oi-task-amt">1,750</span></div>
                         <div className="oi-task-row"><span className="oi-task-name">QA & staging sign-off</span><span className="oi-task-amt">875</span></div>
                       </div>
@@ -759,7 +759,7 @@ function PaymentModal(p: PaymentModalProps) {
                     </div>
                     <div className="pfield"><label>Name on card</label><input type="text" placeholder="Jane Wanjiru" /></div>
                     <button type="button" className="btn-pay" onClick={p.onTriggerCard}>Pay now →</button>
-                    <div className="lipa-note">LipaPlus coming soon — <span>Kipkiren Pay</span></div>
+                    <div className="lipa-note">LipaPlus coming soon - <span>Kipkiren Pay</span></div>
                   </div>
                 )}
               </div>

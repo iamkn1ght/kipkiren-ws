@@ -6,7 +6,7 @@
  *   - Real auth: the JWT's role is authoritative (a client can't become admin);
  *     `picked` only themes the login and chooses where to head.
  *   - Dev bypass (VITE_DEV_AUTH_BYPASS=1): picking a role synthesises a session
- *     for it and skips login — for working on the UI. The API still enforces
+ *     for it and skips login - for working on the UI. The API still enforces
  *     auth, so a synthetic session only renders the shell (data calls 401).
  */
 
@@ -85,7 +85,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return true;
   }, []);
 
-  // Clear the session (and stored token) but keep `picked` — used on a hard
+  // Clear the session (and stored token) but keep `picked` - used on a hard
   // 401 in real mode so the user re-logs into the same portal.
   const clearSessionOnly = useCallback(() => {
     emailRef.current = '';

@@ -1,4 +1,4 @@
-# Kipkiren WS — Deployment
+# Kipkiren WS - Deployment
 
 Production topology. The API runs on Railway; the **single portal** (role
 picker → shared login → client / admin / task view) is one Cloudflare Pages
@@ -9,14 +9,14 @@ project, git-connected to `iamkn1ght/kipkiren-ws` `main`, auto-deploying on push
 | API | Railway | `api.ws.kipkiren.co.ke` | ✅ live |
 | Portal (all roles) | Cloudflare Pages | `ws.kipkiren.co.ke` | ⏳ create / re-point (below) |
 
-The portal is `apps/portal` — one Vite + React 18 app that internally routes to
+The portal is `apps/portal` - one Vite + React 18 app that internally routes to
 the client, admin, or task-view experience based on the signed-in user's role.
-(The former three separate apps — client-portal, admin-portal, task-view — were
+(The former three separate apps - client-portal, admin-portal, task-view - were
 merged into it.)
 
 ---
 
-## Cloudflare Pages — the portal project
+## Cloudflare Pages - the portal project
 
 Cloudflare → **Workers & Pages → Create → Pages → Connect to Git** → pick
 `iamkn1ght/kipkiren-ws`, then:
@@ -26,7 +26,7 @@ Cloudflare → **Workers & Pages → Create → Pages → Connect to Git** → p
 | Project name | `kipkiren-ws-portal` |
 | Production branch | `main` |
 | Framework preset | None |
-| Root directory | *(leave blank — repo root, so pnpm workspace resolves)* |
+| Root directory | *(leave blank - repo root, so pnpm workspace resolves)* |
 | Build command | `pnpm install --frozen-lockfile=false && pnpm --filter @kws/shared build && pnpm --filter @kws/portal build` |
 | Build output directory | `apps/portal/dist` |
 
@@ -36,7 +36,7 @@ Cloudflare → **Workers & Pages → Create → Pages → Connect to Git** → p
 | `VITE_API_BASE` | `https://api.ws.kipkiren.co.ke` |
 | `NODE_VERSION` | `22` |
 
-> Do **not** set `VITE_DEV_AUTH_BYPASS` in production — it's dev-only (local
+> Do **not** set `VITE_DEV_AUTH_BYPASS` in production - it's dev-only (local
 > `.env.local`). Without it, the portal requires real login.
 
 Then **Custom domains → `ws.kipkiren.co.ke`** (Cloudflare auto-creates the CNAME).
@@ -61,7 +61,7 @@ Only one portal origin is needed now. `NODE_ENV=production` turns on the
 ## Verify after deploy
 
 ```
-curl -I https://ws.kipkiren.co.ke          # 200 — role picker
+curl -I https://ws.kipkiren.co.ke          # 200 - role picker
 curl -s https://api.ws.kipkiren.co.ke/v1/health
 ```
 

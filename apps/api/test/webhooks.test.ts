@@ -1,5 +1,5 @@
 /**
- * Webhook perimeter tests — KWS-SEC-003 and KWS-SEC-006.
+ * Webhook perimeter tests - KWS-SEC-003 and KWS-SEC-006.
  *
  * These tests verify the rejection paths that MUST short-circuit before
  * any database state can change:
@@ -11,7 +11,7 @@
  *   5. Missing idempotency_key in metadata → 400.
  *
  * The deeper "successful confirmation produces exactly one scope_lock"
- * tests live in the integration suite — they need a real Supabase
+ * tests live in the integration suite - they need a real Supabase
  * project with migrations applied. The signature/window checks here
  * cover everything that can be tested without that.
  */
@@ -40,7 +40,7 @@ function signSha512(body: string, secret: string): string {
   return createHmac('sha512', secret).update(body, 'utf8').digest('hex');
 }
 
-describe('POST /v1/webhooks/mpesa — perimeter', () => {
+describe('POST /v1/webhooks/mpesa - perimeter', () => {
   it('rejects with no signature header', async () => {
     const body = { gateway_ref: 'gw1', idempotency_key: 'k1', amount_kes: 100, status: 'success' };
     const res = await request(app).post('/v1/webhooks/mpesa').send(body);
@@ -101,7 +101,7 @@ describe('POST /v1/webhooks/mpesa — perimeter', () => {
   });
 });
 
-describe('POST /v1/webhooks/paystack — perimeter', () => {
+describe('POST /v1/webhooks/paystack - perimeter', () => {
   it('rejects with no signature header', async () => {
     const res = await request(app).post('/v1/webhooks/paystack').send({ event: 'charge.success' });
     expect(res.status).toBe(400);

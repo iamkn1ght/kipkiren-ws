@@ -6,7 +6,7 @@
  * (POST /v1/admin/tickets) run the exact same flow: create ticket → AI
  * decompose → draft proforma (which the client then approves). Keeping one
  * implementation guarantees an admin-raised ticket behaves identically to a
- * client-raised one — same SLA stamping, same Amara review gate, same audit.
+ * client-raised one - same SLA stamping, same Amara review gate, same audit.
  */
 
 import { type RetainerPlanName, type CreateTicketInput } from '@kws/shared';

@@ -17,7 +17,7 @@ const ONBOARDING_FEES: Record<string, number> = {
 };
 
 // ----------------------------------------------------------------------------
-// POST /v1/onboarding/invoice — generate a one-time onboarding fee invoice
+// POST /v1/onboarding/invoice - generate a one-time onboarding fee invoice
 //
 // Called by the admin when onboarding a new client. Creates an invoice with
 // kind='onboarding'. Returns the generated invoice.
@@ -107,7 +107,7 @@ onboardingRouter.post(
 );
 
 // ----------------------------------------------------------------------------
-// POST /v1/onboarding/consent — record KDPA consent for the authenticated user
+// POST /v1/onboarding/consent - record KDPA consent for the authenticated user
 //
 // Sets consent_given_at on the user record and writes an audit event.
 // Must be called before any personal data processing for the client.
@@ -148,7 +148,7 @@ onboardingRouter.post(
 );
 
 // ----------------------------------------------------------------------------
-// GET /v1/onboarding/privacy-policy — serve the KDPA privacy policy metadata
+// GET /v1/onboarding/privacy-policy - serve the KDPA privacy policy metadata
 //
 // Returns the policy version and summary. The full HTML will be served
 // at ws.kipkiren.co.ke/privacy when the legal review is complete.
@@ -167,16 +167,16 @@ onboardingRouter.get(
         data_categories: ['Contact details (name, email, phone)', 'Business information', 'Service usage and billing records'],
         retention: 'Invoices 7 years (tax requirement), operational data 2 years after account closure',
         dsar_email: 'privacy@kipkiren.co.ke',
-        dpo_contact: 'Chamia Kigen, CEO — chamia@kipkiren.co.ke',
+        dpo_contact: 'Chamia Kigen, CEO - chamia@kipkiren.co.ke',
       },
     });
   },
 );
 
 // ----------------------------------------------------------------------------
-// GET /v1/onboarding/privacy — KDPA Privacy Policy HTML page
+// GET /v1/onboarding/privacy - KDPA Privacy Policy HTML page
 // Served as HTML so it can be linked from the portal footer.
-// Legal review pending (KWS-S7-005) — this is the draft.
+// Legal review pending (KWS-S7-005) - this is the draft.
 // ----------------------------------------------------------------------------
 onboardingRouter.get(
   '/privacy',
@@ -186,7 +186,7 @@ onboardingRouter.get(
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Privacy Policy — Kipkiren Web Services</title>
+<title>Privacy Policy - Kipkiren Web Services</title>
 <style>
   body { font-family: system-ui, -apple-system, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 20px; color: #1a1a1a; line-height: 1.7; }
   h1 { font-size: 24px; margin-bottom: 4px; }
@@ -201,19 +201,19 @@ onboardingRouter.get(
 </head>
 <body>
 <h1>Privacy Policy</h1>
-<p class="meta">Kipkiren Web Services — a product of Kipkiren Teknolojia<br/>Version 1.0 (Draft) · Effective date: pending legal review</p>
+<p class="meta">Kipkiren Web Services - a product of Kipkiren Teknolojia<br/>Version 1.0 (Draft) · Effective date: pending legal review</p>
 
-<div class="draft"><strong>DRAFT</strong> — This policy is pending legal review (KWS-S7-005). Do not publish until approved by legal counsel and the CEO.</div>
+<div class="draft"><strong>DRAFT</strong> - This policy is pending legal review (KWS-S7-005). Do not publish until approved by legal counsel and the CEO.</div>
 
 <h2>1. Data Controller</h2>
 <p>Kipkiren Teknolojia ("we", "us") operates Kipkiren Web Services at <a href="https://ws.kipkiren.co.ke">ws.kipkiren.co.ke</a>. We are the data controller for personal data processed through this platform.</p>
 
 <h2>2. Data We Collect</h2>
 <ul>
-<li><strong>Contact details:</strong> Name, email address, phone number — collected at account registration.</li>
+<li><strong>Contact details:</strong> Name, email address, phone number - collected at account registration.</li>
 <li><strong>Business information:</strong> Business name, retainer plan selection, service subscriptions.</li>
 <li><strong>Service usage:</strong> Tickets submitted, proformas reviewed, payment records, invoice history.</li>
-<li><strong>Technical data:</strong> IP address, browser type, session tokens — collected automatically for security and service delivery.</li>
+<li><strong>Technical data:</strong> IP address, browser type, session tokens - collected automatically for security and service delivery.</li>
 </ul>
 
 <h2>3. Legal Basis for Processing</h2>
@@ -231,7 +231,7 @@ onboardingRouter.get(
 <p>We do not sell your personal data. We share data only with:</p>
 <ul>
 <li><strong>Kipkiren Pay / LipaPlus:</strong> M-Pesa payment processing (phone number + amount)</li>
-<li><strong>Paystack:</strong> Card payment processing (handled by Paystack — we never see raw card data)</li>
+<li><strong>Paystack:</strong> Card payment processing (handled by Paystack - we never see raw card data)</li>
 <li><strong>Supabase:</strong> Database hosting in the EU (eu-west-1, Ireland). This is a cross-border transfer of your data outside Kenya, made under the safeguards in the Kenya Data Protection Act 2019 (Sections 48&ndash;49).</li>
 <li><strong>Google Cloud / Microsoft:</strong> When provisioning cloud services on your behalf (S5)</li>
 </ul>
@@ -239,7 +239,7 @@ onboardingRouter.get(
 <h2>6. Data Retention</h2>
 <ul>
 <li><strong>Invoices and payment records:</strong> 7 years (Kenya Revenue Authority tax requirement)</li>
-<li><strong>Proforma approvals and audit logs:</strong> 7 years (legal records — INSERT-only, never modified)</li>
+<li><strong>Proforma approvals and audit logs:</strong> 7 years (legal records - INSERT-only, never modified)</li>
 <li><strong>Operational data (tickets, service configs):</strong> 2 years after account closure</li>
 <li><strong>Account profile:</strong> Retained while account is active; deleted within 30 days of closure request</li>
 </ul>
@@ -247,11 +247,11 @@ onboardingRouter.get(
 <h2>7. Your Rights (KDPA 2019)</h2>
 <p>You have the right to:</p>
 <ul>
-<li><strong>Access</strong> your personal data — use the "Export my data" feature in the portal, or email us</li>
-<li><strong>Rectification</strong> — request correction of inaccurate data</li>
-<li><strong>Erasure</strong> — request deletion of your data (subject to legal retention requirements)</li>
-<li><strong>Data portability</strong> — receive your data in a structured, machine-readable format (JSON)</li>
-<li><strong>Object to processing</strong> — where processing is based on legitimate interest</li>
+<li><strong>Access</strong> your personal data - use the "Export my data" feature in the portal, or email us</li>
+<li><strong>Rectification</strong> - request correction of inaccurate data</li>
+<li><strong>Erasure</strong> - request deletion of your data (subject to legal retention requirements)</li>
+<li><strong>Data portability</strong> - receive your data in a structured, machine-readable format (JSON)</li>
+<li><strong>Object to processing</strong> - where processing is based on legitimate interest</li>
 </ul>
 
 <h2>8. Data Subject Access Requests</h2>
@@ -270,14 +270,14 @@ onboardingRouter.get(
 );
 
 // ----------------------------------------------------------------------------
-// GET /v1/onboarding/dsar — Data Subject Access Request (KDPA 2019 §35)
+// GET /v1/onboarding/dsar - Data Subject Access Request (KDPA 2019 §35)
 //
 // Returns all personal data held for the authenticated client user in a
 // structured JSON response. Covers: user profile, client record, tickets,
 // proformas with line items, invoices, services, and audit events.
 //
 // KDPA requires response within 30 days. This endpoint returns data
-// immediately — the 30-day SLA is for the admin to process edge cases.
+// immediately - the 30-day SLA is for the admin to process edge cases.
 // ----------------------------------------------------------------------------
 onboardingRouter.get(
   '/dsar',
@@ -374,7 +374,7 @@ onboardingRouter.get(
       return;
     }
 
-    // Non-client user (admin/delivery) — return profile only
+    // Non-client user (admin/delivery) - return profile only
     res.json({
       exported_at: new Date().toISOString(),
       data_controller: 'Kipkiren Teknolojia',

@@ -1,5 +1,5 @@
 /**
- * KWS-SEC-005 — prompt injection defence (layer 1).
+ * KWS-SEC-005 - prompt injection defence (layer 1).
  *
  * The AI Decomposition Service accepts plain-language ticket text from
  * clients and forwards it to the Claude API. A client could craft a
@@ -7,7 +7,7 @@
  * pricing, or coerce the model into emitting attacker-controlled JSON.
  *
  * Defence layers (architecture doc §9 KWS-SEC-005):
- *   1. sanitiseTicketDescription() — this file. Strips known injection
+ *   1. sanitiseTicketDescription() - this file. Strips known injection
  *      patterns BEFORE the text reaches the Claude API call.
  *   2. System prompt explicitly forbids inventing tasks not in the rate
  *      card and demands JSON-only output (services/decomposition.ts).
@@ -28,7 +28,7 @@ const REDACT_MARKER = '[REDACTED]';
 
 /**
  * Patterns we strip outright. Each one is a regex that runs in
- * case-insensitive multiline mode. Order doesn't matter — every pattern
+ * case-insensitive multiline mode. Order doesn't matter - every pattern
  * runs against the buffer.
  *
  * If you add a pattern, also add a test case in test/sanitise.test.ts.
@@ -73,7 +73,7 @@ const MAX_LENGTH = 4000;
 export interface SanitiseResult {
   /** The text that is safe to send to the model. */
   cleaned: string;
-  /** True if any pattern matched — used for telemetry and Amara flagging. */
+  /** True if any pattern matched - used for telemetry and Amara flagging. */
   redacted: boolean;
   /** Number of distinct pattern matches stripped. */
   match_count: number;
@@ -86,7 +86,7 @@ export interface SanitiseResult {
  * Claude API. Returns the cleaned text and a flag indicating whether
  * anything was redacted (so the AI Review tab can warn Amara).
  *
- * This function is pure and synchronous — no I/O, no side effects.
+ * This function is pure and synchronous - no I/O, no side effects.
  */
 export function sanitiseTicketDescription(input: string): SanitiseResult {
   if (typeof input !== 'string') {
@@ -116,7 +116,7 @@ export function sanitiseTicketDescription(input: string): SanitiseResult {
       return REDACT_MARKER;
     });
     if (buf !== before) {
-      // No-op — already counted via callback.
+      // No-op - already counted via callback.
     }
   }
 

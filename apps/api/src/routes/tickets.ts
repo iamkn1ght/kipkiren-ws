@@ -11,7 +11,7 @@ import { intakeTicket } from '../services/ticket-intake.js';
 export const ticketsRouter: Router = Router();
 
 // ----------------------------------------------------------------------------
-// POST /v1/tickets — KWS-S2 core flow start.
+// POST /v1/tickets - KWS-S2 core flow start.
 //   1. Create the ticket row (status: submitted)
 //   2. Audit ticket_submitted
 //   3. Decompose async-style: decompose() then createDraftProforma()
@@ -20,7 +20,7 @@ export const ticketsRouter: Router = Router();
 //      decomposition succeeded synchronously.
 //
 // At MVP we run decomposition inline. For volume we will move it to a
-// background worker — the architecture doc shows the async boundary at
+// background worker - the architecture doc shows the async boundary at
 // the AI Decomposition Service. For now inline keeps S2 testable.
 // ----------------------------------------------------------------------------
 ticketsRouter.post(
@@ -48,7 +48,7 @@ ticketsRouter.post(
 );
 
 // ----------------------------------------------------------------------------
-// GET /v1/tickets — list tickets for the authenticated user.
+// GET /v1/tickets - list tickets for the authenticated user.
 // Client: own tickets only. Admin/delivery_lead: all tickets.
 // ----------------------------------------------------------------------------
 ticketsRouter.get(
@@ -78,7 +78,7 @@ ticketsRouter.get(
 );
 
 // ----------------------------------------------------------------------------
-// GET /v1/tickets/:id — single ticket detail.
+// GET /v1/tickets/:id - single ticket detail.
 // Client: own ticket only. Admin: any ticket.
 // ----------------------------------------------------------------------------
 ticketsRouter.get(
@@ -108,7 +108,7 @@ ticketsRouter.get(
 );
 
 // ----------------------------------------------------------------------------
-// PUT /v1/tickets/:id/assign — assign a ticket to a technical_delivery user.
+// PUT /v1/tickets/:id/assign - assign a ticket to a technical_delivery user.
 // KWS-SEC-007 + ADR-KWS-003: only delivery_lead / admin can call this.
 // The assignee must be a technical_delivery user; we enforce that server-side.
 // ----------------------------------------------------------------------------
@@ -162,7 +162,7 @@ ticketsRouter.put(
 );
 
 // ----------------------------------------------------------------------------
-// PUT /v1/tickets/:id/status — role-scoped status transitions.
+// PUT /v1/tickets/:id/status - role-scoped status transitions.
 //
 // ADR-KWS-003 / KWS-SEC-007: Kamau (technical_delivery) can only progress
 // a ticket he is assigned to through in_progress → complete. He cannot

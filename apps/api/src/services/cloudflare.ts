@@ -1,17 +1,17 @@
 /**
- * Cloudflare DNS adapter (S6 — Hosting, Domain, DNS & Uptime).
+ * Cloudflare DNS adapter (S6 - Hosting, Domain, DNS & Uptime).
  *
  * KWS manages DNS for client domain/dns services through Cloudflare (the
- * platform edge/DNS provider — architecture doc §7). This adapter is a thin,
+ * platform edge/DNS provider - architecture doc §7). This adapter is a thin,
  * interface-shaped client over the Cloudflare v4 API so the DNS routes can
- * inject a fake in tests — exactly the pattern used for the payment rails in
+ * inject a fake in tests - exactly the pattern used for the payment rails in
  * `payments.ts`. The real client is wired lazily and reads its token from the
  * Tier-2 env; routes gate on `requireFeatureEnv('cloudflare')` first, so the
  * service boots fine without a Cloudflare token and the feature 503s cleanly
  * until one is set.
  *
  * Live passthrough: records are read/written directly against Cloudflare on
- * each call. Nothing is mirrored into Supabase — there is no DNS table.
+ * each call. Nothing is mirrored into Supabase - there is no DNS table.
  */
 
 import { loadEnv } from '../config/env.js';
@@ -49,7 +49,7 @@ export interface CloudflareDnsClient {
 }
 
 // ---------------------------------------------------------------------------
-// Real-client wiring (lazy — tests bypass this entirely via the route seam)
+// Real-client wiring (lazy - tests bypass this entirely via the route seam)
 // ---------------------------------------------------------------------------
 
 const CF_BASE = 'https://api.cloudflare.com/client/v4';

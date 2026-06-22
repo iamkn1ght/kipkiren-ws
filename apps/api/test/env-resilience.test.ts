@@ -1,5 +1,5 @@
 /**
- * Regression guard — a blank NODE_ENV must NOT crash the service.
+ * Regression guard - a blank NODE_ENV must NOT crash the service.
  *
  * Production incident (16 Jun 2026): Railway presented NODE_ENV as an empty
  * string. Zod's .default() only fills `undefined`, so "" failed the enum and
@@ -8,7 +8,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 
-describe('env — blank enum vars fall back to defaults', () => {
+describe('env - blank enum vars fall back to defaults', () => {
   it('NODE_ENV="" loads as development instead of throwing', async () => {
     vi.resetModules();
     const prevNode = process.env.NODE_ENV;

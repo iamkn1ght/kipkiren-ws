@@ -5,7 +5,7 @@ build/
 .next/
 .cache/
 
-# env — secrets MUST live in Railway, never committed
+# env - secrets MUST live in Railway, never committed
 .env
 .env.*
 !.env.example
@@ -26,7 +26,7 @@ Thumbs.db
 coverage/
 .nyc_output/
 
-# keys — JWT RS256 private keys must never be committed
+# keys - JWT RS256 private keys must never be committed
 *.pem
 *.key
 keys/

@@ -10,7 +10,7 @@ export const servicesRouter: Router = Router();
 
 /**
  * Mark services as 'expiring' when their renewal_at is within 30 days.
- * Called on admin list fetch — lightweight, runs once per admin page load.
+ * Called on admin list fetch - lightweight, runs once per admin page load.
  */
 async function refreshExpiringStatuses(): Promise<void> {
   const sb = getServiceClient();
@@ -42,7 +42,7 @@ const SERVICE_TYPES = [
 const SERVICE_STATUSES = ['active', 'expiring', 'expired', 'suspended'] as const;
 
 // ----------------------------------------------------------------------------
-// GET /v1/services — list services for the authenticated client
+// GET /v1/services - list services for the authenticated client
 // RLS: clients see own services only via service-role query filtered by client_id
 // ----------------------------------------------------------------------------
 servicesRouter.get(
@@ -65,7 +65,7 @@ servicesRouter.get(
 );
 
 // ----------------------------------------------------------------------------
-// GET /v1/services/:id — single service detail for the authenticated client
+// GET /v1/services/:id - single service detail for the authenticated client
 // ----------------------------------------------------------------------------
 servicesRouter.get(
   '/:id',
@@ -88,11 +88,11 @@ servicesRouter.get(
 );
 
 // ============================================================================
-// Admin endpoints — delivery_lead/admin only
+// Admin endpoints - delivery_lead/admin only
 // ============================================================================
 
 // ----------------------------------------------------------------------------
-// GET /v1/services/admin/all — list all services across all clients
+// GET /v1/services/admin/all - list all services across all clients
 // ----------------------------------------------------------------------------
 servicesRouter.get(
   '/admin/all',
@@ -144,7 +144,7 @@ servicesRouter.get(
 );
 
 // ----------------------------------------------------------------------------
-// POST /v1/services/admin — create a service for a client
+// POST /v1/services/admin - create a service for a client
 // ----------------------------------------------------------------------------
 const CreateServiceInput = z.object({
   client_id: z.string().uuid(),
@@ -207,7 +207,7 @@ servicesRouter.post(
 );
 
 // ----------------------------------------------------------------------------
-// PUT /v1/services/admin/:id — update a service
+// PUT /v1/services/admin/:id - update a service
 // ----------------------------------------------------------------------------
 const UpdateServiceInput = z.object({
   status: z.enum(SERVICE_STATUSES).optional(),

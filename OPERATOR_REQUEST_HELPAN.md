@@ -1,9 +1,9 @@
-# Operator Request — Helpan AI `helpan-kws-service` JWT issuance for Kipkiren WS
+# Operator Request - Helpan AI `helpan-kws-service` JWT issuance for Kipkiren WS
 
 **To:** Silvia Mumbua (CTO · Helpan AI rail operator)
 **From:** Kipkiren WS engineering · authored 4 June 2026
-**Authority:** KWS Sprint 9 backlog §KWS-S9-002 (`helpan-kws-service` JWT role — KWS API) · Helpan H-8c agent admission (closed 21 May 2026 — `helpan-kws-v1` agent registered + 7 scopes seeded) · Helpan KWS Instruction Pack v1.0 §7.1
-**Status:** 🟠 Pending operator handover — Helpan-side admission ALREADY COMPLETE; this request is for the service-account JWT
+**Authority:** KWS Sprint 9 backlog §KWS-S9-002 (`helpan-kws-service` JWT role - KWS API) · Helpan H-8c agent admission (closed 21 May 2026 - `helpan-kws-v1` agent registered + 7 scopes seeded) · Helpan KWS Instruction Pack v1.0 §7.1
+**Status:** 🟠 Pending operator handover - Helpan-side admission ALREADY COMPLETE; this request is for the service-account JWT
 **Estimated operator effort:** ~15 min (JWT issuance + 1Password transfer)
 **External lead time:** none
 
@@ -17,17 +17,17 @@ Per Sprint 9 §S9-002 AC #7: *"Service account JWT issued and stored in Railway 
 
 ---
 
-## 1. What to return — 1 env var + 2 informational items
+## 1. What to return - 1 env var + 2 informational items
 
 ### 1.1 Env var
 
 | Env var | Value type | Notes |
 |---|---|---|
-| `HELPAN_KWS_SERVICE_JWT` | RS256 JWT (string, ~500–800 chars) | Long-lived service account token for the `helpan-kws-service` role. Signed by Identiti's delegated-authority key class (per ID-16 paper-side delegation contract). Audience: `ws.kipkiren.co.ke`. Subject: `helpan-kws-service`. Scopes: per §1.2 below. |
+| `HELPAN_KWS_SERVICE_JWT` | RS256 JWT (string, ~500-800 chars) | Long-lived service account token for the `helpan-kws-service` role. Signed by Identiti's delegated-authority key class (per ID-16 paper-side delegation contract). Audience: `ws.kipkiren.co.ke`. Subject: `helpan-kws-service`. Scopes: per §1.2 below. |
 
 **Hand over via 1Password:** item `KMV / Helpan / kws-service JWT`. Then `rm` any local file copies.
 
-### 1.2 JWT shape (informational — KWS verifies these at every request)
+### 1.2 JWT shape (informational - KWS verifies these at every request)
 
 ```json
 {
@@ -42,9 +42,9 @@ Per Sprint 9 §S9-002 AC #7: *"Service account JWT issued and stored in Railway 
 }
 ```
 
-KWS auth middleware (`apps/api/src/middleware/auth.ts`) verifies via the Identiti JWKS (`https://sandbox.id.identiti.co.ke/.well-known/jwks.json`) — the 2-key JWKS Identiti publishes today (step-up + delegated-authority) is exactly the pattern KWS verifies against.
+KWS auth middleware (`apps/api/src/middleware/auth.ts`) verifies via the Identiti JWKS (`https://sandbox.id.identiti.co.ke/.well-known/jwks.json`) - the 2-key JWKS Identiti publishes today (step-up + delegated-authority) is exactly the pattern KWS verifies against.
 
-### 1.3 Permission table (per Sprint 9 §S9-002 AC #2–4)
+### 1.3 Permission table (per Sprint 9 §S9-002 AC #2-4)
 
 | Action | `helpan-kws-service` allowed? |
 |---|---|
@@ -54,7 +54,7 @@ KWS auth middleware (`apps/api/src/middleware/auth.ts`) verifies via the Identit
 | READ `client_services` | ✅ |
 | READ `rate_card` (active entries only) | ✅ |
 | READ `agent_registry` | ✅ |
-| INSERT `audit_log` | ✅ (only INSERT — never UPDATE/DELETE per KWS-SEC-012) |
+| INSERT `audit_log` | ✅ (only INSERT - never UPDATE/DELETE per KWS-SEC-012) |
 | **Proforma approval endpoint** | ❌ 403 always |
 | **Invoice creation** | ❌ 403 |
 | **Rate card modification** | ❌ 403 |
@@ -66,11 +66,11 @@ Test suite at S9-002 AC #5 + #6: minimum 6 explicit 403 assertions + minimum 4 e
 
 ### 1.4 No direct Supabase
 
-Per Sprint 9 §S9-002 AC #8: *"No direct Supabase connection from any Helpan KWS service — all data access via KWS API using this JWT."* Helpan-side code must consume KWS API endpoints only. Confirm this is the architecture on the Helpan rail side.
+Per Sprint 9 §S9-002 AC #8: *"No direct Supabase connection from any Helpan KWS service - all data access via KWS API using this JWT."* Helpan-side code must consume KWS API endpoints only. Confirm this is the architecture on the Helpan rail side.
 
 ---
 
-## 2. Helpan-side context (already done — no operator action)
+## 2. Helpan-side context (already done - no operator action)
 
 | Item | Helpan-side status |
 |---|---|
@@ -86,16 +86,16 @@ Per Sprint 9 §S9-002 AC #8: *"No direct Supabase connection from any Helpan KWS
 |---|---|---|
 | Tier 2 env: `HELPAN_KWS_SERVICE_JWT` validated via `requireFeatureEnv('helpan')` | KWS API | Authored at S9-002 |
 | Auth middleware: new role added to JWT role enum alongside `delivery_lead`, `technical_delivery`, `client`, `admin` (AC #1) | KWS API | S9-002 |
-| Permission matrix enforcement at route layer (AC #2–4) | KWS API | S9-002 |
+| Permission matrix enforcement at route layer (AC #2-4) | KWS API | S9-002 |
 | `GET /admin/agents` endpoint surfacing `agent_registry` (delivery_lead+admin only) (S9-001 AC #3) | KWS API | S9-001 |
 | Identiti JWKS verification with 1-hour cache | KWS API | S9-002 |
-| Test suite: 6+ explicit 403 + 4+ explicit 200 assertions | KWS API | S9-002 AC #5–6 |
+| Test suite: 6+ explicit 403 + 4+ explicit 200 assertions | KWS API | S9-002 AC #5-6 |
 
 ---
 
 ## 4. How KWS activates this once delivered
 
-The 1 env var goes into Railway service env. `requireFeatureEnv('helpan')` activates the feature lazily — routes that the Helpan service tries to call before the JWT is present return 503 cleanly. Once set, the auth middleware accepts the `helpan-kws-service` subject as a valid role and applies the permission matrix.
+The 1 env var goes into Railway service env. `requireFeatureEnv('helpan')` activates the feature lazily - routes that the Helpan service tries to call before the JWT is present return 503 cleanly. Once set, the auth middleware accepts the `helpan-kws-service` subject as a valid role and applies the permission matrix.
 
 Identiti JWKS URL is a code constant in the auth middleware (mirroring Lunch Drop's pattern). No additional env needed for JWKS.
 
@@ -127,9 +127,9 @@ Document in `docs/runbooks/helpan-jwt-rotation.md` at S9-002 close.
 - KWS Sprint 9 backlog: `C:\Projects\Platform Rails-instruction pack v1-reboot pack v1.2\newdocs\Kipkiren Web Services-Sprint 9-Helpan\kws_sprint_9.md` §KWS-S9-002
 - Helpan KWS Instruction Pack: `C:\Projects\Platform Rails-instruction pack v1-reboot pack v1.2\newdocs\Kipkiren Web Services-Sprint 9-Helpan\helpan_kws_instruction_pack.md` §7.1
 - KWS INSTRUCTION_PACK: [INSTRUCTION_PACK.md](./INSTRUCTION_PACK.md) §2 (cross-rail joints) + §8 (pre-flight)
-- Helpan AI rail-side: `C:\Projects\helpan-ai-rail\` — H-8c admission complete; migration 0010
-- Identiti rail-side: `C:\Projects\identiti\` — ID-16 KWS delegation contract paper; `/v1/internal/sign` is the delegated-authority signing surface
+- Helpan AI rail-side: `C:\Projects\helpan-ai-rail\` - H-8c admission complete; migration 0010
+- Identiti rail-side: `C:\Projects\identiti\` - ID-16 KWS delegation contract paper; `/v1/internal/sign` is the delegated-authority signing surface
 
 ---
 
-*Operator Request 2/2 · Helpan AI `helpan-kws-service` JWT issuance · 4 June 2026 · Confidential — Internal Use Only*
+*Operator Request 2/2 · Helpan AI `helpan-kws-service` JWT issuance · 4 June 2026 · Confidential - Internal Use Only*

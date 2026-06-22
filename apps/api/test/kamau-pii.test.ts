@@ -1,5 +1,5 @@
 /**
- * ADR-KWS-003 / KWS-SEC-007 regression guard — Kamau PII stripping.
+ * ADR-KWS-003 / KWS-SEC-007 regression guard - Kamau PII stripping.
  *
  * The tasks router serialises through `toKamauTask` which must pick ONLY
  * a fixed allow-list of columns. This test mocks the supabase service
@@ -8,7 +8,7 @@
  * none of the forbidden ones.
  *
  * If a future change adds a new column to the SELECT in routes/tasks.ts
- * without updating the serializer, this test will fail — which is the
+ * without updating the serializer, this test will fail - which is the
  * point. Kamau's API surface is allow-listed by construction.
  */
 
@@ -17,7 +17,7 @@ import { describe, expect, it, beforeAll, vi } from 'vitest';
 // Mock BEFORE any module imports tasks.ts / app.ts that close over the
 // real supabase binding. vi.mock is hoisted.
 const CONTAMINATED_ROW = {
-  // Allowed keys — must appear
+  // Allowed keys - must appear
   id: '00000000-0000-0000-0000-000000000aaa',
   ref: 'KWS-T-0001',
   category: 'web',
@@ -27,7 +27,7 @@ const CONTAMINATED_ROW = {
   sla_deadline_at: '2026-04-13T08:00:00Z',
   created_at: '2026-04-12T08:00:00Z',
   updated_at: '2026-04-12T09:30:00Z',
-  // Forbidden keys — must NOT appear
+  // Forbidden keys - must NOT appear
   client_id: '00000000-0000-0000-0000-000000000bbb',
   business_name: 'Jane Wanjiru Logistics Ltd',
   contact_name: 'Jane Wanjiru',
@@ -114,7 +114,7 @@ beforeAll(() => {
   app = buildApp();
 });
 
-describe('ADR-KWS-003 — Kamau task serializer strips PII', () => {
+describe('ADR-KWS-003 - Kamau task serializer strips PII', () => {
   it('GET /v1/tasks returns ONLY the allowed key set', async () => {
     listMode = 'many';
     const res = await request(app).get('/v1/tasks').set(auth(mintTestToken('technical_delivery')));

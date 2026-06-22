@@ -3,7 +3,7 @@ import rateLimit from 'express-rate-limit';
 /**
  * KWS-SEC-010 limits.
  *
- * `keyGenerator` falls back to req.ip — Express trust-proxy must be set so
+ * `keyGenerator` falls back to req.ip - Express trust-proxy must be set so
  * Cloudflare's X-Forwarded-For populates ip correctly.
  */
 

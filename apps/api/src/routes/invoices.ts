@@ -6,7 +6,7 @@ import { getServiceClient } from '../lib/supabase.js';
 export const invoicesRouter: Router = Router();
 
 // ----------------------------------------------------------------------------
-// GET /v1/invoices — list retainer + task invoices for the caller's client.
+// GET /v1/invoices - list retainer + task invoices for the caller's client.
 // ----------------------------------------------------------------------------
 invoicesRouter.get(
   '/',

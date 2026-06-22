@@ -1,12 +1,12 @@
 -- ============================================================================
--- KWS Migration 0002 — Row-Level Security policies
--- KWS-SEC-002 — client data isolation. Last line of defence.
--- KWS-SEC-007 — Kamau (technical_delivery) zero client-data surface.
+-- KWS Migration 0002 - Row-Level Security policies
+-- KWS-SEC-002 - client data isolation. Last line of defence.
+-- KWS-SEC-007 - Kamau (technical_delivery) zero client-data surface.
 -- ============================================================================
 --
 -- Roles assumed (Supabase native):
---   authenticated  — any logged-in user
---   anon           — public, no JWT
+--   authenticated  - any logged-in user
+--   anon           - public, no JWT
 --
 -- KWS role distinction lives on public.users.role and is asserted via JWT
 -- claim `role` plus a join to public.users on auth.uid().
@@ -156,7 +156,7 @@ create policy tickets_admin_all on public.tickets
 
 -- KWS-SEC-007 + ADR-KWS-003: Kamau sees ONLY assigned tickets, no client_id join.
 -- The application layer must additionally strip client PII columns from any
--- response served to technical_delivery — RLS gives row-level scoping; column
+-- response served to technical_delivery - RLS gives row-level scoping; column
 -- masking happens in the API resource serializer.
 create policy tickets_kamau_assigned on public.tickets
   for select to authenticated
@@ -227,7 +227,7 @@ create policy proforma_line_items_admin_all on public.proforma_line_items
   for all to authenticated using (public.kws_is_admin()) with check (public.kws_is_admin());
 
 -- ----------------------------------------------------------------------------
--- proforma_approvals — INSERT-only at app level (see 0003_insert_only.sql).
+-- proforma_approvals - INSERT-only at app level (see 0003_insert_only.sql).
 -- Read scoped to owner client + admin.
 -- ----------------------------------------------------------------------------
 create policy proforma_approvals_client_select on public.proforma_approvals
@@ -253,7 +253,7 @@ create policy proforma_approvals_client_insert on public.proforma_approvals
   );
 
 -- ----------------------------------------------------------------------------
--- payments — server-side only (service-role bypasses RLS for webhook handlers).
+-- payments - server-side only (service-role bypasses RLS for webhook handlers).
 -- Authenticated users may READ their own payments via proforma join.
 -- ----------------------------------------------------------------------------
 create policy payments_client_select on public.payments
@@ -307,13 +307,13 @@ create policy notifications_admin_all on public.notifications
   for all to authenticated using (public.kws_is_admin()) with check (public.kws_is_admin());
 
 -- ----------------------------------------------------------------------------
--- refresh_tokens — service-role only. No policies for authenticated → deny.
+-- refresh_tokens - service-role only. No policies for authenticated → deny.
 -- The auth flow uses the service-role client to read/write refresh tokens.
 -- ----------------------------------------------------------------------------
 -- (Intentionally no policies created.)
 
 -- ----------------------------------------------------------------------------
--- audit_log — read for admin only. INSERT permitted but locked further in 0003.
+-- audit_log - read for admin only. INSERT permitted but locked further in 0003.
 -- ----------------------------------------------------------------------------
 create policy audit_log_admin_select on public.audit_log
   for select to authenticated using (public.kws_is_admin());

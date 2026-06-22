@@ -11,7 +11,7 @@ import {
   VAT_RATE,
 } from '@kws/shared';
 
-describe('priceLineSubtotal — ceiling rounding', () => {
+describe('priceLineSubtotal - ceiling rounding', () => {
   it('1.0 hours × KES 3500 = 3500', () => {
     expect(priceLineSubtotal({ base_rate_kes_per_hour: 3500, hours: 1 })).toBe(3500);
   });
@@ -21,7 +21,7 @@ describe('priceLineSubtotal — ceiling rounding', () => {
   });
 });
 
-describe('priceProforma — order of operations matches the locked spec', () => {
+describe('priceProforma - order of operations matches the locked spec', () => {
   it('Starter / standard urgency / no discount → just adds VAT', () => {
     const r = priceProforma({ subtotal_kes: 10_000, urgency: 'standard', plan: 'Starter' });
     expect(r.pre_discount_kes).toBe(10_000);
@@ -65,7 +65,7 @@ describe('priceProforma — order of operations matches the locked spec', () => 
   });
 });
 
-describe('canonicalProformaPayload — deterministic content-hash input', () => {
+describe('canonicalProformaPayload - deterministic content-hash input', () => {
   it('produces identical output regardless of input order', () => {
     const a = canonicalProformaPayload([
       { task_name: 'B task', amount_kes: 200, position: 1 },

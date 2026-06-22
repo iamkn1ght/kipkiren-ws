@@ -45,9 +45,9 @@ async function loadProfile(userId: string): Promise<UserProfile> {
 function setRefreshCookie(res: Response, token: string, ttlSeconds: number): void {
   const env = loadEnv();
   res.cookie(REFRESH_COOKIE, token, {
-    httpOnly: true,                              // KWS-SEC-008 — never readable from JS
+    httpOnly: true,                              // KWS-SEC-008 - never readable from JS
     secure: env.NODE_ENV === 'production',
-    sameSite: 'strict',                          // KWS-SEC-008 — CSRF defence
+    sameSite: 'strict',                          // KWS-SEC-008 - CSRF defence
     path: '/v1/auth',
     maxAge: ttlSeconds * 1000,
   });
@@ -127,7 +127,7 @@ authRouter.post('/login', loginRateLimit, async (req: Request, res: Response) =>
   // We then discard its session and mint our own RS256 token.
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
   if (error || !data?.user) {
-    // Generic message — never reveal whether the email exists.
+    // Generic message - never reveal whether the email exists.
     res.status(401).json({ error: 'invalid_credentials' });
     return;
   }
@@ -141,7 +141,7 @@ authRouter.post('/login', loginRateLimit, async (req: Request, res: Response) =>
 });
 
 // ----------------------------------------------------------------------------
-// POST /v1/auth/refresh — rotating refresh token, family invalidation on reuse
+// POST /v1/auth/refresh - rotating refresh token, family invalidation on reuse
 // ----------------------------------------------------------------------------
 authRouter.post('/refresh', async (req: Request, res: Response) => {
   const raw = req.cookies?.[REFRESH_COOKIE];
@@ -202,7 +202,7 @@ authRouter.post('/refresh', async (req: Request, res: Response) => {
 });
 
 // ----------------------------------------------------------------------------
-// POST /v1/auth/logout — revoke entire family
+// POST /v1/auth/logout - revoke entire family
 // ----------------------------------------------------------------------------
 authRouter.post('/logout', requireAuth, async (req: Request, res: Response) => {
   const raw = req.cookies?.[REFRESH_COOKIE];

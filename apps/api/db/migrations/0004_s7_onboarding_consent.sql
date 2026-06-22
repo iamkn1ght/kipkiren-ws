@@ -1,4 +1,4 @@
--- Migration 0004: S7 — Onboarding fee invoice kind + KDPA consent tracking
+-- Migration 0004: S7 - Onboarding fee invoice kind + KDPA consent tracking
 --
 -- 1. Widen the invoices.kind CHECK constraint to allow 'onboarding'
 -- 2. Add consent_given_at to users table for KDPA compliance

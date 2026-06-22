@@ -1,5 +1,5 @@
 /**
- * KWS-SEC-002 — RLS cross-client isolation.
+ * KWS-SEC-002 - RLS cross-client isolation.
  *
  * Verifies the policies in 0002_rls.sql actually prevent Client A from
  * reading Client B's tickets/proformas/invoices via the RLS-bound client.
@@ -32,7 +32,7 @@ const skip = !url || !clientAJwt || !clientBJwt || !aTicketId || !anonKey;
 const d = skip ? describe.skip : describe;
 
 d('KWS-SEC-002 RLS isolation (live Supabase)', () => {
-  // Guard createClient — even inside describe.skip, vitest evaluates the
+  // Guard createClient - even inside describe.skip, vitest evaluates the
   // callback body at collection time. Newer @supabase/supabase-js validates
   // the URL eagerly, so we must not call createClient when env vars are missing.
   const makeSb = (jwt: string) =>

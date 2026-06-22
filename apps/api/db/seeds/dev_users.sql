@@ -1,20 +1,20 @@
 -- ============================================================================
--- KWS — bootstrap login users for BOTH portals (admin + client) + task view
+-- KWS - bootstrap login users for BOTH portals (admin + client) + task view
 -- ============================================================================
 -- Login = Supabase Auth (password, in auth.users) + an app profile row
 -- (public.users, same UUID). A `client`-role login also needs a clients row
 -- (with a retainer_plan_id) and client_id on its profile.
 --
--- HOW TO RUN (reliable, no DB password needed — uses your dashboard session):
---   STEP 1 — Supabase → Authentication → Users → "Add user" (tick Auto Confirm)
+-- HOW TO RUN (reliable, no DB password needed - uses your dashboard session):
+--   STEP 1 - Supabase → Authentication → Users → "Add user" (tick Auto Confirm)
 --            for each of these (CHANGE the passwords after first login):
 --              admin@ws.kipkiren.co.ke     →  KwsAdmin#2026      (admin portal)
 --              client@demo.co.ke           →  KwsClient#2026     (client portal)
 --              kamau@ws.kipkiren.co.ke     →  KwsKamau#2026      (task view)
---   STEP 2 — Supabase → SQL Editor → paste & run everything below.
---            (It links profiles to the auth users by email — no UUID copying.)
+--   STEP 2 - Supabase → SQL Editor → paste & run everything below.
+--            (It links profiles to the auth users by email - no UUID copying.)
 --
--- Requires migrations 0001–0004 applied. If these tables don't exist, run the
+-- Requires migrations 0001-0004 applied. If these tables don't exist, run the
 -- migrations in apps/api/db/migrations first.
 -- ============================================================================
 
@@ -38,7 +38,7 @@ select id, email, 'KWS Admin', 'admin', null
 from auth.users where email = 'admin@ws.kipkiren.co.ke'
 on conflict (id) do update set role = excluded.role, full_name = excluded.full_name;
 
--- 4) Kamau — technical_delivery (task view).
+-- 4) Kamau - technical_delivery (task view).
 insert into public.users (id, email, full_name, role, client_id)
 select id, email, 'Kamau Waweru', 'technical_delivery', null
 from auth.users where email = 'kamau@ws.kipkiren.co.ke'

@@ -1,5 +1,5 @@
 /**
- * Uptime monitoring — lightweight self-hosted pinger.
+ * Uptime monitoring - lightweight self-hosted pinger.
  *
  * For each client service of type 'hosting', checks if the domain
  * responds to an HTTP HEAD request. Stores results in the service's

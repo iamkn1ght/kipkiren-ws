@@ -1,5 +1,5 @@
 /* ============================================================================
- * Kipkiren WS — public landing page. Editorial light system, self-contained
+ * Kipkiren WS - public landing page. Editorial light system, self-contained
  * (own palette so it ignores the app's dark/light theme). All classes lp-*.
  * Rebuilt from the Lovable/brand-guide design.
  * ========================================================================== */
@@ -247,3 +247,31 @@
 .lp-fineprint { font-size: 11px; color: var(--mid); margin-top: 18px; line-height: 1.6; }
 @media (max-width: 860px) { .lp-plans { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 520px) { .lp-plans { grid-template-columns: 1fr; } }
+
+/* ── larger type for readability (customer-facing legibility pass) ── */
+.lp-status { font-size: 11px; }
+.lp-navlink { font-size: 12px; }
+.lp-booking { font-size: 12px; }
+.lp-brand-mark { font-size: 15px; }
+.lp-brand-sub { font-size: 9px; }
+.lp-mono { font-size: 11px; }
+.lp-eyebrow .lp-num { font-size: 11px; }
+.lp-tagchip { font-size: 10px; }
+.lp-lede { font-size: 17px; line-height: 1.75; }
+.lp-tag { font-size: 10px; }
+.lp-card-top { font-size: 12px; }
+.lp-card-body { font-size: 15px; line-height: 1.65; }
+.lp-readspec { font-size: 12px; }
+.lp-strip .k { font-size: 9px; } .lp-strip .v { font-size: 14px; }
+.lp-plan-name { font-size: 11px; }
+.lp-plan-target { font-size: 10px; }
+.lp-plan-feats li { font-size: 14px; }
+.lp-table td, .lp-table th { font-size: 14px; }
+.lp-table .role { font-size: 11px; }
+.lp-dtable td { font-size: 14px; }
+.lp-term, .lp-term-body { font-size: 14px; }
+.lp-proc-body { font-size: 14px; line-height: 1.7; }
+.lp-meta { font-size: 13px; }
+.lp-footer p, .lp-footer a { font-size: 14px; }
+.lp-fineprint { font-size: 12px; }
+.lp-scroll { font-size: 10px; }

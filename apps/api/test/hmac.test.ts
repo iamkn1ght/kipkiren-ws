@@ -1,6 +1,6 @@
 /**
  * Pure-function tests for the HMAC verification helpers.
- * These cover the highest-stakes line of defence on the webhook path —
+ * These cover the highest-stakes line of defence on the webhook path -
  * any payload that fails signature verification must NEVER reach the
  * confirmation logic. KWS-SEC-003 / KWS-SEC-006.
  */

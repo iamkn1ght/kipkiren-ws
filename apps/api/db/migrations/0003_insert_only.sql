@@ -1,11 +1,11 @@
 -- ============================================================================
--- KWS Migration 0003 — INSERT-only enforcement (database layer)
+-- KWS Migration 0003 - INSERT-only enforcement (database layer)
 --
 -- ADR-KWS-001 + KWS-SEC-004 + KWS-SEC-012:
 --   proforma_approvals and audit_log are evidentiary records. They cannot be
 --   modified after the fact by any user, role, or application bug.
 --
--- This migration enforces that at the database — not just in app code.
+-- This migration enforces that at the database - not just in app code.
 -- Two layers of defence:
 --   1. REVOKE update/delete grants from authenticated/anon roles.
 --   2. Triggers that raise an exception on UPDATE or DELETE (catches the
@@ -23,7 +23,7 @@ revoke update, delete on public.audit_log          from authenticated, anon;
 -- service role), so we use a trigger guard below.
 
 -- ----------------------------------------------------------------------------
--- 2. Hard triggers — apply to ALL roles, including service role
+-- 2. Hard triggers - apply to ALL roles, including service role
 -- ----------------------------------------------------------------------------
 create or replace function public.kws_block_update_delete() returns trigger
 language plpgsql as $$

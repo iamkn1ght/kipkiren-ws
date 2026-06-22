@@ -16,7 +16,7 @@ function constantTimeEquals(a: string, b: string): boolean {
 }
 
 /**
- * KWS-SEC-003 — Kipkiren Pay (LipaPlus) webhook signature.
+ * KWS-SEC-003 - Kipkiren Pay (LipaPlus) webhook signature.
  * Algorithm: HMAC-SHA256 hex of raw body, secret = KIPKIREN_PAY_HMAC_SECRET.
  */
 export function verifyKipkirenPaySignature(
@@ -30,7 +30,7 @@ export function verifyKipkirenPaySignature(
 }
 
 /**
- * KWS-SEC-006 — Paystack webhook signature.
+ * KWS-SEC-006 - Paystack webhook signature.
  * Algorithm: HMAC-SHA512 hex of raw body, secret = PAYSTACK_SECRET_KEY.
  * (Paystack documents this header as `x-paystack-signature`.)
  */
@@ -45,8 +45,8 @@ export function verifyPaystackSignature(
 }
 
 /**
- * S9-003 — Todoku webhook signature (`X-Todoku-Signature`).
- * Algorithm: HMAC-SHA256 of raw body, **base64** digest (NOT hex — Todoku's
+ * S9-003 - Todoku webhook signature (`X-Todoku-Signature`).
+ * Algorithm: HMAC-SHA256 of raw body, **base64** digest (NOT hex - Todoku's
  * CONTRACT.md uses base64, distinct from Kipkiren Pay / Paystack which use hex),
  * secret = TODOKU_KWS_WEBHOOK_SECRET.
  */

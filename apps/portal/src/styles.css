@@ -1,14 +1,14 @@
 /*
- * Kipkiren WS — Task View stylesheet
+ * Kipkiren WS - Task View stylesheet
  * Ported verbatim from kws_task_view.html
  *
- * Brand tokens and component classes are CANONICAL — do not redesign.
+ * Brand tokens and component classes are CANONICAL - do not redesign.
  * If a token or class needs to change, update the canonical HTML mockup
  * first and re-port from there. See feedback memory: match-canonical-ui.
  *
  * Adaptations for the live app (data-driven, not mock):
  *   - html/body height extended to #root so the flex layout fills.
- *   - Completed table trimmed from 4 to 3 columns (Hours column omitted —
+ *   - Completed table trimmed from 4 to 3 columns (Hours column omitted -
  *     no logged-hours data exists in the PII-safe API surface).
  *   - Login / auth-gate / sign-out rules appended from the client-portal
  *     stylesheet (shared canonical components).
@@ -148,10 +148,10 @@ html, body, #root { height: 100%; background: var(--bg); font-family: var(--sans
 .gate-btn { font-family: var(--mono); font-size: 9px; letter-spacing: 3px; text-transform: uppercase; background: transparent; color: var(--teal-deep); border: 1px solid var(--teal-deep); padding: 10px 18px; cursor: pointer; }
 .gate-btn:hover { background: var(--teal-deep); color: #fff; }
 /*
- * Kipkiren WS — Admin Portal stylesheet
+ * Kipkiren WS - Admin Portal stylesheet
  * Ported verbatim from kws_admin_portal.html (inaugural pack).
  *
- * Brand tokens and component classes are CANONICAL — do not redesign.
+ * Brand tokens and component classes are CANONICAL - do not redesign.
  * If a token or class needs to change, update the canonical HTML mockup
  * first and re-port from there. See feedback memory: match-canonical-ui.
  */
@@ -413,10 +413,10 @@ html, body { height: 100%; background: var(--bg); font-family: var(--sans); }
 .gate-btn { font-family: var(--mono); font-size: 9px; letter-spacing: 3px; text-transform: uppercase; background: transparent; color: var(--teal-deep); border: 1px solid var(--teal-deep); padding: 10px 18px; cursor: pointer; }
 .gate-btn:hover { background: var(--teal-deep); color: #fff; }
 /*
- * Kipkiren WS — Client Portal stylesheet
+ * Kipkiren WS - Client Portal stylesheet
  * Ported verbatim from kws_client_portal_v3.html
  *
- * Brand tokens and component classes are CANONICAL — do not redesign.
+ * Brand tokens and component classes are CANONICAL - do not redesign.
  * If a token or class needs to change, update the canonical HTML mockup
  * first and re-port from there. See feedback memory: match-canonical-ui.
  */
@@ -729,14 +729,14 @@ html, body, #root { height: 100%; background: var(--bg); font-family: var(--sans
 .gate-btn:hover { background: var(--teal-deep); color: #fff; }
 
 /* ============================================================================
- * SOFTENING PASS — post-canonical override layer (UI/UX review, Jun 2026)
+ * SOFTENING PASS - post-canonical override layer (UI/UX review, Jun 2026)
  * Loosens the brutalist-editorial rigidity: adds a radius scale, elevation
  * instead of hairline cages, real spacing, motion, and an a11y contrast fix.
  * Brand (palette, fonts, editorial tone) is untouched. Remove this block to
  * revert to the pure canonical port.
  * ========================================================================== */
 :root {
-  --mid: #6B6456;                 /* was #888070 — now ≥4.5:1 on cream */
+  --mid: #6B6456;                 /* was #888070 - now ≥4.5:1 on cream */
   --border: #E7E2D6;              /* softer hairline */
   --radius-sm: 6px;
   --radius: 10px;
@@ -755,7 +755,7 @@ html, body, #root { height: 100%; background: var(--bg); font-family: var(--sans
 .sc, .svc-card { transition: box-shadow .18s ease, transform .18s ease; }
 .sc:hover, .svc-card:hover { box-shadow: var(--shadow-2); transform: translateY(-1px); }
 
-/* Breathing room — kill the 2px spreadsheet gaps */
+/* Breathing room - kill the 2px spreadsheet gaps */
 .stats { gap: 14px; }
 .inv-summary { gap: 14px; }
 .svc-detail-grid { gap: 8px; }
@@ -796,7 +796,7 @@ html, body, #root { height: 100%; background: var(--bg); font-family: var(--sans
 }
 
 /* ============================================================================
- * UNIFIED PORTAL — reconciliation, role picker, admin/task softening
+ * UNIFIED PORTAL - reconciliation, role picker, admin/task softening
  * (appended after the merged per-portal stylesheets + client softening layer)
  * ========================================================================== */
 
@@ -846,7 +846,7 @@ html, body, #root { height: 100%; background: var(--bg); font-family: var(--sans
 @media (max-width: 720px) { .rp-grid { grid-template-columns: 1fr; } }
 
 /* ============================================================================
- * THEME SYSTEM — modern smoothness always on; color palette toggles light ⇆
+ * THEME SYSTEM - modern smoothness always on; color palette toggles light ⇆
  * dark via [data-theme] on <html>. Uber-style geometric type, big radius, soft
  * depth; Kipkiren green + brown accents in both modes.
  * ========================================================================== */
@@ -867,7 +867,7 @@ html, body, #root { background: var(--bg); -webkit-font-smoothing: antialiased; 
 /* ── DARK PALETTE ── */
 [data-theme="dark"] {
   --bg:        #000000;   /* true black */
-  --surface:   #0E0E10;   /* cards — slight lift so they read on black */
+  --surface:   #0E0E10;   /* cards - slight lift so they read on black */
   --surface-2: #1B1B1E;   /* elevated / inputs */
   --ink:       #E6E6E6;
   --slate:     #BDBDBD;

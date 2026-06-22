@@ -20,7 +20,7 @@ import { onboardingRouter } from './routes/onboarding.js';
 import { errorHandler, notFound } from './middleware/error.js';
 
 /**
- * Build the Express app. No `listen` here — `index.ts` binds the port,
+ * Build the Express app. No `listen` here - `index.ts` binds the port,
  * `test/*.test.ts` imports this directly into supertest.
  */
 export function buildApp(): Express {
@@ -61,7 +61,7 @@ export function buildApp(): Express {
   app.use('/v1/auth', authRouter);
 
   // ----------------------------------------------------------------------
-  // S2 + S3 + S4 — real handlers
+  // S2 + S3 + S4 - real handlers
   // ----------------------------------------------------------------------
   app.use('/v1/tickets', ticketsRouter);
   app.use('/v1/proformas', proformasRouter);

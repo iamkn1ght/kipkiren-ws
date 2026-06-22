@@ -3,7 +3,7 @@ import { logger } from '../lib/logger.js';
 import type { UserRole } from '../middleware/auth.js';
 
 /**
- * KWS-SEC-012 — non-repudiation audit log writer.
+ * KWS-SEC-012 - non-repudiation audit log writer.
  *
  * The audit_log table is INSERT-only at the database layer (migration 0003
  * revokes update/delete grants AND installs a hard trigger). This helper
@@ -72,7 +72,7 @@ export async function writeAuditEvent(input: AuditEventInput): Promise<void> {
     payload_snapshot: input.payload_snapshot ?? {},
   });
   if (error) {
-    // Audit failures are loud. We do NOT swallow them — but we also don't
+    // Audit failures are loud. We do NOT swallow them - but we also don't
     // throw because audit writes are typically secondary to a primary
     // operation that already succeeded. Log + alert is the right escalation.
     logger.error({ err: error, event: input }, 'audit_log_write_failed');

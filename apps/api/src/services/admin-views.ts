@@ -5,7 +5,7 @@
  * Dashboard, Ticket Queue, Client Accounts, and Capacity tabs need.
  *
  * All functions here run under the service-role client and are ONLY
- * called from delivery_lead/admin route handlers — never from a client
+ * called from delivery_lead/admin route handlers - never from a client
  * request path.
  */
 

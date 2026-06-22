@@ -4,7 +4,7 @@
  * KWS sends transactional SMS on 5 event types via the Todoku rail. The
  * `kws` tenant + 5 templates are already provisioned rail-side (TD-13); what
  * is pending is the operator credential handover (4 env vars) and the 5
- * template ULIDs — see OPERATOR_REQUEST_TODOKU.md.
+ * template ULIDs - see OPERATOR_REQUEST_TODOKU.md.
  *
  * This module is the scaffold the operator doc anticipates:
  *   - Template ULIDs are PLACEHOLDER constants until the real ULIDs land.
@@ -51,7 +51,7 @@ function isPlaceholder(ulid: string): boolean {
   return ulid.startsWith(PLACEHOLDER_PREFIX);
 }
 
-// Test seam — set a real ULID so the send path can be exercised before the
+// Test seam - set a real ULID so the send path can be exercised before the
 // operator handover.
 export function setTemplateUlidForTest(slug: TodokuTemplateSlug, ulid: string): void {
   TEMPLATE_ULIDS[slug] = ulid;
@@ -83,7 +83,7 @@ export interface TodokuClient {
 }
 
 // ---------------------------------------------------------------------------
-// Real-client wiring (lazy — tests inject a fake via setTodokuClientForTest)
+// Real-client wiring (lazy - tests inject a fake via setTodokuClientForTest)
 // ---------------------------------------------------------------------------
 
 let injectedClient: TodokuClient | null = null;
@@ -139,7 +139,7 @@ function getTodokuClient(): TodokuClient {
 }
 
 /**
- * Fire-and-forget SMS send. NEVER throws — returns a result the caller may
+ * Fire-and-forget SMS send. NEVER throws - returns a result the caller may
  * log or ignore. Safe to call inline from a primary transaction (AC #5).
  */
 export async function sendSms(input: SendSmsInput): Promise<SendSmsResult> {

@@ -1,8 +1,8 @@
 /**
  * Data hook for the task view.
  *
- * Loads the two lists Kamau can see — active (assigned, not yet finished) and
- * completed — from the PII-safe /v1/tasks surface, and exposes the two
+ * Loads the two lists Kamau can see - active (assigned, not yet finished) and
+ * completed - from the PII-safe /v1/tasks surface, and exposes the two
  * architecture-allowed status transitions (paid → in_progress → complete)
  * via PUT /v1/tickets/:id/status. Every field here comes straight from the
  * server's allow-listed serializer; the client never has access to anything
@@ -79,7 +79,7 @@ export function useTaskData(): TaskData {
   }, [refresh]);
 
   const startTask = useCallback(async (id: string) => {
-    if (DEV_AUTH_BYPASS) return; // mock mode — no real mutation
+    if (DEV_AUTH_BYPASS) return; // mock mode - no real mutation
     await setStatus(id, 'in_progress');
     await refresh();
   }, [refresh]);

@@ -1,5 +1,5 @@
 /**
- * KWS billing math — single source of truth.
+ * KWS billing math - single source of truth.
  *
  * From kws_reboot_pack_v1.md §5:
  *
@@ -27,7 +27,7 @@ export const PLAN_DISCOUNT_PCT: Record<RetainerPlanName, number> = {
   Starter: 0,
   Growth: 10,
   Business: 15,
-  Enterprise: 0, // negotiated per contract — applied at line-item dispatch time
+  Enterprise: 0, // negotiated per contract - applied at line-item dispatch time
 };
 
 const ceilKes = (n: number): number => Math.ceil(n);
@@ -45,7 +45,7 @@ export interface PriceProformaInput {
   subtotal_kes: number;
   urgency: TicketUrgency;
   plan: RetainerPlanName;
-  enterprise_discount_pct?: number; // 0–100
+  enterprise_discount_pct?: number; // 0-100
 }
 
 export interface PriceProformaResult {
@@ -80,7 +80,7 @@ export function priceProforma(input: PriceProformaInput): PriceProformaResult {
 }
 
 /**
- * KWS-SEC-004 + ADR-KWS-001 — deterministic content hash for a proforma.
+ * KWS-SEC-004 + ADR-KWS-001 - deterministic content hash for a proforma.
  * Hash is computed at dispatch and re-verified at approval. Any drift aborts
  * the approval.
  *

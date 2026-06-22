@@ -1,5 +1,5 @@
 /**
- * POST /v1/admin/tickets — admin raises a ticket on behalf of a client.
+ * POST /v1/admin/tickets - admin raises a ticket on behalf of a client.
  *
  * Locks the security boundary and input validation. These paths short-circuit
  * before any DB call (role gate + Zod validation), so no Supabase mock is
@@ -25,7 +25,7 @@ beforeAll(() => {
   app = buildApp();
 });
 
-describe('POST /v1/admin/tickets — role gate', () => {
+describe('POST /v1/admin/tickets - role gate', () => {
   it('client and technical_delivery are forbidden (403)', async () => {
     for (const role of ['client', 'technical_delivery'] as const) {
       const res = await request(app)
@@ -42,7 +42,7 @@ describe('POST /v1/admin/tickets — role gate', () => {
   });
 });
 
-describe('POST /v1/admin/tickets — input validation (admin token)', () => {
+describe('POST /v1/admin/tickets - input validation (admin token)', () => {
   it('400 when client_id is missing', async () => {
     const { client_id, ...noClient } = VALID;
     void client_id;
@@ -71,7 +71,7 @@ describe('POST /v1/admin/tickets — input validation (admin token)', () => {
   });
 });
 
-describe('GET /v1/admin/rails — role gate', () => {
+describe('GET /v1/admin/rails - role gate', () => {
   it('forbids client + technical_delivery, requires auth', async () => {
     for (const role of ['client', 'technical_delivery'] as const) {
       const res = await request(app).get('/v1/admin/rails').set(auth(mintTestToken(role)));

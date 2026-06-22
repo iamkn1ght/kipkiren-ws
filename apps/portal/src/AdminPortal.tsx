@@ -1,5 +1,5 @@
 /**
- * Admin Portal — ported verbatim from kws_admin_portal.html (inaugural pack).
+ * Admin Portal - ported verbatim from kws_admin_portal.html (inaugural pack).
  *
  * The HTML mockup is the canonical design output of the founding session.
  * Markup, copy, class names, and visual states match it character-for-character.
@@ -8,12 +8,12 @@
  *
  * State model mirrors the original vanilla JS:
  *   - tab    : 'dashboard' | 'queue' | 'review' | 'clients' | 'capacity'
- *   - filter : queue filter — 'all' | 'awaiting' | 'progress' | 'review' | 'flagged'
+ *   - filter : queue filter - 'all' | 'awaiting' | 'progress' | 'review' | 'flagged'
  *   - review : null | { ref, title, meta, discount, lines: [desc, hours, rate][] }
  *
  * The data is the same demo data as the canonical mockup. Wiring to
  * /v1/tickets, /v1/proformas, /v1/decompositions happens against THIS markup
- * in a follow-up ticket — never replace the markup with a "data-driven" rewrite.
+ * in a follow-up ticket - never replace the markup with a "data-driven" rewrite.
  */
 
 import { useMemo, useState } from 'react';
@@ -69,7 +69,7 @@ export function AdminPortal() {
   const roleLabel = session?.claims.role === 'admin' ? 'Admin' : 'Delivery Lead';
 
   const { queue, capacity, clients, reviewQueue, recentDispatches, capacityDetail, services, rails, railsProbing, probeRails, loading, reload } = useAdminData();
-  const d = '—';
+  const d = '-';
 
   const queueRows = queue ?? [];
   const reviewItems = reviewQueue ?? [];
@@ -167,7 +167,7 @@ export function AdminPortal() {
     try {
       await call(`/v1/proformas/${proformaId}/reject`, {
         method: 'PUT',
-        body: { reason: 'Requeued by delivery lead — scope needs client clarification' },
+        body: { reason: 'Requeued by delivery lead - scope needs client clarification' },
       });
       closeReview();
       reload();
@@ -195,13 +195,13 @@ export function AdminPortal() {
       });
       setRaiseResult(
         res.proforma_id
-          ? `Raised ${res.ref} — proforma drafted and sent to the client to approve.`
-          : `Raised ${res.ref} — awaiting review (AI decomposition not available).`,
+          ? `Raised ${res.ref} - proforma drafted and sent to the client to approve.`
+          : `Raised ${res.ref} - awaiting review (AI decomposition not available).`,
       );
       setNewTicket({ client_id: '', category: 'web', urgency: 'standard', description: '' });
       reload();
     } catch {
-      setRaiseResult('Could not raise the ticket — please try again.');
+      setRaiseResult('Could not raise the ticket - please try again.');
     } finally {
       setActionBusy(false);
     }
@@ -348,7 +348,7 @@ export function AdminPortal() {
                 </thead>
                 <tbody>
                   {loading ? (
-                    <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--mid)' }}>Loading…</td></tr>
+                    <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--mid)' }}>Loading...</td></tr>
                   ) : queueRows.length === 0 ? (
                     <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--mid)' }}>No open tickets</td></tr>
                   ) : queueRows.slice(0, 8).map((r) => {
@@ -374,7 +374,7 @@ export function AdminPortal() {
                 <thead><tr><th>Ref</th><th>Client</th><th>Amount</th></tr></thead>
                 <tbody>
                   {loading ? (
-                    <tr><td colSpan={3} style={{ textAlign: 'center', color: 'var(--mid)' }}>Loading…</td></tr>
+                    <tr><td colSpan={3} style={{ textAlign: 'center', color: 'var(--mid)' }}>Loading...</td></tr>
                   ) : !recentDispatches?.length ? (
                     <tr><td colSpan={3} style={{ textAlign: 'center', color: 'var(--mid)' }}>No recent dispatches</td></tr>
                   ) : recentDispatches.map((rd) => (
@@ -410,14 +410,14 @@ export function AdminPortal() {
             <select className="filter-sel" defaultValue="ALL URGENCY">
               <option>ALL URGENCY</option><option>Standard</option><option>Elevated</option><option>Urgent</option>
             </select>
-            <input className="qsearch" placeholder="Search ticket or client…" />
+            <input className="qsearch" placeholder="Search ticket or client..." />
           </div>
 
           <div className="q-row-hd">
             <span>Ticket</span><span>Title</span><span>Client</span><span>Urgency</span><span>Assigned</span><span>SLA</span>
           </div>
           {loading ? (
-            <div className="q-row"><div style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--mid)' }}>Loading…</div></div>
+            <div className="q-row"><div style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--mid)' }}>Loading...</div></div>
           ) : filteredQueue.map((r) => {
             const ub = urgencyBadge(r.urgency);
             const barPct = slaBarPercent(r.ms_until_breach, r.created_at);
@@ -445,7 +445,7 @@ export function AdminPortal() {
 
           <div className="ai-split">
             {loading ? (
-              <div style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--mid)', padding: 40 }}>Loading…</div>
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--mid)', padding: 40 }}>Loading...</div>
             ) : reviewItems.length === 0 ? (
               <div style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--mid)', padding: 40 }}>No proformas awaiting review</div>
             ) : reviewItems.map((item) => (
@@ -494,7 +494,7 @@ export function AdminPortal() {
 
           <div className="clients">
             {loading ? (
-              <div style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--mid)', padding: 40 }}>Loading…</div>
+              <div style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--mid)', padding: 40 }}>Loading...</div>
             ) : (clients ?? []).map((c) => {
               const planCls = c.plan === 'Business' || c.plan === 'Enterprise' ? 'bdg-k' : c.plan === 'Growth' ? 'bdg-t' : 'bdg-o';
               const mtdK = c.month_to_date_charges_kes >= 1000
@@ -540,7 +540,7 @@ export function AdminPortal() {
               <div className="shd" style={{ marginBottom: 14 }}>Utilisation · this week</div>
 
               {loading ? (
-                <div style={{ textAlign: 'center', color: 'var(--mid)', padding: 40 }}>Loading…</div>
+                <div style={{ textAlign: 'center', color: 'var(--mid)', padding: 40 }}>Loading...</div>
               ) : !capacityDetail?.staff.length ? (
                 <div style={{ textAlign: 'center', color: 'var(--mid)', padding: 40 }}>No delivery staff with active tasks</div>
               ) : capacityDetail.staff.map((s) => {
@@ -577,7 +577,7 @@ export function AdminPortal() {
               <div className="cap-box">
                 <div className="shd" style={{ marginBottom: 6 }}>Upcoming deadlines</div>
                 {loading ? (
-                  <div style={{ textAlign: 'center', color: 'var(--mid)', padding: 20 }}>Loading…</div>
+                  <div style={{ textAlign: 'center', color: 'var(--mid)', padding: 20 }}>Loading...</div>
                 ) : !capacityDetail?.deadlines.length ? (
                   <div style={{ textAlign: 'center', color: 'var(--mid)', padding: 20 }}>No upcoming deadlines</div>
                 ) : capacityDetail.deadlines.map((dl) => {
@@ -617,7 +617,7 @@ export function AdminPortal() {
           </div>
 
           {loading ? (
-            <div style={{ textAlign: 'center', color: 'var(--mid)', padding: 40 }}>Loading…</div>
+            <div style={{ textAlign: 'center', color: 'var(--mid)', padding: 40 }}>Loading...</div>
           ) : !services?.length ? (
             <div style={{ textAlign: 'center', color: 'var(--mid)', padding: 40 }}>No services provisioned yet</div>
           ) : (
@@ -660,15 +660,15 @@ export function AdminPortal() {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
               <h1 className="greeting">Platform rails</h1>
-              <p className="g-sub">KWS-side view — throughput that flows through KWS plus each rail's config &amp; reachability. KWS is an app, not a rail, so this isn't the rails' internal dashboards.</p>
+              <p className="g-sub">KWS-side view - throughput that flows through KWS plus each rail's config &amp; reachability. KWS is an app, not a rail, so this isn't the rails' internal dashboards.</p>
             </div>
             <button type="button" className="btn-tb" disabled={railsProbing} onClick={() => void probeRails()}>
-              {railsProbing ? 'Pinging…' : '↻ Check reachability'}
+              {railsProbing ? 'Pinging...' : '↻ Check reachability'}
             </button>
           </div>
 
           {loading ? (
-            <div style={{ textAlign: 'center', color: 'var(--mid)', padding: 40 }}>Loading…</div>
+            <div style={{ textAlign: 'center', color: 'var(--mid)', padding: 40 }}>Loading...</div>
           ) : !rails?.length ? (
             <div style={{ textAlign: 'center', color: 'var(--mid)', padding: 40 }}>No rail data</div>
           ) : (
@@ -688,12 +688,12 @@ export function AdminPortal() {
               <button type="button" className="rev-close" onClick={() => setShowRaiseTicket(false)}>CLOSE ✕</button>
             </div>
             <div className="rev-body">
-              <div className="rev-meta">Runs the same flow as a client ticket — AI decomposes it into a proforma the client approves before any work begins.</div>
+              <div className="rev-meta">Runs the same flow as a client ticket - AI decomposes it into a proforma the client approves before any work begins.</div>
 
               <div className="rev-line" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                 <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--mid)', minWidth: 100 }}>Client</span>
                 <select className="rev-inp" value={newTicket.client_id} onChange={(e) => setNewTicket({ ...newTicket, client_id: e.target.value })}>
-                  <option value="">Select client…</option>
+                  <option value="">Select client...</option>
                   {(clients ?? []).map((c) => <option key={c.id} value={c.id}>{c.business_name}</option>)}
                 </select>
               </div>
@@ -721,7 +721,7 @@ export function AdminPortal() {
                 <textarea
                   className="rev-inp"
                   style={{ minHeight: 96, resize: 'vertical', fontFamily: 'var(--sans)' }}
-                  placeholder="Describe the work the client needs (min 10 characters)…"
+                  placeholder="Describe the work the client needs (min 10 characters)..."
                   value={newTicket.description}
                   onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
                 />
@@ -732,7 +732,7 @@ export function AdminPortal() {
               <div className="rev-acts">
                 <button type="button" className="btn-mod btn-cancel" onClick={() => setShowRaiseTicket(false)}>Close</button>
                 <button type="button" className="btn-mod btn-disp" disabled={actionBusy || !raiseValid} onClick={() => void handleRaiseTicket()}>
-                  {actionBusy ? 'Raising…' : 'Raise & send to client'}
+                  {actionBusy ? 'Raising...' : 'Raise & send to client'}
                 </button>
               </div>
             </div>
@@ -753,7 +753,7 @@ export function AdminPortal() {
               <div className="rev-line" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                 <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--mid)', minWidth: 100 }}>Client</span>
                 <select className="rev-inp" value={newSvc.client_id} onChange={(e) => setNewSvc({ ...newSvc, client_id: e.target.value })}>
-                  <option value="">Select client…</option>
+                  <option value="">Select client...</option>
                   {(clients ?? []).map((c) => <option key={c.id} value={c.id}>{c.business_name}</option>)}
                 </select>
               </div>
@@ -784,7 +784,7 @@ export function AdminPortal() {
               <div className="rev-acts">
                 <button type="button" className="btn-mod btn-cancel" onClick={() => setShowAddService(false)}>Cancel</button>
                 <button type="button" className="btn-mod btn-disp" disabled={actionBusy || !newSvc.client_id} onClick={() => void handleAddService()}>
-                  {actionBusy ? 'Creating…' : 'Create service'}
+                  {actionBusy ? 'Creating...' : 'Create service'}
                 </button>
               </div>
             </div>
@@ -853,7 +853,7 @@ export function AdminPortal() {
 
               <div className="rev-totals">
                 <div className="rev-tot-row"><span className="lbl">Subtotal</span><span className="val">{fmt(totals.sub)}</span></div>
-                <div className="rev-tot-row"><span className="lbl">Urgency multiplier · 1.0×</span><span className="val">—</span></div>
+                <div className="rev-tot-row"><span className="lbl">Urgency multiplier · 1.0×</span><span className="val">-</span></div>
                 <div className="rev-tot-row"><span className="lbl">Plan discount · {activeReview.client.plan} {Math.round(discountPct * 100)}%</span><span className="val">-{fmt(totals.disc)}</span></div>
                 <div className="rev-tot-row"><span className="lbl">VAT · 16%</span><span className="val">{fmt(totals.vat)}</span></div>
                 <div className="rev-tot-row total"><span className="lbl">Total due</span><span className="val">KES {fmt(totals.total)}</span></div>

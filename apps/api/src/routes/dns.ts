@@ -12,19 +12,19 @@ import {
 } from '../services/cloudflare.js';
 
 /**
- * S6 — Cloudflare DNS management.
+ * S6 - Cloudflare DNS management.
  *
- * Admin-only (delivery_lead/admin — clients do not edit DNS, matching the
+ * Admin-only (delivery_lead/admin - clients do not edit DNS, matching the
  * services.ts role model). Every route gates on requireFeatureEnv('cloudflare')
  * so the surface 503s cleanly until a Cloudflare token is configured.
  *
  * A DNS operation targets an existing client_services row of type domain/dns;
  * the Cloudflare zone is resolved from that row's metadata.domain. Records are
- * passed through live to Cloudflare — nothing is mirrored into Supabase.
+ * passed through live to Cloudflare - nothing is mirrored into Supabase.
  */
 export const dnsRouter: Router = Router();
 
-// Test seam — overrideable in vitest so DNS tests don't need a real CF token.
+// Test seam - overrideable in vitest so DNS tests don't need a real CF token.
 // Mirrors proformas.ts setPaymentClientsForTest + kp()/ps().
 let cloudflareClient: CloudflareDnsClient | null = null;
 export function setCloudflareClientForTest(c: CloudflareDnsClient | null): void {
@@ -72,7 +72,7 @@ async function resolveZone(serviceId: string): Promise<ResolvedZone> {
 }
 
 // ----------------------------------------------------------------------------
-// GET /v1/dns/:serviceId/records — list DNS records for the service's zone
+// GET /v1/dns/:serviceId/records - list DNS records for the service's zone
 // ----------------------------------------------------------------------------
 dnsRouter.get(
   '/:serviceId/records',
@@ -87,7 +87,7 @@ dnsRouter.get(
 );
 
 // ----------------------------------------------------------------------------
-// POST /v1/dns/:serviceId/records — create a DNS record
+// POST /v1/dns/:serviceId/records - create a DNS record
 // ----------------------------------------------------------------------------
 dnsRouter.post(
   '/:serviceId/records',
@@ -118,7 +118,7 @@ dnsRouter.post(
 );
 
 // ----------------------------------------------------------------------------
-// PUT /v1/dns/:serviceId/records/:recordId — update a DNS record
+// PUT /v1/dns/:serviceId/records/:recordId - update a DNS record
 // ----------------------------------------------------------------------------
 dnsRouter.put(
   '/:serviceId/records/:recordId',
@@ -150,7 +150,7 @@ dnsRouter.put(
 );
 
 // ----------------------------------------------------------------------------
-// DELETE /v1/dns/:serviceId/records/:recordId — delete a DNS record
+// DELETE /v1/dns/:serviceId/records/:recordId - delete a DNS record
 // ----------------------------------------------------------------------------
 dnsRouter.delete(
   '/:serviceId/records/:recordId',

@@ -13,15 +13,15 @@ function Router() {
   const [entered, setEntered] = useState(false);
 
   if (bootstrapping) {
-    return <div className="boot">Loading…</div>;
+    return <div className="boot">Loading...</div>;
   }
 
-  // Public landing (home) — shown to anyone not signed in who hasn't entered.
+  // Public landing (home) - shown to anyone not signed in who hasn't entered.
   if (!entered && !session) {
     return <Landing onSignIn={() => setEntered(true)} />;
   }
 
-  // Inside the app — pick role → shared login → portal (by real JWT role).
+  // Inside the app - pick role → shared login → portal (by real JWT role).
   let view;
   if (session) {
     const target = portalForRole(session.claims.role);

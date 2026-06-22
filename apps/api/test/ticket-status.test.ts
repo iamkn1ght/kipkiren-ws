@@ -1,5 +1,5 @@
 /**
- * Ticket status transition — role gate perimeter tests.
+ * Ticket status transition - role gate perimeter tests.
  *
  * The inline Kamau assigned_to / allowed-from / allowed-to logic needs
  * real DB state to exercise, and lives in the integration suite. These
@@ -20,7 +20,7 @@ beforeAll(() => {
 
 const path = '/v1/tickets/00000000-0000-0000-0000-000000000050/status';
 
-describe('PUT /v1/tickets/:id/status — role gate', () => {
+describe('PUT /v1/tickets/:id/status - role gate', () => {
   it('client → 403 (must be delivery_lead / admin / technical_delivery)', async () => {
     const res = await request(app)
       .put(path)
@@ -50,7 +50,7 @@ describe('PUT /v1/tickets/:id/status — role gate', () => {
   });
 });
 
-describe('PUT /v1/tickets/:id/assign — role gate', () => {
+describe('PUT /v1/tickets/:id/assign - role gate', () => {
   const assignPath = '/v1/tickets/00000000-0000-0000-0000-000000000050/assign';
   it('client → 403', async () => {
     const res = await request(app)
