@@ -12,7 +12,7 @@ const Moon = () => (
   </svg>
 );
 
-export function ThemeToggle() {
+export function ThemeToggle({ inline = false }: { inline?: boolean }) {
   const [theme, setTheme] = useState<Theme>(getInitialTheme());
   const toggle = () => {
     const next: Theme = theme === 'dark' ? 'light' : 'dark';
@@ -22,7 +22,7 @@ export function ThemeToggle() {
   return (
     <button
       type="button"
-      className="theme-toggle"
+      className={inline ? 'lp-toggle' : 'theme-toggle'}
       onClick={toggle}
       aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
       title={theme === 'dark' ? 'Light mode' : 'Dark mode'}

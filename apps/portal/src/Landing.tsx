@@ -1,4 +1,5 @@
 import type { FormEvent } from 'react';
+import { ThemeToggle } from './ThemeToggle.tsx';
 import './landing.css';
 
 /**
@@ -9,6 +10,7 @@ import './landing.css';
  */
 export function Landing({ onSignIn }: { onSignIn: () => void }) {
   const submit = (e: FormEvent) => { e.preventDefault(); onSignIn(); };
+  const go = (id: string) => () => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
   return (
     <div className="lp">
@@ -29,13 +31,16 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
             <span className="lp-brand-sub">/ web-services</span>
           </div>
           <div className="lp-navlinks">
-            <button className="lp-navlink active">01 Systems</button>
-            <button className="lp-navlink">02 Stack</button>
-            <button className="lp-navlink">03 Process</button>
-            <button className="lp-navlink">04 Studio</button>
-            <button className="lp-navlink">05 Journal</button>
+            <button className="lp-navlink active" onClick={go('systems')}>01 Systems</button>
+            <button className="lp-navlink" onClick={go('stack')}>02 Stack</button>
+            <button className="lp-navlink" onClick={go('process')}>03 Process</button>
+            <button className="lp-navlink" onClick={go('studio')}>04 Studio</button>
+            <button className="lp-navlink" onClick={go('contact')}>05 Contact</button>
           </div>
-          <button className="lp-booking" onClick={onSignIn}><span className="lp-live" /> Sign in · Booking Q3</button>
+          <div className="lp-nav-right">
+            <ThemeToggle inline />
+            <button className="lp-booking" onClick={onSignIn}><span className="lp-live" /> Sign in · Booking Q3</button>
+          </div>
         </div>
       </nav>
 
@@ -88,7 +93,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
       </header>
 
       {/* ── §01 systems ── */}
-      <section className="lp-sec grid-bg">
+      <section className="lp-sec grid-bg" id="systems">
         <div className="lp-wrap">
           <div className="lp-eyebrow"><span className="lp-mono">§01 · <span className="lp-diamond">systems we ship</span></span><span className="lp-rule" /><span className="lp-num">01 / 05</span></div>
           <p className="lp-intro">Four packages, practiced deeply. Composable. Versioned. Maintained on a long horizon — never a hand-off, always a system.</p>
@@ -112,7 +117,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
       </section>
 
       {/* ── §02 stack (dark) ── */}
-      <section className="lp-sec dark">
+      <section className="lp-sec dark" id="stack">
         <div className="lp-wrap">
           <div className="lp-eyebrow"><span className="lp-mono" style={{ color: 'var(--amber2)' }}>§02 · the stack</span><span className="lp-rule" /><span className="lp-num">02 / 05</span></div>
           <div className="lp-split">
@@ -173,7 +178,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
       </section>
 
       {/* ── §04 process ── */}
-      <section className="lp-sec grid-bg">
+      <section className="lp-sec grid-bg" id="process">
         <div className="lp-wrap">
           <div className="lp-eyebrow"><span className="lp-mono">§04 · <span className="lp-diamond">process</span></span><span className="lp-rule" /><span className="lp-num">04 / 05</span></div>
           <p className="lp-intro">A four-movement loop. Repeated slowly. Repeated well.</p>
@@ -195,7 +200,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
       </section>
 
       {/* ── §05 studio ── */}
-      <section className="lp-sec">
+      <section className="lp-sec" id="studio">
         <div className="lp-wrap">
           <div className="lp-eyebrow"><span className="lp-mono">§05 · <span className="lp-diamond">the studio</span></span><span className="lp-rule" /><span className="lp-num">05 / 05</span></div>
           <div className="lp-split">
@@ -226,7 +231,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
       </section>
 
       {/* ── §06 contact (teal) ── */}
-      <section className="lp-sec teal">
+      <section className="lp-sec teal" id="contact">
         <div className="lp-wrap lp-contact">
           <div className="lp-eyebrow"><span className="lp-mono" style={{ color: 'var(--amber2)' }}><span className="lp-dot">●</span> §06 · open a channel</span><span className="lp-rule" /></div>
           <div className="lp-contact-grid">

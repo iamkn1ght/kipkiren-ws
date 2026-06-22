@@ -177,3 +177,52 @@
   .lp-navlinks { display: none; }
   .lp-footer .lp-wrap { grid-template-columns: 1fr 1fr; }
 }
+
+/* ── polish ── */
+.lp-sec, .lp-hero { scroll-margin-top: 76px; }
+.lp-card { transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease; }
+.lp-card:hover { box-shadow: 0 10px 28px rgba(17,16,8,.07); transform: translateY(-2px); border-top-color: var(--amber); }
+.lp-readspec { transition: color .18s ease, transform .18s ease; }
+.lp-card:hover .lp-readspec { color: var(--teal2); transform: translateX(3px); }
+.lp-navlink, .lp-booking, .lp-btn, .lp-send, .lp-footer a, .lp-term a { transition: color .18s ease, background .18s ease, transform .18s ease, box-shadow .18s ease, opacity .18s ease; }
+.lp-footer a:hover { text-decoration: underline; }
+.lp-term a:hover { opacity: .75; }
+.lp-dtable tr { transition: background .15s ease; }
+.lp-dtable tbody tr:hover td { background: #ECF1ED; }
+.lp-btn:active, .lp-send:active { transform: scale(.97); }
+.lp-statcard, .lp-badge { transition: transform .18s ease, box-shadow .18s ease; }
+.lp-statcard:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(17,16,8,.06); }
+
+/* ── theme toggle in nav + DARK MODE (driven by [data-theme]) ── */
+.lp-nav-right { display: flex; align-items: center; gap: 16px; }
+.lp-toggle { width: 32px; height: 32px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; background: transparent; border: 1px solid var(--line); color: var(--ink); transition: border-color .18s, color .18s, transform .15s; }
+.lp-toggle:hover { border-color: var(--teal2); color: var(--teal2); }
+.lp-toggle:active { transform: scale(.92); }
+.lp-toggle svg { width: 16px; height: 16px; display: block; }
+
+/* Flip the neutral palette only; keep --teal/--amber as deep fills (contact
+   section bg, primary button) and brighten accent TEXT separately below. */
+[data-theme="dark"] .lp {
+  --cream: #0E1110; --paper: #181C1A; --ink: #F3F1EA; --slate: #C9C7BE; --mid: #9A968B;
+  --line: rgba(243,241,234,0.12);
+}
+[data-theme="dark"] .lp-nav { background: rgba(14,17,16,.82); border-bottom-color: rgba(243,241,234,0.10); }
+[data-theme="dark"] .lp-dtable th { background: #20251F; }
+[data-theme="dark"] .lp-dtable tbody tr:nth-child(even) td { background: #1F2522; }
+[data-theme="dark"] .lp-dtable tbody tr:hover td { background: #283029; }
+[data-theme="dark"] .lp-card:hover { box-shadow: 0 12px 30px rgba(0,0,0,.45); }
+[data-theme="dark"] .lp-term { box-shadow: 0 24px 60px rgba(0,0,0,.5); }
+[data-theme="dark"] .lp-toggle:hover { border-color: #34C6A6; color: #34C6A6; }
+
+/* Brighten teal accent TEXT so it reads on the dark background */
+[data-theme="dark"] .lp-h1 em,
+[data-theme="dark"] .lp-tagchip,
+[data-theme="dark"] .lp-card-top,
+[data-theme="dark"] .lp-quote em,
+[data-theme="dark"] .lp-statcard .n,
+[data-theme="dark"] .lp-booking,
+[data-theme="dark"] .lp-diamond,
+[data-theme="dark"] .lp-readspec,
+[data-theme="dark"] .lp-num,
+[data-theme="dark"] .lp-brand-mark { color: #34C6A6; }
+[data-theme="dark"] .lp-brand-mark { color: var(--ink); }

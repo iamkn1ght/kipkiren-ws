@@ -945,3 +945,29 @@ html, body, #root { background: var(--bg); -webkit-font-smoothing: antialiased; 
 .rail-metric .v.ok { color: #1a9a5a; } .rail-metric .v.warn { color: var(--amber-deep); } .rail-metric .v.mut { color: var(--mid); }
 .rail-note { font-size: 11px; color: var(--mid); margin-top: 12px; line-height: 1.55; border-left: 2px solid var(--border); padding-left: 10px; }
 @media (max-width: 720px) { .rails-grid, .rail-metrics { grid-template-columns: 1fr; } }
+
+/* ── Global polish: scroll, scrollbars, focus, selection, tactile press ── */
+html { scroll-behavior: smooth; }
+::selection { background: var(--teal-light); color: var(--teal-deep); }
+[data-theme="dark"] ::selection { background: rgba(52,198,166,.28); color: #fff; }
+
+* { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+*::-webkit-scrollbar { width: 11px; height: 11px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: var(--mid); border-radius: 999px; border: 3px solid transparent; background-clip: content-box; opacity: .5; }
+*::-webkit-scrollbar-thumb:hover { background: var(--teal-deep); background-clip: content-box; }
+
+/* Consistent keyboard focus ring everywhere */
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--teal-deep); outline-offset: 2px; border-radius: 5px;
+}
+[data-theme="dark"] button:focus-visible, [data-theme="dark"] a:focus-visible,
+[data-theme="dark"] input:focus-visible, [data-theme="dark"] select:focus-visible, [data-theme="dark"] textarea:focus-visible {
+  outline-color: var(--teal);
+}
+
+/* Tactile press feedback on buttons */
+.btn-sub:active, .btn-app:active, .btn-rq:active, .btn-tb:active, .btn-mod:active, .btn-pay:active,
+.lg-submit:active, .btn-act:active, .filter-btn:active, .btn-cc:active, .sni:active, .gate-btn:active {
+  transform: scale(.97);
+}
