@@ -35,7 +35,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
           <div className="lp-brand">
             <span className="lp-diamond">◆</span>
             <span className="lp-brand-mark">KIPKIREN</span>
-            <span className="lp-brand-sub">/ web-services</span>
+            <span className="lp-brand-sub">/web-services</span>
           </div>
           <div className="lp-navlinks">
             <button className="lp-navlink active" onClick={go('systems')}>01 Systems</button>

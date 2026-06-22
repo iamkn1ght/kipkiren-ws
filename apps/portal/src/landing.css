@@ -29,8 +29,8 @@
 .lp-nav { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
 .lp-nav .lp-wrap { display: flex; align-items: center; justify-content: space-between; height: 68px; }
 .lp-brand { display: flex; align-items: baseline; gap: 10px; }
-.lp-brand-mark { font-family: var(--mono); font-size: 13px; letter-spacing: 4px; font-weight: 500; color: var(--ink); }
-.lp-brand-sub { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; color: var(--mid); text-transform: uppercase; }
+.lp-brand-mark { font-family: var(--mono); font-size: 13px; letter-spacing: 4px; font-weight: 700; color: var(--ink); }
+.lp-brand-sub { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; color: var(--teal2); }
 .lp-navlinks { display: flex; gap: 26px; }
 .lp-navlink { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); cursor: pointer; background: none; border: none; padding: 0; transition: color .2s; }
 .lp-navlink:hover, .lp-navlink.active { color: var(--ink); }
@@ -279,3 +279,4 @@
 
 /* ── sign-in pill: white-on-dark in dark mode (overrides earlier teal color) ── */
 [data-theme="dark"] .lp-booking { background: #fff; color: #0B0B0C; box-shadow: 0 2px 14px rgba(0,0,0,.55); }
+[data-theme="dark"] .lp-brand-sub { color: #34C6A6; }
