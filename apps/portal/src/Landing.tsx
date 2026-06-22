@@ -24,8 +24,8 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
       {/* ── status bar ── */}
       <div className="lp-status">
         <div className="lp-wrap">
-          <span><b>● SYS</b> · ONLINE&nbsp;&nbsp;·&nbsp;&nbsp;UPTIME · 99.998%&nbsp;&nbsp;·&nbsp;&nbsp;P50 · 38MS&nbsp;&nbsp;·&nbsp;&nbsp;DEPLOY · EDGE-IAD&nbsp;&nbsp;·&nbsp;&nbsp;14M AGO</span>
-          <span>BUILD · V7.04.21&nbsp;&nbsp;·&nbsp;&nbsp;NBO · 16:40 EAT</span>
+          <span><b>● KIPKIREN</b> · WEB SERVICES&nbsp;&nbsp;·&nbsp;&nbsp;NAIROBI, KE&nbsp;&nbsp;·&nbsp;&nbsp;EDGE · eu-west-1&nbsp;&nbsp;·&nbsp;&nbsp;RETAINER + PROFORMA</span>
+          <span>M-PESA · PAYSTACK&nbsp;&nbsp;·&nbsp;&nbsp;NBO · EAT</span>
         </div>
       </div>
 
@@ -55,9 +55,9 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
       <header className="lp-wrap lp-hero">
         <div className="lp-hero-grid">
           <div>
-            <span className="lp-tagchip">◆ V7.04 · WEB · SYSTEMS · INFRA · <span className="lp-diamond">● ACCEPTING PARTNERS</span></span>
-            <h1 className="lp-h1">We engineer the quiet parts of the <em>modern web</em><span className="lp-dot">.</span></h1>
-            <p className="lp-lede">Managed web services for Kenya's SMEs - websites, hosting, SEO, email and cloud - on a monthly retainer, with <strong>every task priced and approved on a proforma before we build</strong>. No surprise invoices.</p>
+            <span className="lp-tagchip">◆ MANAGED WEB SERVICES · KENYA · <span className="lp-diamond">● NOW ONBOARDING</span></span>
+            <h1 className="lp-h1">We run the quiet parts of your <em>website</em><span className="lp-dot">.</span></h1>
+            <p className="lp-lede"><strong>Websites, hosting, SEO and business email for Kenyan SMEs</strong> - on a monthly retainer. Every task is priced and approved on a proforma before we build, so there are no surprise invoices.</p>
             <div className="lp-cta-row">
               <button className="lp-btn lp-btn-primary" onClick={onSignIn}>Get started →</button>
               <button className="lp-btn lp-btn-ghost" onClick={go('plans')}>See plans →</button>
@@ -91,7 +91,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
               <div><span className="ok">●</span> warm <span className="mut">···············</span> 04s</div>
               <div style={{ height: 12 }} />
               <div>live → <a>your-brand.co.ke</a></div>
-              <div>lighthouse → <span className="amber">100 · 100 · 100 · 100</span></div>
+              <div>lighthouse → <span className="amber">performance budget enforced</span></div>
               <div className="mut">next: tend - six month retainer</div>
               <div style={{ height: 10 }} /><div><span className="pr">▸</span> <span className="lp-term-cursor" /></div>
             </div>
@@ -103,16 +103,16 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
       <section className="lp-sec grid-bg" id="systems">
         <div className="lp-wrap">
           <div className="lp-eyebrow"><span className="lp-mono">§01 · <span className="lp-diamond">systems we ship</span></span><span className="lp-rule" /><span className="lp-num">01 / 05</span></div>
-          <p className="lp-intro">Four packages, practiced deeply. Composable. Versioned. Maintained on a long horizon - never a hand-off, always a system.</p>
+          <p className="lp-intro">Four things every small business needs online - done properly and kept running. Pick a retainer; we handle the rest, priced and approved before we build.</p>
           <div className="lp-cards">
             {[
-              { pkg: '@kipkiren/brand', ver: 'v2.4.1', title: 'Brand systems', body: 'Wordmarks, type pairings, motion logos, and the design tokens that hold a brand together at scale.', tags: ['Identity', 'Tokens', 'Motion'] },
-              { pkg: '@kipkiren/site', ver: 'v7.0.0', title: 'Editorial websites', body: 'Marketing surfaces, careers and pricing pages. Content-led, instrumented, fast on a thin pipe.', tags: ['TanStack', 'Sanity', 'Edge'] },
-              { pkg: '@kipkiren/product', ver: 'v3.8.2', title: 'Product UI & design systems', body: 'Dashboards, onboarding flows, component libraries built alongside your engineering team.', tags: ['React', 'Storybook', 'A11Y'] },
-              { pkg: '@kipkiren/infra', ver: 'v1.2.0', title: 'Platform & engineering', body: 'Typed end-to-end. Edge deployment, observability, CI, security, performance budgets.', tags: ['Workers', 'Postgres', 'OTEL'] },
+              { pkg: '@kipkiren/site', kind: 'WEBSITE', title: 'Websites that load fast', body: 'Marketing sites, landing and pricing pages - built to load quickly on a thin Kenyan pipe and rank on Google.', tags: ['Design', 'Build', 'SEO'] },
+              { pkg: '@kipkiren/host', kind: 'HOSTING', title: 'Hosting, domain & email', body: 'Your domain, secure hosting with backups, and business email on your own name that actually lands in the inbox.', tags: ['Domain', 'Email', 'Backups'] },
+              { pkg: '@kipkiren/grow', kind: 'SEO', title: 'SEO & social', body: 'On-page SEO, Google indexing and the social presence that brings new customers in - measured, not guessed.', tags: ['Search', 'Social', 'Analytics'] },
+              { pkg: '@kipkiren/infra', kind: 'CLOUD', title: 'Cloud & support', body: 'Cloud provisioning, monitoring and fast support when something breaks - so you can run the business, not the website.', tags: ['Cloud', 'Monitoring', 'Support'] },
             ].map((c) => (
               <div key={c.pkg} className="lp-card">
-                <div className="lp-card-top"><span>◆ {c.pkg}</span><span className="lp-ver">{c.ver}</span></div>
+                <div className="lp-card-top"><span>◆ {c.pkg}</span><span className="lp-ver">{c.kind}</span></div>
                 <div className="lp-card-title">{c.title}</div>
                 <div className="lp-card-body">{c.body}</div>
                 <div className="lp-tags">{c.tags.map((t) => <span key={t} className="lp-tag">{t}</span>)}</div>
@@ -132,7 +132,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
               <h2 className="lp-h2">Six layers,<br />one <em>typed</em> seam.</h2>
               <p className="lp-intro">A stable, well-understood stack - proven choices at the edge, sharp tools at the surface. Every layer instrumented, every contract typed, every deploy reversible in under a minute.</p>
               <div className="lp-badges">
-                {['100 LH', 'WCAG 2.2', 'OWASP', 'GDPR', 'OTEL', 'SOC2-Ready'].map((b) => <span key={b} className="lp-badge">{b}</span>)}
+                {['WCAG 2.2 AA', 'KDPA', 'OWASP', 'OTEL', 'Typed', 'Reversible deploys'].map((b) => <span key={b} className="lp-badge">{b}</span>)}
               </div>
             </div>
             <table className="lp-table">
@@ -236,17 +236,18 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
             <div>
               <h2>A short note is <em>enough</em>.</h2>
               <p>We read everything ourselves. Expect a thoughtful reply within two business days - usually with a question, sometimes with a referral if we're not the right fit.</p>
+              {/* TODO: replace with the real handles/numbers before launch */}
               <div className="lp-meta">
-                <div className="lp-meta-row"><span className="lp-k">▸ Mail</span> studio@kipkiren.co</div>
-                <div className="lp-meta-row"><span className="lp-k">▸ PGP</span> 0xA21F · 4DC9</div>
-                <div className="lp-meta-row"><span className="lp-k">▸ Tel</span> +254 (0)20 ··· 0142</div>
-                <div className="lp-meta-row"><span className="lp-k">▸ Geo</span> 01°17′S · 36°48′E</div>
+                <div className="lp-meta-row"><span className="lp-k">▸ Mail</span> hello@kipkiren.co.ke</div>
+                <div className="lp-meta-row"><span className="lp-k">▸ WhatsApp</span> chat us - fastest reply</div>
+                <div className="lp-meta-row"><span className="lp-k">▸ Hours</span> Mon-Fri · 9-5 EAT</div>
+                <div className="lp-meta-row"><span className="lp-k">▸ Based</span> Nairobi, Kenya</div>
               </div>
             </div>
             <form onSubmit={submit}>
-              <div className="lp-field"><label>$ Name</label><input placeholder="Amara Njoroge" /></div>
-              <div className="lp-field"><label>$ Email</label><input type="email" placeholder="amara@maridadi.press" /></div>
-              <div className="lp-field"><label>$ Company</label><input placeholder="Maridadi Press" /></div>
+              <div className="lp-field"><label>$ Name</label><input placeholder="Your name" /></div>
+              <div className="lp-field"><label>$ Email</label><input type="email" placeholder="you@yourcompany.co.ke" /></div>
+              <div className="lp-field"><label>$ Company</label><input placeholder="Your company" /></div>
               <div className="lp-field"><label>$ Brief</label><textarea placeholder="One sentence about what you're making and a date you'd like to ship by." /></div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span className="lp-mono" style={{ color: 'rgba(255,255,255,.55)' }}>◆ no trackers · no autoresponders</span>
@@ -262,13 +263,13 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
         <div className="lp-wrap">
           <div>
             <h4><span className="lp-diamond">◆</span> KIPKIREN <span style={{ color: 'rgba(255,255,255,.4)' }}>/web-services</span></h4>
-            <p>A small studio engineering editorial websites, product surfaces, and the infrastructure behind them. Built in Nairobi, deployed at the edge.</p>
+            <p>Managed web services for Kenyan SMEs - websites, hosting, SEO, email and cloud on a monthly retainer, every task priced on a proforma before we build. Based in Nairobi.</p>
           </div>
-          <div><div className="lp-fcol-l">/src</div><a>github/kipkiren</a></div>
-          <div><div className="lp-fcol-l">/log</div><a>@kipkiren</a><div className="lp-fcol-l" style={{ marginTop: 12 }}>/rss</div><a>journal.xml</a></div>
-          <div><div className="lp-fcol-l">/lib</div><a>are.na/kipkiren</a></div>
+          <div><div className="lp-fcol-l">/pages</div><a onClick={go('systems')}>Services</a><a onClick={go('plans')}>Plans</a><a onClick={go('process')}>How it works</a></div>
+          <div><div className="lp-fcol-l">/talk</div><a onClick={go('contact')}>Contact</a><a>hello@kipkiren.co.ke</a></div>
+          <div><div className="lp-fcol-l">/where</div><a>Nairobi, Kenya</a><a>eu-west-1 edge</a></div>
         </div>
-        <div className="lp-wrap"><div className="lp-footbar"><span>© 2026 Kipkiren Web Services Ltd · CO. NO. KE-04421</span><span><span className="lp-diamond">●</span> All systems nominal · v7.04.21</span></div></div>
+        <div className="lp-wrap"><div className="lp-footbar"><span>© 2026 Kipkiren Web Services · Nairobi, Kenya</span><span><span className="lp-diamond">●</span> Proforma-priced · no surprise invoices</span></div></div>
       </footer>
     </div>
   );
