@@ -1,5 +1,6 @@
-import type { FormEvent } from 'react';
+import { useEffect, type FormEvent } from 'react';
 import { ThemeToggle } from './ThemeToggle.tsx';
+import { ProformaTerminal } from './ProformaTerminal.tsx';
 import './landing.css';
 
 /**
@@ -18,6 +19,21 @@ const PLANS = [
 export function Landing({ onSignIn }: { onSignIn: () => void }) {
   const submit = (e: FormEvent) => { e.preventDefault(); onSignIn(); };
   const go = (id: string) => () => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  // Scroll-reveal: sections fade/slide up as they enter the viewport.
+  // JS adds the `lp-reveal` class, so without JS content stays visible.
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const els = Array.from(document.querySelectorAll<HTMLElement>('.lp-sec'));
+    els.forEach((el) => el.classList.add('lp-reveal'));
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) { e.target.classList.add('lp-in'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -8% 0px' });
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
 
   return (
     <div className="lp">
@@ -64,30 +80,8 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
             </div>
           </div>
 
-          {/* terminal */}
-          <div className="lp-term">
-            <div className="lp-term-bar">
-              <span className="lp-tl r" /><span className="lp-tl y" /><span className="lp-tl g" />
-              <span className="lp-term-title">~ / KIPKIREN - ZSH</span>
-              <span className="lp-term-size">80×24</span>
-            </div>
-            <div className="lp-term-body">
-              <div><span className="pr">▸</span> kpkrn <b>init</b> --client your-brand</div>
-              <div><span className="ok">✓</span> brief synced <span className="mut">(24 pages, 1.2k assets)</span></div>
-              <div><span className="ok">✓</span> tokens generated <span className="mut">(palette · type · scale)</span></div>
-              <div><span className="ok">✓</span> repo provisioned <span className="mut">(tanstack · sanity)</span></div>
-              <div style={{ height: 12 }} />
-              <div><span className="pr">▸</span> kpkrn <b>deploy</b> --edge</div>
-              <div><span className="ok">●</span> build <span className="mut">···············</span> 38s</div>
-              <div><span className="ok">●</span> ship <span className="mut">···············</span> 11s</div>
-              <div><span className="ok">●</span> warm <span className="mut">···············</span> 04s</div>
-              <div style={{ height: 12 }} />
-              <div>live → <a>your-brand.co.ke</a></div>
-              <div>lighthouse → <span className="amber">performance budget enforced</span></div>
-              <div className="mut">next: tend - six month retainer</div>
-              <div style={{ height: 10 }} /><div><span className="pr">▸</span> <span className="lp-term-cursor" /></div>
-            </div>
-          </div>
+          {/* AI proforma demo terminal (self-typing) */}
+          <ProformaTerminal />
         </div>
       </header>
 

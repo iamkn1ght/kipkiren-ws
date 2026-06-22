@@ -282,3 +282,15 @@
 [data-theme="dark"] .lp-booking { background: #fff; color: #0B0B0C; box-shadow: 0 2px 14px rgba(0,0,0,.55); }
 [data-theme="dark"] .lp-brand-sub { color: #34C6A6; }
 [data-theme="dark"] .lp-navlink::after { background: #34C6A6; }
+
+/* ── AI proforma terminal rows ── */
+.lp-trow { display: flex; justify-content: space-between; gap: 16px; color: rgba(255,255,255,.62); }
+.lp-trow span:last-child { color: #DCE7E2; }
+.lp-trow.em { color: #fff; font-weight: 500; margin-top: 2px; }
+.lp-trow.em span:last-child { color: var(--amber2); }
+.lp-trule { border-top: 1px dashed rgba(255,255,255,.18); margin: 8px 0; }
+
+/* ── scroll reveal (added via JS; no-JS keeps content visible) ── */
+.lp-reveal { opacity: 0; transform: translateY(22px); transition: opacity .6s ease, transform .6s cubic-bezier(.22,.61,.36,1); }
+.lp-reveal.lp-in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .lp-reveal { opacity: 1; transform: none; } }
