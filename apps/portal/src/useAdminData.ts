@@ -226,8 +226,10 @@ export function useAdminData(): AdminData {
         call<CapacityDetail>('/v1/admin/capacity-detail'),
         call<{ services: AdminServiceRow[] }>('/v1/services/admin/all'),
         call<RailsResult>('/v1/admin/rails'),
-        call<{ sites: SiteHealthRow[] }>('/v1/admin/site-health'),
-        call<{ agents: AgentRow[] }>('/v1/admin/agents'),
+        // Non-fatal: these depend on migrations 0005-0007. Until applied they
+        // 500, but they must not break the rest of the admin portal load.
+        call<{ sites: SiteHealthRow[] }>('/v1/admin/site-health').catch(() => ({ sites: [] })),
+        call<{ agents: AgentRow[] }>('/v1/admin/agents').catch(() => ({ agents: [] })),
       ]);
       setQueue(qRes.queue);
       setCapacity(capRes);
