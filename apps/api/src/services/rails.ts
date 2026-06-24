@@ -172,7 +172,7 @@ export async function loadRailsHealth(probe: boolean): Promise<{ rails: RailHeal
         { label: 'Failed', value: String(tdFail), tone: tdFail > 0 ? 'warn' : 'mut' },
         { label: 'Delivery rate', value: pct(tdSent, tdSent + tdFail) },
       ],
-      note: tdCfg ? undefined : 'Scaffolded - awaiting Todoku tenant creds + template ULIDs (Sprint 9).',
+      ...(tdCfg ? {} : { note: 'Scaffolded - awaiting Todoku tenant creds + template ULIDs (Sprint 9).' }),
     },
     {
       key: 'helpan', name: 'Helpan KWS · AI agent', purpose: 'Proforma enrichment + SLA early warning (Phase 1)',

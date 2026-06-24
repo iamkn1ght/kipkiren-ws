@@ -6,7 +6,7 @@ import { HttpError } from '../middleware/error.js';
 import { getServiceClient } from '../lib/supabase.js';
 import { writeAuditEvent } from '../services/audit.js';
 import { intakeTicket } from '../services/ticket-intake.js';
-import { loadQueue, loadClientAccounts, loadCapacitySnapshot, loadReviewQueue, loadCapacityDetail, loadRecentDispatches } from '../services/admin-views.js';
+import { loadQueue, loadClientAccounts, loadCapacitySnapshot, loadReviewQueue, loadCapacityDetail, loadRecentDispatches, loadSlaAudit } from '../services/admin-views.js';
 import { runUptimeChecks } from '../services/uptime.js';
 import { loadRailsHealth } from '../services/rails.js';
 import { logger } from '../lib/logger.js';
@@ -88,6 +88,22 @@ adminRouter.get(
   async (_req: Request, res: Response) => {
     const detail = await loadCapacityDetail();
     res.json(detail);
+  },
+);
+
+// ----------------------------------------------------------------------------
+// GET /v1/admin/sla-audit?window=30 - SLA compliance report (KWS-S8-003)
+// Breach rate by client, category and plan over a trailing window.
+// ----------------------------------------------------------------------------
+adminRouter.get(
+  '/sla-audit',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (req: Request, res: Response) => {
+    const raw = Number(req.query.window);
+    const windowDays = Number.isFinite(raw) && raw > 0 && raw <= 365 ? Math.floor(raw) : 30;
+    const report = await loadSlaAudit(windowDays);
+    res.json(report);
   },
 );
 

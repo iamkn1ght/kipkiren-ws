@@ -665,3 +665,162 @@ export async function loadCapacityDetail(now: Date = new Date()): Promise<Capaci
 
   return { staff, sla_trend, deadlines };
 }
+
+// ── SLA audit (KWS-S8-003) ──────────────────────────────────────────
+//
+// A compliance report over a trailing window, grouped by client, category and
+// plan. The auditable population is tickets whose SLA deadline has ELAPSED
+// (deadline <= now) within the window - those are the only ones we can judge.
+// met = the ticket reached a terminal status (complete/closed); breached = the
+// deadline passed and it is still open.
+//
+// Limitation (documented, not hidden): we do not yet record a per-ticket
+// completion timestamp, so a ticket completed AFTER its deadline still counts
+// as "met" here. A `task_completed` event with a reliable timestamp is the v2
+// upgrade that lets us measure on-time completion exactly.
+
+export interface SlaAuditTicketRow {
+  client_id: string;
+  client_name: string;
+  plan: string;
+  category: TicketCategory;
+  status: string;
+  sla_deadline_at: string | null;
+  created_at: string;
+}
+
+export interface SlaBucket {
+  key: string;
+  total: number;
+  breached: number;
+  met: number;
+  breach_rate: number;   // 0..1
+  compliance_pct: number; // 0..100
+}
+
+export interface SlaAuditReport {
+  window_days: number;
+  generated_at: string;
+  overall: { total: number; breached: number; met: number; breach_rate: number; compliance_pct: number };
+  by_client: SlaBucket[];
+  by_category: SlaBucket[];
+  by_plan: SlaBucket[];
+}
+
+function bucketise(
+  rows: { key: string; breached: boolean }[],
+): SlaBucket[] {
+  const map = new Map<string, { total: number; breached: number }>();
+  for (const r of rows) {
+    const b = map.get(r.key) ?? { total: 0, breached: 0 };
+    b.total += 1;
+    if (r.breached) b.breached += 1;
+    map.set(r.key, b);
+  }
+  return [...map.entries()]
+    .map(([key, b]) => {
+      const met = b.total - b.breached;
+      const breach_rate = b.total > 0 ? b.breached / b.total : 0;
+      return {
+        key,
+        total: b.total,
+        breached: b.breached,
+        met,
+        breach_rate,
+        compliance_pct: Math.round((1 - breach_rate) * 1000) / 10,
+      };
+    })
+    .sort((a, b) => b.breach_rate - a.breach_rate || b.total - a.total);
+}
+
+/**
+ * Pure SLA-audit aggregation. Considers only tickets whose deadline has elapsed
+ * within the trailing `windowDays`. Exported for unit testing with fixtures.
+ */
+export function computeSlaAudit(
+  rows: SlaAuditTicketRow[],
+  now: Date = new Date(),
+  windowDays = 30,
+): SlaAuditReport {
+  const windowStart = now.getTime() - windowDays * 24 * 60 * 60 * 1000;
+
+  const judged = rows
+    .filter((r) => r.sla_deadline_at != null)
+    .map((r) => ({ r, deadline: Date.parse(r.sla_deadline_at as string) }))
+    .filter(({ deadline }) => deadline <= now.getTime() && deadline >= windowStart)
+    .map(({ r }) => ({
+      client: r.client_name || r.client_id,
+      category: r.category,
+      plan: r.plan,
+      breached: !TERMINAL_STATUSES.has(r.status),
+    }));
+
+  const total = judged.length;
+  const breached = judged.filter((j) => j.breached).length;
+  const met = total - breached;
+  const breach_rate = total > 0 ? breached / total : 0;
+
+  return {
+    window_days: windowDays,
+    generated_at: now.toISOString(),
+    overall: {
+      total,
+      breached,
+      met,
+      breach_rate,
+      compliance_pct: Math.round((1 - breach_rate) * 1000) / 10,
+    },
+    by_client: bucketise(judged.map((j) => ({ key: j.client, breached: j.breached }))),
+    by_category: bucketise(judged.map((j) => ({ key: j.category, breached: j.breached }))),
+    by_plan: bucketise(judged.map((j) => ({ key: j.plan, breached: j.breached }))),
+  };
+}
+
+/**
+ * Load tickets whose SLA deadline elapsed within the window and produce the
+ * audit report. delivery_lead/admin only (called from the route gate).
+ */
+export async function loadSlaAudit(windowDays = 30, now: Date = new Date()): Promise<SlaAuditReport> {
+  const sb = getServiceClient();
+  const windowStart = new Date(now.getTime() - windowDays * 24 * 60 * 60 * 1000).toISOString();
+
+  const { data, error } = await sb
+    .from('tickets')
+    .select(
+      `category, status, sla_deadline_at, created_at,
+       clients ( id, business_name, retainer_plans ( name ) )`,
+    )
+    .not('sla_deadline_at', 'is', null)
+    .gte('sla_deadline_at', windowStart)
+    .lte('sla_deadline_at', now.toISOString())
+    .limit(2000);
+  if (error) throw error;
+
+  type Row = {
+    category: TicketCategory;
+    status: string;
+    sla_deadline_at: string | null;
+    created_at: string;
+    clients:
+      | { id: string; business_name: string; retainer_plans: { name: string } | { name: string }[] | null }
+      | { id: string; business_name: string; retainer_plans: { name: string } | { name: string }[] | null }[]
+      | null;
+  };
+
+  const rows: SlaAuditTicketRow[] = ((data ?? []) as Row[]).map((r) => {
+    const clientRel = Array.isArray(r.clients) ? r.clients[0] : r.clients;
+    const planRel = clientRel?.retainer_plans;
+    const planName = Array.isArray(planRel) ? planRel[0]?.name : planRel?.name;
+    return {
+      client_id: clientRel?.id ?? '',
+      client_name: clientRel?.business_name ?? '',
+      plan: planName ?? 'Starter',
+      category: r.category,
+      status: r.status,
+      sla_deadline_at: r.sla_deadline_at,
+      created_at: r.created_at,
+    };
+  });
+
+  return computeSlaAudit(rows, now, windowDays);
+}
