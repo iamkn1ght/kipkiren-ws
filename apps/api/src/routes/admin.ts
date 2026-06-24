@@ -8,6 +8,8 @@ import { writeAuditEvent } from '../services/audit.js';
 import { intakeTicket } from '../services/ticket-intake.js';
 import { loadQueue, loadClientAccounts, loadCapacitySnapshot, loadReviewQueue, loadCapacityDetail, loadRecentDispatches, loadSlaAudit } from '../services/admin-views.js';
 import { runUptimeChecks } from '../services/uptime.js';
+import { runSslChecks } from '../services/ssl.js';
+import { runDomainExpiryAlerts } from '../services/domain-expiry.js';
 import { loadRailsHealth } from '../services/rails.js';
 import { logger } from '../lib/logger.js';
 
@@ -180,6 +182,34 @@ adminRouter.post(
   async (_req: Request, res: Response) => {
     const results = await runUptimeChecks();
     res.json({ checked: results.length, results });
+  },
+);
+
+// ----------------------------------------------------------------------------
+// POST /v1/admin/ssl-check - probe + persist SSL state for domain services
+// (KWS-S6-003). Manual trigger or future cron, mirrors uptime-check.
+// ----------------------------------------------------------------------------
+adminRouter.post(
+  '/ssl-check',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (_req: Request, res: Response) => {
+    const results = await runSslChecks();
+    res.json({ checked: results.length, results });
+  },
+);
+
+// ----------------------------------------------------------------------------
+// POST /v1/admin/domain-expiry-scan - fire due domain-expiry SMS alerts
+// (KWS-S6-005). SMS send is gated on Todoku creds; returns the scan summary.
+// ----------------------------------------------------------------------------
+adminRouter.post(
+  '/domain-expiry-scan',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (_req: Request, res: Response) => {
+    const summary = await runDomainExpiryAlerts();
+    res.json(summary);
   },
 );
 

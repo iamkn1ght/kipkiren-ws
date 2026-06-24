@@ -50,7 +50,17 @@ export type AuditEventType =
   | 'rate_card_modified'
   | 'ticket_assigned'
   | 'task_completed'
-  | 'refresh_replay_detected';
+  | 'refresh_replay_detected'
+  // S6-003 SSL tracking
+  | 'ssl_certificate_expiring'
+  | 'ssl_certificate_expired'
+  // S9-004 agent autonomous execution ledger
+  | 'agent_execution_started'
+  | 'agent_execution_completed'
+  | 'agent_execution_failed'
+  | 'agent_execution_escalated'
+  // S9-006 observability
+  | 'site_health_anomaly_detected';
 
 export interface AuditEventInput {
   actor_id: string | null;
