@@ -6,7 +6,7 @@ import { HttpError } from '../middleware/error.js';
 import { getServiceClient } from '../lib/supabase.js';
 import { writeAuditEvent } from '../services/audit.js';
 import { intakeTicket } from '../services/ticket-intake.js';
-import { loadQueue, loadClientAccounts, loadCapacitySnapshot, loadReviewQueue, loadCapacityDetail, loadRecentDispatches, loadSlaAudit } from '../services/admin-views.js';
+import { loadQueue, loadClientAccounts, loadCapacitySnapshot, loadReviewQueue, loadCapacityDetail, loadRecentDispatches, loadSlaAudit, loadAgentRegistry } from '../services/admin-views.js';
 import { runUptimeChecks } from '../services/uptime.js';
 import { runSslChecks } from '../services/ssl.js';
 import { runDomainExpiryAlerts } from '../services/domain-expiry.js';
@@ -90,6 +90,19 @@ adminRouter.get(
   async (_req: Request, res: Response) => {
     const detail = await loadCapacityDetail();
     res.json(detail);
+  },
+);
+
+// ----------------------------------------------------------------------------
+// GET /v1/admin/agents - registered AI agents (KWS-S9-001)
+// ----------------------------------------------------------------------------
+adminRouter.get(
+  '/agents',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (_req: Request, res: Response) => {
+    const agents = await loadAgentRegistry();
+    res.json({ agents });
   },
 );
 

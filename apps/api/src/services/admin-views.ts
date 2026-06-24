@@ -666,6 +666,32 @@ export async function loadCapacityDetail(now: Date = new Date()): Promise<Capaci
   return { staff, sla_trend, deadlines };
 }
 
+// ── Agent registry (KWS-S9-001) ─────────────────────────────────────
+
+export interface AgentRegistryRow {
+  agent_id: string;
+  name: string;
+  scope: string[];
+  version: string;
+  confidence_threshold: number | null;
+  human_review_required: boolean;
+  audit_log_required: boolean;
+  phase: number;
+  active: boolean;
+  created_at: string;
+}
+
+/** All registered agents, oldest first. delivery_lead/admin only (route-gated). */
+export async function loadAgentRegistry(): Promise<AgentRegistryRow[]> {
+  const sb = getServiceClient();
+  const { data, error } = await sb
+    .from('agent_registry')
+    .select('agent_id, name, scope, version, confidence_threshold, human_review_required, audit_log_required, phase, active, created_at')
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  return (data ?? []) as AgentRegistryRow[];
+}
+
 // ── SLA audit (KWS-S8-003) ──────────────────────────────────────────
 //
 // A compliance report over a trailing window, grouped by client, category and

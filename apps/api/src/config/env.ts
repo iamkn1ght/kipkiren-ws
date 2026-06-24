@@ -70,6 +70,14 @@ const CoreEnvSchema = z.object({
   TODOKU_KWS_HMAC_SECRET: z.string().optional().default(''),
   TODOKU_KWS_WEBHOOK_SECRET: z.string().optional().default(''),
   TODOKU_KWS_SENDER_ID: z.string().optional().default(''),
+
+  // S9-004 agent autonomous DNS/SSL execution. OFF by default - Chamia enables
+  // per-client only after the Phase 1->2 gate. The execution guard additionally
+  // requires an approved proforma + matching content hash (agent-execution.ts).
+  AGENT_DNS_EXECUTION_ENABLED: z.preprocess(
+    (v) => v === 'true' || v === '1' || v === true,
+    z.boolean().default(false),
+  ),
 });
 
 export type Env = z.infer<typeof CoreEnvSchema> & {
