@@ -28,7 +28,7 @@ import {
   type RailHealth,
 } from './useAdminData.ts';
 
-type Tab = 'dashboard' | 'queue' | 'review' | 'clients' | 'capacity' | 'services' | 'rails';
+type Tab = 'dashboard' | 'queue' | 'review' | 'clients' | 'capacity' | 'services' | 'rails' | 'health';
 type QueueFilter = 'all' | 'awaiting' | 'progress' | 'review' | 'flagged';
 
 const TAB_LABELS: Record<Tab, string> = {
@@ -39,6 +39,7 @@ const TAB_LABELS: Record<Tab, string> = {
   capacity: 'Capacity',
   services: 'Services',
   rails: 'Rails',
+  health: 'Health',
 };
 
 interface EditLine {
@@ -68,8 +69,9 @@ export function AdminPortal() {
   const displayEmail = session?.email ?? '';
   const roleLabel = session?.claims.role === 'admin' ? 'Admin' : 'Delivery Lead';
 
-  const { queue, capacity, clients, reviewQueue, recentDispatches, capacityDetail, services, rails, railsProbing, probeRails, loading, reload } = useAdminData();
+  const { queue, capacity, clients, reviewQueue, recentDispatches, capacityDetail, services, rails, siteHealth, agents, railsProbing, probeRails, loading, reload } = useAdminData();
   const d = '-';
+  const anomalyCount = (siteHealth ?? []).filter((s) => s.anomaly).length;
 
   const queueRows = queue ?? [];
   const reviewItems = reviewQueue ?? [];
@@ -273,6 +275,9 @@ export function AdminPortal() {
           </button>
           <button type="button" className={`sni ${tab === 'rails' ? 'active' : ''}`} onClick={() => setTab('rails')}>
             <span className="sni-dot"></span>Rails{(rails?.length ?? 0) > 0 && <span className="sni-badge">{rails!.length}</span>}
+          </button>
+          <button type="button" className={`sni ${tab === 'health' ? 'active' : ''}`} onClick={() => setTab('health')}>
+            <span className="sni-dot"></span>Health{anomalyCount > 0 && <span className="sni-badge">{anomalyCount}</span>}
           </button>
         </nav>
         <div className="sb-foot">
@@ -676,6 +681,59 @@ export function AdminPortal() {
               {rails.map((r) => <RailCard key={r.key} rail={r} />)}
             </div>
           )}
+        </section>
+
+        {/* ═════════════ HEALTH (S9-006 site health + S9-001 agents) ════════════════ */}
+        <section className={`view ${tab === 'health' ? 'active' : ''}`} id="health">
+          <h1 className="greeting">Site health &amp; agents</h1>
+          <p className="g-sub">Per-site uptime &amp; latency from the health pings, and the registered AI agents.</p>
+
+          <div className="shd">Hosted sites · uptime</div>
+          <table className="tbl">
+            <thead>
+              <tr><th>Site</th><th>Uptime</th><th>p95</th><th>Avg</th><th>Pings</th><th>Last check</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--mid)' }}>Loading...</td></tr>
+              ) : !siteHealth?.length ? (
+                <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--mid)' }}>No hosted sites monitored yet</td></tr>
+              ) : siteHealth.map((s) => (
+                <tr key={s.service_id}>
+                  <td className="client-nm">{s.domain ?? d}</td>
+                  <td style={{ fontFamily: 'var(--mono)', fontSize: 13 }}>{s.uptime_pct}%</td>
+                  <td style={{ fontFamily: 'var(--mono)', fontSize: 13 }}>{s.p95_ms != null ? `${s.p95_ms}ms` : d}</td>
+                  <td style={{ fontFamily: 'var(--mono)', fontSize: 13 }}>{s.avg_ms != null ? `${s.avg_ms}ms` : d}</td>
+                  <td style={{ fontFamily: 'var(--mono)', fontSize: 13 }}>{s.ping_count}</td>
+                  <td style={{ fontFamily: 'var(--mono)', fontSize: 12, color: 'var(--mid)' }}>{s.last_check ? new Date(s.last_check).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : d}</td>
+                  <td>{s.anomaly ? <span className="bdg bdg-a">{(s.anomaly_type ?? 'anomaly').replace(/_/g, ' ')}</span> : <span className="bdg bdg-t">healthy</span>}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div className="shd" style={{ marginTop: 28 }}>AI agents · registry</div>
+          <table className="tbl">
+            <thead>
+              <tr><th>Agent</th><th>Scope</th><th>Phase</th><th>Confidence floor</th><th>Human review</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--mid)' }}>Loading...</td></tr>
+              ) : !agents?.length ? (
+                <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--mid)' }}>No agents registered</td></tr>
+              ) : agents.map((a) => (
+                <tr key={a.agent_id}>
+                  <td className="client-nm">{a.agent_id}<small>{a.name} · {a.version}</small></td>
+                  <td style={{ fontSize: 12 }}>{a.scope.map((sc) => sc.replace(/_/g, ' ')).join(', ')}</td>
+                  <td style={{ fontFamily: 'var(--mono)', fontSize: 13 }}>Phase {a.phase}</td>
+                  <td style={{ fontFamily: 'var(--mono)', fontSize: 13 }}>{a.confidence_threshold != null ? a.confidence_threshold.toFixed(2) : d}</td>
+                  <td>{a.human_review_required ? 'Required' : 'Not required'}</td>
+                  <td>{a.active ? <span className="bdg bdg-t">Active</span> : <span className="bdg bdg-o">Inactive</span>}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </section>
       </div>
 

@@ -8,6 +8,7 @@
 import type {
   QueueRow, CapacitySnapshot, ClientSummaryRow, RecentDispatch,
   ReviewQueueItem, CapacityDetail, AdminServiceRow, RailHealth,
+  SiteHealthRow, AgentRow,
 } from './useAdminData.ts';
 import type { ClientTicket, ClientInvoice, ClientService } from './useClientData.ts';
 import type { Task } from './useTaskData.ts';
@@ -64,7 +65,15 @@ const rails: RailHealth[] = [
   { key: 'helpan', name: 'Helpan KWS · AI agent', purpose: 'Proforma enrichment + SLA early warning (Phase 1)', configured: false, status: 'pending', reachable: null, latency_ms: null, metrics: [ { label: 'Phase', value: '1 · enrichment' }, { label: 'Agent', value: 'helpan-kws-v1' } ], note: 'Sprint 9 - agent admitted to the registry; service JWT + consumption not wired yet.' },
 ];
 
-export const mockAdmin = { queue, capacity, clients, reviewQueue, recentDispatches, capacityDetail, services: adminServices, rails };
+const siteHealth: SiteHealthRow[] = [
+  { service_id: 'sv1', domain: 'maridadi.press', uptime_pct: 99.9, p95_ms: 180, avg_ms: 120, ping_count: 30, last_check: hrs(-0.2), anomaly: false, anomaly_type: null },
+  { service_id: 'sv3', domain: 'fieldatlas.org', uptime_pct: 86.7, p95_ms: 940, avg_ms: 410, ping_count: 30, last_check: hrs(-0.2), anomaly: true, anomaly_type: 'latency_spike' },
+];
+const agents: AgentRow[] = [
+  { agent_id: 'helpan-kws-v1', name: 'Helpan KWS', scope: ['proforma_enrichment', 'confidence_amplification', 'sla_early_warning'], version: 'v1', confidence_threshold: 0.7, human_review_required: true, audit_log_required: true, phase: 1, active: true, created_at: days(-30) },
+];
+
+export const mockAdmin = { queue, capacity, clients, reviewQueue, recentDispatches, capacityDetail, services: adminServices, rails, siteHealth, agents };
 
 // ── Client ──
 const clientTickets: ClientTicket[] = [
