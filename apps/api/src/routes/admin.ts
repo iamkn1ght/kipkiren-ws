@@ -10,6 +10,7 @@ import { loadQueue, loadClientAccounts, loadCapacitySnapshot, loadReviewQueue, l
 import { runUptimeChecks } from '../services/uptime.js';
 import { runSslChecks } from '../services/ssl.js';
 import { runDomainExpiryAlerts } from '../services/domain-expiry.js';
+import { loadSiteHealth } from '../services/observability.js';
 import { loadRailsHealth } from '../services/rails.js';
 import { logger } from '../lib/logger.js';
 
@@ -195,6 +196,19 @@ adminRouter.post(
   async (_req: Request, res: Response) => {
     const results = await runUptimeChecks();
     res.json({ checked: results.length, results });
+  },
+);
+
+// ----------------------------------------------------------------------------
+// GET /v1/admin/site-health - per-site health summary + anomalies (KWS-S9-006)
+// ----------------------------------------------------------------------------
+adminRouter.get(
+  '/site-health',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (_req: Request, res: Response) => {
+    const sites = await loadSiteHealth();
+    res.json({ sites });
   },
 );
 

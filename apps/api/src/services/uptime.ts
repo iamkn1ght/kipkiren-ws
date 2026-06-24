@@ -17,11 +17,16 @@
 
 import { getServiceClient } from '../lib/supabase.js';
 import { logger } from '../lib/logger.js';
+import { writeAuditEvent } from './audit.js';
+import { computeHealthBaseline, detectAnomaly } from './observability.js';
+
+type UptimeErrorType = 'timeout' | 'http_error' | 'network_error' | null;
 
 interface UptimeCheck {
   ts: string;
   ok: boolean;
   latency_ms: number | null;
+  error_type?: UptimeErrorType;
 }
 
 interface UptimeResult {
@@ -34,7 +39,7 @@ interface UptimeResult {
 const PING_TIMEOUT_MS = 10_000;
 const MAX_CHECKS = 30;
 
-async function pingDomain(domain: string): Promise<{ ok: boolean; latency_ms: number | null }> {
+async function pingDomain(domain: string): Promise<{ ok: boolean; latency_ms: number | null; error_type: UptimeErrorType }> {
   const url = domain.startsWith('http') ? domain : `https://${domain}`;
   const start = Date.now();
   try {
@@ -46,9 +51,11 @@ async function pingDomain(domain: string): Promise<{ ok: boolean; latency_ms: nu
       redirect: 'follow',
     });
     clearTimeout(timer);
-    return { ok: res.ok || res.status < 400, latency_ms: Date.now() - start };
-  } catch {
-    return { ok: false, latency_ms: null };
+    const ok = res.ok || res.status < 400;
+    return { ok, latency_ms: Date.now() - start, error_type: ok ? null : 'http_error' };
+  } catch (err) {
+    const aborted = err instanceof Error && err.name === 'AbortError';
+    return { ok: false, latency_ms: null, error_type: aborted ? 'timeout' : 'network_error' };
   }
 }
 
@@ -74,15 +81,23 @@ export async function runUptimeChecks(): Promise<UptimeResult[]> {
     if (!domain) continue;
 
     const ping = await pingDomain(domain);
-    const check: UptimeCheck = { ts: new Date().toISOString(), ok: ping.ok, latency_ms: ping.latency_ms };
+    const check: UptimeCheck = { ts: new Date().toISOString(), ok: ping.ok, latency_ms: ping.latency_ms, error_type: ping.error_type };
 
     // Append to uptime_checks array in metadata, keep last MAX_CHECKS
     const existing = Array.isArray(meta.uptime_checks) ? (meta.uptime_checks as UptimeCheck[]) : [];
     const updated = [...existing, check].slice(-MAX_CHECKS);
-    const okCount = updated.filter((c) => c.ok).length;
-    const uptimePct = updated.length > 0 ? Math.round((okCount / updated.length) * 1000) / 10 : 100;
+    const baseline = computeHealthBaseline(updated);
 
-    const newMeta = { ...meta, uptime_checks: updated, uptime_pct: uptimePct, last_check: check.ts };
+    // S9-006: anomaly detection (admin-visible only). Audit on transition INTO
+    // an anomaly so the trail captures the onset without re-firing each ping.
+    const anomaly = detectAnomaly(updated, baseline);
+    const prev = (meta.health_anomaly ?? {}) as { active?: boolean; since?: string };
+    const wasActive = prev.active === true;
+    const health_anomaly = anomaly.anomaly
+      ? { active: true, type: anomaly.type ?? null, detail: anomaly.detail ?? null, since: wasActive ? prev.since ?? check.ts : check.ts }
+      : { active: false };
+
+    const newMeta = { ...meta, uptime_checks: updated, uptime_pct: baseline.uptime_pct, last_check: check.ts, health_anomaly };
 
     const { error: uErr } = await sb
       .from('client_services')
@@ -90,6 +105,17 @@ export async function runUptimeChecks(): Promise<UptimeResult[]> {
       .eq('id', svc.id);
     if (uErr) {
       logger.error({ err: uErr, service_id: svc.id }, 'uptime_check_update_failed');
+    }
+
+    if (anomaly.anomaly && !wasActive) {
+      await writeAuditEvent({
+        actor_id: null,
+        actor_role: null,
+        event_type: 'site_health_anomaly_detected',
+        entity_type: 'client_service',
+        entity_id: svc.id,
+        payload_snapshot: { domain, type: anomaly.type ?? null, detail: anomaly.detail ?? null, uptime_pct: baseline.uptime_pct },
+      });
     }
 
     results.push({ service_id: svc.id, domain, ok: ping.ok, latency_ms: ping.latency_ms });
