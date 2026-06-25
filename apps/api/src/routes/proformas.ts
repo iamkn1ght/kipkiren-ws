@@ -7,6 +7,7 @@ import { HttpError } from '../middleware/error.js';
 import { getServiceClient } from '../lib/supabase.js';
 import { dispatchProforma } from '../services/proforma.js';
 import { writeAuditEvent } from '../services/audit.js';
+import { sendClientSms } from '../services/notifications.js';
 import { computeContentHash } from '../lib/content-hash.js';
 import { logger } from '../lib/logger.js';
 import { loadEnv, requireFeatureEnv } from '../config/env.js';
@@ -111,7 +112,7 @@ proformasRouter.put(
 
     const { data: proforma, error: pErr } = await sb
       .from('proformas')
-      .select('id, status, content_hash')
+      .select('id, ref, status, content_hash, tickets(client_id)')
       .eq('id', id)
       .single();
     if (pErr || !proforma) throw new HttpError(404, 'proforma_not_found');
@@ -197,6 +198,20 @@ proformasRouter.put(
       proforma_id: id,
       reviewer_user_id: req.auth!.sub,
     });
+
+    // S9-003: notify the client a proforma is ready to approve.
+    // Fire-and-forget + gated - never blocks or fails the dispatch response.
+    const dispatchTicketRel = (proforma as { tickets: { client_id: string } | { client_id: string }[] | null }).tickets;
+    const dispatchClientId = Array.isArray(dispatchTicketRel) ? dispatchTicketRel[0]?.client_id : dispatchTicketRel?.client_id;
+    if (dispatchClientId) {
+      void sendClientSms({
+        clientId: dispatchClientId,
+        template: 'kws_proforma_dispatched',
+        variables: { ref: (proforma as { ref: string }).ref, total: String(dispatched.total_kes) },
+        entity_type: 'proforma',
+        entity_id: id,
+      });
+    }
 
     res.json({
       status: 'dispatched',

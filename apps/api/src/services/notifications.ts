@@ -22,6 +22,7 @@
 
 import { createHash, createHmac } from 'node:crypto';
 import { isFeatureConfigured, loadEnv } from '../config/env.js';
+import { getServiceClient } from '../lib/supabase.js';
 import { logger } from '../lib/logger.js';
 import { writeAuditEvent } from './audit.js';
 
@@ -184,5 +185,40 @@ export async function sendSms(input: SendSmsInput): Promise<SendSmsResult> {
       payload_snapshot: { template: input.template, error },
     });
     return { status: 'failed', error };
+  }
+}
+
+/**
+ * Resolve a client's phone and send a templated SMS (S9-003 event wiring).
+ * Gated + fire-and-forget: never throws. Skips the DB lookup entirely when
+ * Todoku is unconfigured (the current production state), so calling this on a
+ * hot path (proforma dispatch, payment confirmation) is a no-op until creds +
+ * template ULIDs land.
+ */
+export async function sendClientSms(input: {
+  clientId: string;
+  template: TodokuTemplateSlug;
+  variables: Record<string, string>;
+  entity_type?: string;
+  entity_id?: string;
+}): Promise<SendSmsResult> {
+  try {
+    if (!isFeatureConfigured('todoku')) return { status: 'feature_unavailable' };
+    const sb = getServiceClient();
+    const { data, error } = await sb.from('clients').select('phone').eq('id', input.clientId).single();
+    if (error || !data?.phone) {
+      logger.info({ clientId: input.clientId, template: input.template }, 'sms_skipped_no_client_phone');
+      return { status: 'failed', error: 'no_client_phone' };
+    }
+    return await sendSms({
+      template: input.template,
+      to_msisdn: data.phone,
+      variables: input.variables,
+      ...(input.entity_type ? { entity_type: input.entity_type } : {}),
+      ...(input.entity_id ? { entity_id: input.entity_id } : {}),
+    });
+  } catch (err) {
+    logger.error({ err, template: input.template }, 'send_client_sms_failed');
+    return { status: 'failed', error: err instanceof Error ? err.message : 'unknown_error' };
   }
 }

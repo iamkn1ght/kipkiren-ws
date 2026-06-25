@@ -4,6 +4,7 @@ import { loadEnv, requireFeatureEnv } from '../config/env.js';
 import { getServiceClient } from '../lib/supabase.js';
 import { verifyKipkirenPaySignature, verifyPaystackSignature, verifyTodokuSignature } from '../lib/hmac.js';
 import { writeAuditEvent } from '../services/audit.js';
+import { sendClientSms } from '../services/notifications.js';
 import { logger } from '../lib/logger.js';
 
 export const webhooksRouter: Router = Router();
@@ -159,6 +160,16 @@ async function recordConfirmedPayment(input: ConfirmInput): Promise<{ ok: boolea
       payment_ref: input.gateway_ref,
       idempotency_key: input.idempotency_key,
     },
+  });
+
+  // S9-003: notify the client their payment confirmed + scope is locked.
+  // Fire-and-forget + gated - never blocks or fails the webhook ack.
+  void sendClientSms({
+    clientId,
+    template: 'kws_payment_confirmed',
+    variables: { ref: pf.ref, amount: String(input.amount_kes), gateway_ref: input.gateway_ref },
+    entity_type: 'payment',
+    entity_id: pending.id,
   });
 
   return { ok: true };
