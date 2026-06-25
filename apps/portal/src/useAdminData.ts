@@ -171,6 +171,23 @@ export interface AgentRow {
   created_at: string;
 }
 
+export interface SlaBucket {
+  key: string;
+  total: number;
+  breached: number;
+  met: number;
+  breach_rate: number;
+  compliance_pct: number;
+}
+export interface SlaAuditReport {
+  window_days: number;
+  generated_at: string;
+  overall: { total: number; breached: number; met: number; breach_rate: number; compliance_pct: number };
+  by_client: SlaBucket[];
+  by_category: SlaBucket[];
+  by_plan: SlaBucket[];
+}
+
 interface AdminData {
   queue: QueueRow[] | null;
   capacity: CapacitySnapshot | null;
@@ -182,6 +199,7 @@ interface AdminData {
   rails: RailHealth[] | null;
   siteHealth: SiteHealthRow[] | null;
   agents: AgentRow[] | null;
+  slaAudit: SlaAuditReport | null;
   railsProbing: boolean;
   probeRails: () => void;
   loading: boolean;
@@ -201,6 +219,7 @@ export function useAdminData(): AdminData {
   const [rails, setRails] = useState<RailHealth[] | null>(null);
   const [siteHealth, setSiteHealth] = useState<SiteHealthRow[] | null>(null);
   const [agents, setAgents] = useState<AgentRow[] | null>(null);
+  const [slaAudit, setSlaAudit] = useState<SlaAuditReport | null>(null);
   const [railsProbing, setRailsProbing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -213,11 +232,11 @@ export function useAdminData(): AdminData {
         setQueue(mockAdmin.queue); setCapacity(mockAdmin.capacity); setClients(mockAdmin.clients);
         setReviewQueue(mockAdmin.reviewQueue); setRecentDispatches(mockAdmin.recentDispatches);
         setCapacityDetail(mockAdmin.capacityDetail); setServices(mockAdmin.services); setRails(mockAdmin.rails);
-        setSiteHealth(mockAdmin.siteHealth); setAgents(mockAdmin.agents);
+        setSiteHealth(mockAdmin.siteHealth); setAgents(mockAdmin.agents); setSlaAudit(mockAdmin.slaAudit);
         setLoading(false);
         return;
       }
-      const [qRes, capRes, cliRes, revRes, dispRes, capDet, svcRes, railRes, shRes, agRes] = await Promise.all([
+      const [qRes, capRes, cliRes, revRes, dispRes, capDet, svcRes, railRes, shRes, agRes, saRes] = await Promise.all([
         call<{ queue: QueueRow[] }>('/v1/admin/queue'),
         call<CapacitySnapshot>('/v1/admin/capacity'),
         call<{ clients: ClientSummaryRow[] }>('/v1/admin/clients'),
@@ -230,6 +249,7 @@ export function useAdminData(): AdminData {
         // 500, but they must not break the rest of the admin portal load.
         call<{ sites: SiteHealthRow[] }>('/v1/admin/site-health').catch(() => ({ sites: [] })),
         call<{ agents: AgentRow[] }>('/v1/admin/agents').catch(() => ({ agents: [] })),
+        call<SlaAuditReport | null>('/v1/admin/sla-audit').catch(() => null),
       ]);
       setQueue(qRes.queue);
       setCapacity(capRes);
@@ -241,6 +261,7 @@ export function useAdminData(): AdminData {
       setRails(railRes.rails);
       setSiteHealth(shRes.sites);
       setAgents(agRes.agents);
+      setSlaAudit(saRes);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load admin data');
     } finally {
@@ -265,7 +286,7 @@ export function useAdminData(): AdminData {
     void load();
   }, [load]);
 
-  return { queue, capacity, clients, reviewQueue, recentDispatches, capacityDetail, services, rails, siteHealth, agents, railsProbing, probeRails, loading, error, reload: load };
+  return { queue, capacity, clients, reviewQueue, recentDispatches, capacityDetail, services, rails, siteHealth, agents, slaAudit, railsProbing, probeRails, loading, error, reload: load };
 }
 
 export function formatSlaTime(msUntilBreach: number | null): string {

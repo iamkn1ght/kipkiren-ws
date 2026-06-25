@@ -8,7 +8,7 @@
 import type {
   QueueRow, CapacitySnapshot, ClientSummaryRow, RecentDispatch,
   ReviewQueueItem, CapacityDetail, AdminServiceRow, RailHealth,
-  SiteHealthRow, AgentRow,
+  SiteHealthRow, AgentRow, SlaAuditReport,
 } from './useAdminData.ts';
 import type { ClientTicket, ClientInvoice, ClientService } from './useClientData.ts';
 import type { Task } from './useTaskData.ts';
@@ -73,7 +73,29 @@ const agents: AgentRow[] = [
   { agent_id: 'helpan-kws-v1', name: 'Helpan KWS', scope: ['proforma_enrichment', 'confidence_amplification', 'sla_early_warning'], version: 'v1', confidence_threshold: 0.7, human_review_required: true, audit_log_required: true, phase: 1, active: true, created_at: days(-30) },
 ];
 
-export const mockAdmin = { queue, capacity, clients, reviewQueue, recentDispatches, capacityDetail, services: adminServices, rails, siteHealth, agents };
+const slaAudit: SlaAuditReport = {
+  window_days: 30,
+  generated_at: new Date().toISOString(),
+  overall: { total: 24, breached: 2, met: 22, breach_rate: 0.083, compliance_pct: 91.7 },
+  by_client: [
+    { key: 'Acacia Capital', total: 8, breached: 2, met: 6, breach_rate: 0.25, compliance_pct: 75 },
+    { key: 'Maridadi Press', total: 9, breached: 0, met: 9, breach_rate: 0, compliance_pct: 100 },
+    { key: 'Field Atlas', total: 5, breached: 0, met: 5, breach_rate: 0, compliance_pct: 100 },
+    { key: 'Otieno & Co.', total: 2, breached: 0, met: 2, breach_rate: 0, compliance_pct: 100 },
+  ],
+  by_category: [
+    { key: 'web', total: 12, breached: 1, met: 11, breach_rate: 0.083, compliance_pct: 91.7 },
+    { key: 'seo', total: 7, breached: 1, met: 6, breach_rate: 0.143, compliance_pct: 85.7 },
+    { key: 'general', total: 5, breached: 0, met: 5, breach_rate: 0, compliance_pct: 100 },
+  ],
+  by_plan: [
+    { key: 'Business', total: 8, breached: 2, met: 6, breach_rate: 0.25, compliance_pct: 75 },
+    { key: 'Growth', total: 14, breached: 0, met: 14, breach_rate: 0, compliance_pct: 100 },
+    { key: 'Starter', total: 2, breached: 0, met: 2, breach_rate: 0, compliance_pct: 100 },
+  ],
+};
+
+export const mockAdmin = { queue, capacity, clients, reviewQueue, recentDispatches, capacityDetail, services: adminServices, rails, siteHealth, agents, slaAudit };
 
 // ── Client ──
 const clientTickets: ClientTicket[] = [

@@ -69,7 +69,7 @@ export function AdminPortal() {
   const displayEmail = session?.email ?? '';
   const roleLabel = session?.claims.role === 'admin' ? 'Admin' : 'Delivery Lead';
 
-  const { queue, capacity, clients, reviewQueue, recentDispatches, capacityDetail, services, rails, siteHealth, agents, railsProbing, probeRails, loading, reload } = useAdminData();
+  const { queue, capacity, clients, reviewQueue, recentDispatches, capacityDetail, services, rails, siteHealth, agents, slaAudit, railsProbing, probeRails, loading, reload } = useAdminData();
   const d = '-';
   const anomalyCount = (siteHealth ?? []).filter((s) => s.anomaly).length;
 
@@ -577,6 +577,24 @@ export function AdminPortal() {
                 {capacityDetail?.sla_trend.length ? (
                   <div className="cap-sl-meta"><span>{capacityDetail.sla_trend[0]?.week_label}</span><span>This week · {capacityDetail.sla_trend[capacityDetail.sla_trend.length - 1]?.pct}%</span></div>
                 ) : null}
+              </div>
+
+              <div className="cap-box">
+                <div className="shd" style={{ marginBottom: 6 }}>SLA audit · {slaAudit?.window_days ?? 30}d</div>
+                {slaAudit && slaAudit.overall.total > 0 ? (
+                  <>
+                    <div style={{ fontFamily: 'var(--mono)', fontSize: 24, lineHeight: 1.1 }}>{slaAudit.overall.compliance_pct}%</div>
+                    <div style={{ fontSize: 11, color: 'var(--mid)', marginBottom: 8 }}>{slaAudit.overall.met}/{slaAudit.overall.total} met · {slaAudit.overall.breached} breached</div>
+                    {slaAudit.by_client.slice(0, 4).map((b) => (
+                      <div key={b.key} className="deadline-row">
+                        <span>{b.key}</span>
+                        <span className={`dl-due ${b.breach_rate > 0 ? 'urg' : ''}`}>{b.compliance_pct}%</span>
+                      </div>
+                    ))}
+                  </>
+                ) : (
+                  <div style={{ color: 'var(--mid)', fontSize: 12 }}>No tickets with an elapsed SLA deadline in window</div>
+                )}
               </div>
 
               <div className="cap-box">
