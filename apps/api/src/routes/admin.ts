@@ -10,6 +10,7 @@ import { loadQueue, loadClientAccounts, loadCapacitySnapshot, loadReviewQueue, l
 import { runUptimeChecks } from '../services/uptime.js';
 import { runSslChecks } from '../services/ssl.js';
 import { runDomainExpiryAlerts } from '../services/domain-expiry.js';
+import { runSlaBreachAlerts } from '../services/sla-alerts.js';
 import { loadSiteHealth } from '../services/observability.js';
 import { loadRailsHealth } from '../services/rails.js';
 import { logger } from '../lib/logger.js';
@@ -236,6 +237,20 @@ adminRouter.post(
   requireRole('delivery_lead', 'admin'),
   async (_req: Request, res: Response) => {
     const summary = await runDomainExpiryAlerts();
+    res.json(summary);
+  },
+);
+
+// ----------------------------------------------------------------------------
+// POST /v1/admin/sla-breach-scan - notify clients of elapsed-SLA tickets
+// (KWS-S9-003, 5th template). Deduped via audit_log; SMS gated on Todoku.
+// ----------------------------------------------------------------------------
+adminRouter.post(
+  '/sla-breach-scan',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (_req: Request, res: Response) => {
+    const summary = await runSlaBreachAlerts();
     res.json(summary);
   },
 );

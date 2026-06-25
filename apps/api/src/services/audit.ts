@@ -54,6 +54,8 @@ export type AuditEventType =
   // S6-003 SSL tracking
   | 'ssl_certificate_expiring'
   | 'ssl_certificate_expired'
+  // S9-003 SLA breach notification (also the per-ticket dedup marker)
+  | 'sla_breach_notified'
   // S9-004 agent autonomous execution ledger
   | 'agent_execution_started'
   | 'agent_execution_completed'
