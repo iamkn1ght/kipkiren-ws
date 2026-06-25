@@ -971,3 +971,84 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .lg-submit:active, .btn-act:active, .filter-btn:active, .btn-cc:active, .sni:active, .gate-btn:active {
   transform: scale(.97);
 }
+
+/* ============================================================================
+ * Entry flow v2 - elevated role picker + split-panel login.
+ * Brand-aligned with the landing (serif headlines, mono labels, teal/amber,
+ * faint grid). Overrides the earlier rp-/lg- base rules via source order.
+ * ========================================================================== */
+
+/* faint grid backdrop shared by both screens */
+.rp-wrap, .lg-wrap {
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(rgba(13,92,78,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13,92,78,.05) 1px, transparent 1px);
+  background-size: 60px 60px;
+  background-position: center;
+}
+[data-theme="dark"] .rp-wrap, [data-theme="dark"] .lg-wrap {
+  background-image:
+    linear-gradient(rgba(255,255,255,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.04) 1px, transparent 1px);
+}
+
+/* ── role picker ── */
+.rp-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 26px; }
+.rp-brand { display: flex; align-items: baseline; gap: 9px; margin-bottom: 0; }
+.rp-diamond { color: var(--teal-deep); font-size: 13px; }
+.rp-mark { font-family: var(--mono); font-size: 15px; letter-spacing: 5px; font-weight: 700; color: var(--ink); }
+.rp-sub { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; text-transform: lowercase; color: var(--teal-deep); }
+.rp-exit { background: none; border: none; cursor: pointer; font-family: var(--mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); padding: 6px 0; transition: color .18s ease; }
+.rp-exit:hover { color: var(--teal-deep); }
+.rp-title { font-size: clamp(30px, 4.4vw, 40px); }
+.rp-card { position: relative; overflow: hidden; min-height: 184px; padding: 24px 22px 18px; }
+.rp-card-num { position: absolute; top: 14px; right: 18px; font-family: var(--serif); font-size: 46px; font-weight: 700; line-height: 1; color: var(--border); }
+.rp-card:hover { border-top-color: var(--teal); }
+.rp-card:hover .rp-card-go { color: var(--amber-deep); }
+.rp-card-go { transition: color .18s ease, transform .18s ease; }
+.rp-card:hover .rp-card-go { transform: translateX(2px); }
+[data-theme="dark"] .rp-card-num { color: rgba(255,255,255,.10); }
+
+/* ── split-panel login ── */
+.lg-wrap { padding: 40px 20px; }
+.lg-shell {
+  width: 100%; max-width: 760px; display: grid; grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+  box-shadow: var(--shadow-2); background: #fff;
+}
+[data-theme="dark"] .lg-shell { background: #0E0E10; border-color: rgba(255,255,255,.11); }
+
+.lg-aside {
+  background: linear-gradient(155deg, var(--teal-deep), var(--teal));
+  color: #EAF3F0; padding: 32px 30px; min-height: 400px;
+  display: flex; flex-direction: column; justify-content: space-between; gap: 20px;
+}
+.lg-aside .lg-brand { display: flex; align-items: baseline; gap: 9px; }
+.lg-aside .lg-diamond { color: var(--amber2, #F5A623); font-size: 13px; }
+.lg-aside .lg-mark { color: #fff; font-size: 15px; letter-spacing: 5px; font-weight: 700; }
+.lg-aside .lg-sub { color: rgba(255,255,255,.6); margin-top: 4px; text-transform: lowercase; letter-spacing: 2px; }
+.lg-aside-quote { font-family: var(--serif); font-size: 21px; line-height: 1.5; color: #fff; }
+.lg-aside-role { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,.8); border: 1px solid rgba(255,255,255,.28); border-radius: 999px; padding: 6px 12px; display: inline-block; }
+
+.lg-panel { background: #fff; padding: 30px 32px 26px; display: flex; flex-direction: column; gap: 14px; }
+[data-theme="dark"] .lg-panel { background: #0E0E10; }
+.lg-panel .lg-title { font-size: 26px; margin-top: 2px; }
+
+.lg-pass-row { position: relative; }
+.lg-pass-row .lg-input { width: 100%; padding-right: 56px; }
+.lg-pass-toggle {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer;
+  font-family: var(--mono); font-size: 8px; letter-spacing: 1px; text-transform: uppercase;
+  color: var(--mid); padding: 5px 7px; transition: color .18s ease;
+}
+.lg-pass-toggle:hover { color: var(--teal-deep); }
+.lg-submit { padding: 13px; transition: background .2s ease, transform .15s ease; }
+.lg-submit:hover:not(:disabled) { transform: translateY(-1px); }
+
+@media (max-width: 640px) {
+  .lg-shell { grid-template-columns: 1fr; max-width: 410px; }
+  .lg-aside { min-height: auto; padding: 24px 26px; gap: 16px; }
+  .lg-aside-quote { font-size: 17px; }
+}

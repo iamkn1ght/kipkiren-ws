@@ -31,7 +31,7 @@ function Router() {
   } else if (picked) {
     view = <LoginScreen role={picked} onBack={() => void signOut()} />;
   } else {
-    view = <RolePicker onPick={pickRole} />;
+    view = <RolePicker onPick={pickRole} onExit={() => setEntered(false)} />;
   }
 
   return (

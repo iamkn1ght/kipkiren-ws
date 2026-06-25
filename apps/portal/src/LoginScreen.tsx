@@ -18,6 +18,7 @@ export function LoginScreen({ role, onBack }: { role: PortalRole; onBack: () => 
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -38,36 +39,57 @@ export function LoginScreen({ role, onBack }: { role: PortalRole; onBack: () => 
 
   return (
     <div className="lg-wrap">
-      <form className="lg-card" onSubmit={onSubmit}>
-        <div className="lg-brand">
-          <div className="lg-mark">KIPKIREN · WS</div>
-          <div className="lg-sub">{SUBLABEL[role]}</div>
-        </div>
+      <div className="lg-shell">
+        {/* brand panel */}
+        <aside className="lg-aside">
+          <div className="lg-aside-top">
+            <div className="lg-brand">
+              <span className="lg-diamond">◆</span>
+              <span className="lg-mark">KIPKIREN</span>
+            </div>
+            <div className="lg-sub">/ web-services</div>
+          </div>
+          <div className="lg-aside-quote">
+            Managed web services for Kenyan SMEs — every task priced and approved on a proforma before we build.
+          </div>
+          <div className="lg-aside-foot">
+            <span className="lg-aside-role">{SUBLABEL[role]}</span>
+          </div>
+        </aside>
 
-        <button type="button" className="lg-back" onClick={onBack}>‹ Change role</button>
+        {/* form panel */}
+        <form className="lg-panel" onSubmit={onSubmit}>
+          <button type="button" className="lg-back" onClick={onBack}>‹ Change role</button>
+          <h1 className="lg-title">Sign in</h1>
+          <p className="lg-hint">{HINT[role]}</p>
 
-        <h1 className="lg-title">Sign in</h1>
-        <p className="lg-hint">{HINT[role]}</p>
+          <label className="lg-label">
+            <span>Email</span>
+            <input type="email" autoComplete="email" required className="lg-input"
+              placeholder="you@company.co.ke"
+              value={email} onChange={(e) => setEmail(e.target.value)} disabled={submitting} />
+          </label>
 
-        <label className="lg-label">
-          <span>Email</span>
-          <input type="email" autoComplete="email" required className="lg-input"
-            value={email} onChange={(e) => setEmail(e.target.value)} disabled={submitting} />
-        </label>
-        <label className="lg-label">
-          <span>Password</span>
-          <input type="password" autoComplete="current-password" required minLength={8} className="lg-input"
-            value={password} onChange={(e) => setPassword(e.target.value)} disabled={submitting} />
-        </label>
+          <label className="lg-label">
+            <span>Password</span>
+            <div className="lg-pass-row">
+              <input type={showPass ? 'text' : 'password'} autoComplete="current-password" required minLength={8} className="lg-input"
+                value={password} onChange={(e) => setPassword(e.target.value)} disabled={submitting} />
+              <button type="button" className="lg-pass-toggle" onClick={() => setShowPass((v) => !v)} tabIndex={-1}>
+                {showPass ? 'Hide' : 'Show'}
+              </button>
+            </div>
+          </label>
 
-        {error && <div className="lg-error">{error}</div>}
+          {error && <div className="lg-error">{error}</div>}
 
-        <button type="submit" className="lg-submit" disabled={submitting}>
-          {submitting ? 'Signing in...' : 'Sign in'}
-        </button>
+          <button type="submit" className="lg-submit" disabled={submitting}>
+            {submitting ? 'Signing in...' : 'Sign in →'}
+          </button>
 
-        <div className="lg-foot">ws.kipkiren.co.ke</div>
-      </form>
+          <div className="lg-foot">ws.kipkiren.co.ke</div>
+        </form>
+      </div>
     </div>
   );
 }
