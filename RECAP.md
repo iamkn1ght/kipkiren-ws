@@ -65,18 +65,29 @@
 
 ## Outstanding blockers
 
-| ID | Item | Owner | Effect |
+> Current as of 23 Jun 2026, after the codeable-sprint pass. Every in-repo-codeable, unblocked ticket is shipped (S6-003/005, S8-003/004, S9-001/003/004/006). Everything below needs an action outside the repo.
+
+| ID | Item | Owner | Effect / what it unblocks |
 |---|---|---|---|
-| ~~CHAMIA-REGION~~ | **RESOLVED → eu-west-1 (Option B).** Live DB + Railway already in Europe; docs reconciled 15 Jun 2026 | Chamia | Was blocking S8 cutover - now cleared. Residual: counsel review of KDPA §48-49 disclosure wording (`CHAMIA-S7-005` scope) |
-| **CHAMIA-S3-012** | Live M-Pesa E2E with real Safaricom number | Chamia | Closes S3 |
-| **CHAMIA-S5-001** | GCP Partner Advantage application | Chamia | Starts S5 external clock (Nairobi region 2026 time-sensitive) |
+| **SUPABASE-RECONNECT** | MCP Supabase is on the wrong org (`ssevliwftzaeysntnovb`); KWS project `qderqzcyyhnfphrswexm` is not reachable | You (Cornelius) | **Highest leverage.** Blocks applying migrations 0005-0007 → blocks SSL-on-Services UI, the uptime/SSL/domain-expiry scan buttons, the agent-executions ledger view, and `/site-health` + `/agents` returning real data |
+| **CHAMIA-S3-012** | Live M-Pesa E2E with a real Safaricom number + PIN | Chamia | Closes S3; also gates S8 go-live (= KWS-S8-005) |
+| **CHAMIA-S5-001** | GCP Partner Advantage application | Chamia | Unblocks all of S5 + S9-007; Nairobi-region 2026 time-sensitive |
 | **CHAMIA-S5-002** | Google Cloud Digital Leader cert | Chamia | S5 prerequisite |
-| **CHAMIA-S5-003** | Microsoft CSP Indirect (Westcon/Ingram) | Chamia | S5 prerequisite |
-| **CHAMIA-S7-005** | Privacy Policy legal review | Chamia + counsel | Closes S7 |
-| **CHAMIA-S8-001** | Recruit 5 beta SME clients | Chamia | Starts S8 |
-| **OPS-TODOKU** | `kws` tenant API key + 5 template ULIDs (TD-13 provisioned 21 May; need handover) | Silvia | Blocks S9-003 |
-| **OPS-HELPAN** | `helpan-kws-service` JWT issuance | Silvia | Blocks S9-002 |
-| **OPS-ID-16** | Identiti delegation contract activation (paper signed; activation at Scale 2) | Silvia + counsel | Deferred - not blocking S8 or S9 Phase 1 |
+| **CHAMIA-S5-003** | Microsoft CSP Indirect Reseller (Westcon/Ingram) | Chamia | Unblocks S5-006 (M365 provisioning) |
+| **CHAMIA-S7-005** | Privacy Policy legal review (KDPA §48-49 cross-border) | Chamia + counsel | Closes S7 - the only open S7 item; draft served behind a DRAFT banner |
+| **CHAMIA-S8-001/002** | Recruit + contract 5 beta SMEs (1+ Growth, 1+ Business, 1+ P3) | Chamia | Starts S8; S8-006 acceptance gate needs live clients for real audit data |
+| **OPS-TODOKU** | Todoku `kws` tenant creds + 5 template ULIDs (TD-13 provisioned 21 May) | Silvia | **S9-003 code complete - 5/5 templates wired**; sends are inert (`template_not_ready`) until handover |
+| **OPS-HELPAN** | `helpan-kws-service` JWT issuance (needs Identiti signing key) | Silvia | Blocks S9-002 → S9-008 (Helpan Phase 1) |
+| **OPS-ID-16** | Identiti delegation contract activation (paper signed) | Silvia + counsel | Deferred to Scale 2 - not blocking now |
+| ~~CHAMIA-REGION~~ | **RESOLVED → eu-west-1.** Live DB + Railway already in Europe; docs reconciled 15 Jun 2026 | Chamia | Cleared |
+
+**Downstream tickets (auto-unblock once their prereqs land, then codeable):** S5-004/005/006/008 (after the 3 S5 gates) · S9-005 SSL autonomous exec (after S9-004 caller, i.e. S9-002) · S9-007 GCP cost (after S5) · S9-008 Helpan Phase 1 (after S9-002) · S9-009 integration test (after S9-002/003/004/005/008).
+
+**Out of scope / deferred (not a code task now):** S5-007 AWS Partner Network (v2) · S6-008 domain registration via registrar (business process) · S6-007 full admin service-management UI (needs a canonical mockup).
+
+**Code-ready, gated ONLY on applying migrations 0005-0007 (I ship these the moment SUPABASE-RECONNECT clears):** SSL-state column on the Services tab · uptime/SSL/domain-expiry "run scan" buttons · agent-executions ledger view.
+
+**Operational go-live (you):** rotate the exposed Postgres password (treat as compromised) · create Supabase Auth users + run `dev_users.sql` · Cloudflare Pages project for `@kws/portal` → `ws.kipkiren.co.ke` · merge `feat/portal-redesign` → main + push main's `b85064d` · set Railway `NODE_ENV=production` + `ALLOWED_ORIGINS`.
 
 ---
 
@@ -126,7 +137,8 @@ _(Populate at every sprint close: date, summary, tests added, migrations applied
 
 ---
 
-*Kipkiren WS · RECAP v1.8 · 23 June 2026 · Confidential · Update at every sprint close.*
+*Kipkiren WS · RECAP v1.9 · 23 June 2026 · Confidential · Update at every sprint close.*
+*v1.9 - rewrote the Outstanding blockers section into the complete current ledger: every not-done item with its blocker + owner, including SUPABASE-RECONNECT (highest leverage), downstream auto-unblock tickets, out-of-scope items, the code-ready-pending-migration UI, and the operational go-live checklist. No code change.*
 *v1.8 - S9-003 now fully wired (5/5 Todoku templates). Added the `kws_sla_breach` send: canonical template is client-facing ("we've flagged a delay on [ticket_ref]..."), so `services/sla-alerts.ts` scans non-terminal tickets past their SLA deadline and sends, with per-ticket idempotency via the INSERT-only `audit_log` (`sla_breach_notified` marker written only on a confirmed send - no new schema). `POST /v1/admin/sla-breach-scan` (manual/cron). Pure `selectNewBreaches` unit-tested; gated + fire-and-forget like the others, inert until Todoku creds land. All 5 templates (proforma_dispatched, payment_confirmed, sla_breach, domain_expiry_30d/7d) now have code paths. typecheck clean; tests green.*
 *v1.7 - S9-003 SMS event wiring. Added `sendClientSms()` (resolves client phone, gated + fire-and-forget, no-op until Todoku configured) and wired it at two event sites: `kws_proforma_dispatched` (proforma review→dispatch) and `kws_payment_confirmed` (payment webhook fresh-confirmation path). With the domain-expiry sends (30d/7d) already wired in S6-005, that's 4 of 5 Todoku templates live in code; sends stay inert (template_not_ready) until the ULIDs land. The 5th, `kws_sla_breach`, is deferred - it has no event hook and needs a breach-detection scan with per-ticket dedup state (schema work). Calls are fire-and-forget and cannot affect the payment/proforma outcome; 167 tests still pass (webhook perimeter + notifications scaffold green). typecheck clean.*
 *v1.6 - admin-portal surfacing for the sprint backend. New **Health tab** (S9-006 site-health: per-site uptime/p95/anomaly + S9-001 agent registry) and an **SLA audit panel** in the Capacity tab (S8-003 compliance % + worst-breach clients). Wired through `useAdminData` with mock-data fallback for the dev preview. The site-health/agents fetches depend on migrations 0005-0007 so they are wrapped in `.catch` (degrade to empty, never break the admin load); the SLA-audit fetch reads only existing tables so it works today. Portal typecheck + build clean. Deferred until migrations land (would break working endpoints otherwise): SSL state on the Services tab, and the uptime/SSL/domain-expiry "run scan" buttons. Supabase MCP still connected to the wrong org (`ssevliwftzaeysntnovb`) - `qderqzcyyhnfphrswexm` not reachable, so 0005-0007 remain unapplied. HEAD `325c6b2`+.*
