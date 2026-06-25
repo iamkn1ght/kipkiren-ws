@@ -125,6 +125,21 @@
 .app-client .cdash-deliv { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 14px; }
 .app-client .cdash-deliv span { font-size: 11px; color: var(--slate); background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 5px 11px; }
 
+/* ── billing (invoices view, Stripe-flavored) ── */
+.app-client .cdash-billing { display: flex; justify-content: space-between; align-items: center; gap: 18px 32px; flex-wrap: wrap; }
+.app-client .cdash-billing-l { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); }
+.app-client .cdash-billing-v { font-family: var(--mono); font-size: 30px; font-weight: 500; color: var(--ink); margin-top: 8px; line-height: 1; }
+.app-client .cdash-billing-v.due { color: var(--amber-deep); }
+.app-client .cdash-billing-v.clear { color: var(--teal-deep); }
+.app-client .cdash-billing-n { font-size: 11px; color: var(--mid); margin-top: 7px; }
+.app-client .cdash-billing-r { display: flex; flex-direction: column; align-items: flex-end; gap: 9px; }
+.app-client .cdash-methods { font-family: var(--mono); font-size: 9px; letter-spacing: 1px; color: var(--mid); }
+.app-client .cdash-filters { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 4px; }
+.app-client .cdash-row .dt { font-family: var(--mono); font-size: 10px; letter-spacing: .5px; color: var(--mid); flex: none; width: 104px; }
+.app-client .cdash-pay.ghost { background: transparent; color: var(--teal-deep); border: 1px solid var(--border); }
+.app-client .cdash-pay.ghost:hover { border-color: var(--teal); background: var(--bg); }
+@media (max-width: 680px) { .app-client .cdash-row .dt { display: none; } }
+
 @media (max-width: 900px) {
   .app-client .cdash-grid { grid-template-columns: 1fr; }
   .app-client .cdash-projs { grid-template-columns: 1fr; }

@@ -576,9 +576,10 @@ function ProformaView({ paid, onApprove }: ProformaProps) {
 // ---------------------------------------------------------------------------
 // INVOICES
 // ---------------------------------------------------------------------------
+const INV_LABEL: Record<string, string> = { retainer: 'Monthly retainer', task: 'Task charge', onboarding: 'Onboarding fee' };
+
 function InvoicesView({ invoices, loading }: { invoices: ClientInvoice[] | null; loading: boolean }) {
   const [filter, setFilter] = useState<'all' | 'retainer' | 'task' | 'pending'>('all');
-  const d = '-';
   const rows = invoices ?? [];
   const filtered = rows.filter((i) => {
     if (filter === 'all') return true;
@@ -590,56 +591,77 @@ function InvoicesView({ invoices, loading }: { invoices: ClientInvoice[] | null;
   const totalPaid = yearInvoices.filter((i) => i.paid_at).reduce((s, i) => s + i.total_kes, 0);
   const retainerSpend = yearInvoices.filter((i) => i.kind === 'retainer').reduce((s, i) => s + i.total_kes, 0);
   const taskSpend = yearInvoices.filter((i) => i.kind === 'task').reduce((s, i) => s + i.total_kes, 0);
+  const due = rows.filter((i) => !i.paid_at);
+  const outstanding = due.reduce((s, i) => s + i.total_kes, 0);
+
+  const FILTERS: { k: typeof filter; label: string }[] = [
+    { k: 'all', label: 'All' }, { k: 'retainer', label: 'Retainer' },
+    { k: 'task', label: 'Task charges' }, { k: 'pending', label: 'Pending' },
+  ];
 
   return (
     <div className="view">
-      <div className="greeting" style={{ fontSize: 22, marginBottom: 3 }}>Invoice <em>History</em></div>
-      <div className="g-sub">All retainer charges and approved task invoices.</div>
-      <div className="inv-summary">
-        <div className="sc">
-          <div className="sc-lbl">Total paid · {year}</div>
-          <div className="sc-val" style={{ color: 'var(--teal-deep)', fontSize: 20 }}>{loading ? d : `KES ${formatKes(totalPaid)}`}</div>
-          <div className="sc-note">Retainer + task charges</div>
-        </div>
-        <div className="sc">
-          <div className="sc-lbl">Retainer spend</div>
-          <div className="sc-val" style={{ fontSize: 20 }}>{loading ? d : `KES ${formatKes(retainerSpend)}`}</div>
-          <div className="sc-note">{loading ? d : `${yearInvoices.filter((i) => i.kind === 'retainer').length} invoices`}</div>
-        </div>
-        <div className="sc">
-          <div className="sc-lbl">Task charges</div>
-          <div className="sc-val" style={{ fontSize: 20 }}>{loading ? d : `KES ${formatKes(taskSpend)}`}</div>
-          <div className="sc-note">{loading ? d : `${yearInvoices.filter((i) => i.kind === 'task').length} tasks`}</div>
-        </div>
-      </div>
-      <div className="inv-filter">
-        <button type="button" className={`filter-btn ${filter === 'all' ? 'active' : ''}`} onClick={() => setFilter('all')}>All</button>
-        <button type="button" className={`filter-btn ${filter === 'retainer' ? 'active' : ''}`} onClick={() => setFilter('retainer')}>Retainer</button>
-        <button type="button" className={`filter-btn ${filter === 'task' ? 'active' : ''}`} onClick={() => setFilter('task')}>Task charges</button>
-        <button type="button" className={`filter-btn ${filter === 'pending' ? 'active' : ''}`} onClick={() => setFilter('pending')}>Pending</button>
-      </div>
-      <div className="inv-row-hd">
-        <span>Invoice</span><span>Description</span><span>Type</span><span>Date</span>
-        <span style={{ textAlign: 'right', display: 'block' }}>Amount</span>
-      </div>
-      {loading ? (
-        <div className="inv-row"><span style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--mid)' }}>Loading...</span></div>
-      ) : filtered.length === 0 ? (
-        <div className="inv-row"><span style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--mid)' }}>No invoices</span></div>
-      ) : filtered.map((inv) => {
-        const kindCls = inv.kind === 'retainer' ? 'bdg-t' : inv.kind === 'onboarding' ? 'bdg-a' : 'bdg-k';
-        const kindLabel = inv.kind === 'retainer' ? 'Retainer' : inv.kind === 'onboarding' ? 'Onboarding' : 'Task';
-        const dateStr = new Date(inv.issued_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-        return (
-          <div key={inv.id} className="inv-row">
-            <span className="inv-id">{inv.ref}</span>
-            <span className="inv-desc">{inv.ref}</span>
-            <span><div className={`bdg ${kindCls}`} style={{ display: 'inline-block' }}>{kindLabel}</div></span>
-            <span className="inv-date">{dateStr}</span>
-            <span className="inv-amt">KES {formatKes(inv.total_kes)}</span>
+      <div className="cdash">
+        <div className="cdash-head cdash-reveal">
+          <div>
+            <div className="cdash-hi">Billing</div>
+            <div className="cdash-subline">Retainer charges and approved task invoices. Receipts are emailed automatically.</div>
           </div>
-        );
-      })}
+        </div>
+
+        {/* balance overview */}
+        <div className="cdash-card cdash-reveal" style={cssVars({ '--d': '60ms' })}>
+          <div className="cdash-billing">
+            <div>
+              <div className="cdash-billing-l">{outstanding > 0 ? 'Outstanding balance' : 'Account balance'}</div>
+              <div className={`cdash-billing-v ${outstanding > 0 ? 'due' : 'clear'}`}>{loading ? '-' : outstanding > 0 ? `KES ${formatKes(outstanding)}` : 'All settled'}</div>
+              <div className="cdash-billing-n">{due.length ? `${due.length} invoice${due.length !== 1 ? 's' : ''} awaiting payment` : `No balance due · paid up to date`}</div>
+            </div>
+            <div className="cdash-billing-r">
+              {outstanding > 0 && <button type="button" className="cdash-qa primary"><span className="g">→</span> Pay outstanding</button>}
+              <span className="cdash-methods">Pay by M-Pesa or card · receipts emailed</span>
+            </div>
+          </div>
+        </div>
+
+        {/* year totals */}
+        <div className="cdash-kpis cdash-reveal" style={cssVars({ '--d': '100ms' })}>
+          <div className="cdash-kpi"><div className="cdash-kpi-l">Total paid · {year}</div><div className="cdash-kpi-v teal">{loading ? '-' : formatKes(totalPaid)}</div><div className="cdash-kpi-n">KES · retainer + tasks</div></div>
+          <div className="cdash-kpi"><div className="cdash-kpi-l">Retainer spend</div><div className="cdash-kpi-v">{loading ? '-' : formatKes(retainerSpend)}</div><div className="cdash-kpi-n">{yearInvoices.filter((i) => i.kind === 'retainer').length} invoices</div></div>
+          <div className="cdash-kpi"><div className="cdash-kpi-l">Task charges</div><div className="cdash-kpi-v">{loading ? '-' : formatKes(taskSpend)}</div><div className="cdash-kpi-n">{yearInvoices.filter((i) => i.kind === 'task').length} tasks</div></div>
+          <div className="cdash-kpi"><div className="cdash-kpi-l">Outstanding</div><div className="cdash-kpi-v">{loading ? '-' : formatKes(outstanding)}</div><div className="cdash-kpi-n">{due.length ? <span className="warn">{due.length} due</span> : 'All settled'}</div></div>
+        </div>
+
+        {/* invoice list */}
+        <div className="cdash-card cdash-reveal" style={cssVars({ '--d': '140ms' })}>
+          <div className="cdash-sec"><h3>Invoices</h3></div>
+          <div className="cdash-filters">
+            {FILTERS.map((f) => (
+              <button key={f.k} type="button" className={`filter-btn ${filter === f.k ? 'active' : ''}`} onClick={() => setFilter(f.k)}>{f.label}</button>
+            ))}
+          </div>
+          {loading ? (
+            <div style={{ padding: 16, textAlign: 'center', color: 'var(--mid)', fontSize: 12 }}>Loading...</div>
+          ) : filtered.length === 0 ? (
+            <div style={{ padding: 16, textAlign: 'center', color: 'var(--mid)', fontSize: 12 }}>No invoices in this view.</div>
+          ) : filtered.map((inv) => {
+            const paid = !!inv.paid_at;
+            const dateStr = new Date(inv.issued_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            return (
+              <div key={inv.id} className="cdash-row">
+                <span className={`cdash-pill ${paid ? 'ok' : 'md'}`}>{paid ? 'Paid' : 'Due'}</span>
+                <span className="tid">{inv.ref}</span>
+                <span className="txt">{INV_LABEL[inv.kind] ?? 'Charge'}</span>
+                <span className="dt">{dateStr}</span>
+                <span className="amt">KES {formatKes(inv.total_kes)}</span>
+                {paid
+                  ? <button type="button" className="cdash-pay ghost">Receipt</button>
+                  : <button type="button" className="cdash-pay">Pay now</button>}
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }
