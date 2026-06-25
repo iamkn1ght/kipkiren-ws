@@ -425,52 +425,72 @@ function TicketView({ onSubmitted }: { onSubmitted: () => void }) {
 
   return (
     <div className="view">
-      <div className="fsec">
-        <div className="ftit">Submit a new request</div>
-        <div className="fsub">
-          Describe what you need in plain language. Our AI engine will decompose and price it within 24 hours - you approve before anything starts.
-        </div>
-        <div className="fld">
-          <label>Describe your request</label>
-          <textarea
-            placeholder="e.g. I need to add a new services page to my website with 4 sections - intro, what we offer, a pricing table, and a contact form at the bottom."
-            value={desc}
-            onChange={(e) => setDesc(e.target.value)}
-            disabled={submitting}
-          />
-        </div>
-        <div className="fg2">
-          <div className="fld">
-            <label>Service category</label>
-            <select value={category} onChange={(e) => setCategory(e.target.value)} disabled={submitting}>
-              <option>Web Development</option>
-              <option>Cloud Services</option>
-              <option>SEO</option>
-              <option>Social Media</option>
-              <option>Domain / DNS</option>
-              <option>Not sure</option>
-            </select>
-          </div>
-          <div className="fld">
-            <label>Urgency</label>
-            <select value={urgency} onChange={(e) => setUrgency(e.target.value)} disabled={submitting}>
-              <option>Standard (within SLA)</option>
-              <option>Elevated - within 48hrs</option>
-              <option>Urgent - within 24hrs</option>
-            </select>
+      <div className="cdash">
+        <div className="cdash-head cdash-reveal">
+          <div>
+            <div className="cdash-hi">New <em>request</em></div>
+            <div className="cdash-subline">Describe what you need in plain language. We price it on a proforma you approve before any work begins.</div>
           </div>
         </div>
-        <div className="fld">
-          <label>Attachments (optional)</label>
-          <div className="attach"><div className="attach-t">Drop files here · screenshots, references, briefs</div></div>
+
+        <div className="cdash-intake">
+          {/* request form */}
+          <div className="cdash-card cdash-reveal" style={cssVars({ '--d': '60ms' })}>
+            <div className="fld">
+              <label>Describe your request</label>
+              <textarea
+                placeholder="e.g. Add a services page with 4 sections - intro, what we offer, a pricing table, and a contact form."
+                value={desc}
+                onChange={(e) => setDesc(e.target.value)}
+                disabled={submitting}
+              />
+            </div>
+            <div className="fg2">
+              <div className="fld">
+                <label>Service category</label>
+                <select value={category} onChange={(e) => setCategory(e.target.value)} disabled={submitting}>
+                  <option>Web Development</option>
+                  <option>Cloud Services</option>
+                  <option>SEO</option>
+                  <option>Social Media</option>
+                  <option>Domain / DNS</option>
+                  <option>Not sure</option>
+                </select>
+              </div>
+              <div className="fld">
+                <label>Urgency</label>
+                <select value={urgency} onChange={(e) => setUrgency(e.target.value)} disabled={submitting}>
+                  <option>Standard (within SLA)</option>
+                  <option>Elevated - within 48hrs</option>
+                  <option>Urgent - within 24hrs</option>
+                </select>
+              </div>
+            </div>
+            <div className="fld">
+              <label>Attachments (optional)</label>
+              <div className="attach"><div className="attach-t">Drop files here · screenshots, references, briefs</div></div>
+            </div>
+            {error && <div className="lg-error">{error}</div>}
+            <button type="button" className="btn-sub" disabled={submitting || !desc.trim()} onClick={() => void handleSubmit()}>
+              {submitting ? 'Submitting...' : 'Submit request →'}
+            </button>
+          </div>
+
+          {/* what happens next */}
+          <div className="cdash-card cdash-reveal" style={cssVars({ '--d': '120ms' })}>
+            <div className="cdash-sec"><h3>What happens next</h3></div>
+            <div className="cdash-steps">
+              <div className="cdash-step"><div className="cdash-step-n">1</div><div><div className="cdash-step-t">You submit</div><div className="cdash-step-x">Tell us what you need. No need to scope or price it yourself.</div></div></div>
+              <div className="cdash-step"><div className="cdash-step-n">2</div><div><div className="cdash-step-t">We price it</div><div className="cdash-step-x">Our AI decomposes it into line items and drafts a proforma, usually within 24 hours.</div></div></div>
+              <div className="cdash-step"><div className="cdash-step-n">3</div><div><div className="cdash-step-t">You approve</div><div className="cdash-step-x">Review the proforma and approve. Work begins only after you say yes.</div></div></div>
+            </div>
+            <div className="cdash-reassure">
+              <div><span className="ck">✓</span> No surprise invoices. You see the price first.</div>
+              <div><span className="ck">✓</span> Scope is locked once you approve.</div>
+              <div><span className="ck">✓</span> Receipts and updates emailed automatically.</div>
+            </div>
+          </div>
         </div>
-        <div className="ai-note">
-          After submission, our AI engine decomposes your request into sub-tasks and generates a proforma with line-item pricing. You receive the proforma within 24 hours. <strong>Work begins only once you approve.</strong>
-        </div>
-        {error && <div className="lg-error">{error}</div>}
-        <button type="button" className="btn-sub" disabled={submitting || !desc.trim()} onClick={() => void handleSubmit()}>
-          {submitting ? 'Submitting...' : 'Submit request →'}
-        </button>
       </div>
     </div>
   );
@@ -672,11 +692,28 @@ function InvoicesView({ invoices, loading }: { invoices: ClientInvoice[] | null;
 function ServicesView({ services, loading, onRenewDomain }: { services: ClientService[] | null; loading: boolean; onRenewDomain: () => void }) {
   const d = '-';
   const rows = services ?? [];
+  const active = rows.filter((s) => s.status === 'active' || s.status === 'expiring');
+  const monthlyTotal = active.reduce((sum, x) => sum + x.monthly_cost_kes, 0);
+  const expiringCount = rows.filter((s) => s.status === 'expiring' || s.status === 'expired').length;
+  const upcoming = rows
+    .filter((s) => s.renewal_at && Date.parse(s.renewal_at) > Date.now())
+    .sort((a, b) => Date.parse(a.renewal_at as string) - Date.parse(b.renewal_at as string))[0];
+  const nextRenewalLabel = upcoming?.renewal_at ? new Date(upcoming.renewal_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '-';
 
   return (
     <div className="view">
-      <div className="greeting" style={{ fontSize: 22, marginBottom: 3 }}>Your <em>Services</em></div>
-      <div className="g-sub">Manage active services, view health status, and add new services.</div>
+      <div className="cdash-head cdash-reveal" style={{ marginBottom: 18 }}>
+        <div>
+          <div className="cdash-hi">Your <em>services</em></div>
+          <div className="cdash-subline">Hosting, domains, email and retainers, with live health and renewals.</div>
+        </div>
+      </div>
+      <div className="cdash-kpis cdash-reveal" style={cssVars({ '--d': '60ms', marginBottom: 18 })}>
+        <div className="cdash-kpi"><div className="cdash-kpi-l">Active services</div><div className="cdash-kpi-v teal">{active.length}</div><div className="cdash-kpi-n">{rows.length} total</div></div>
+        <div className="cdash-kpi"><div className="cdash-kpi-l">Monthly cost</div><div className="cdash-kpi-v">{formatKes(monthlyTotal)}</div><div className="cdash-kpi-n">KES / month</div></div>
+        <div className="cdash-kpi"><div className="cdash-kpi-l">Next renewal</div><div className="cdash-kpi-v" style={cssVars({ fontSize: 18 })}>{nextRenewalLabel}</div><div className="cdash-kpi-n">{upcoming ? serviceTypeLabel(upcoming.service_type) : 'None upcoming'}</div></div>
+        <div className="cdash-kpi"><div className="cdash-kpi-l">Need attention</div><div className="cdash-kpi-v">{expiringCount}</div><div className="cdash-kpi-n">{expiringCount ? <span className="warn">renewals due</span> : 'all current'}</div></div>
+      </div>
 
       {loading ? (
         <div style={{ padding: 40, textAlign: 'center', color: 'var(--mid)' }}>Loading...</div>
