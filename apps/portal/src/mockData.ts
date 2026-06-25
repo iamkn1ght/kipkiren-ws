@@ -10,7 +10,9 @@ import type {
   ReviewQueueItem, CapacityDetail, AdminServiceRow, RailHealth,
   SiteHealthRow, AgentRow, SlaAuditReport,
 } from './useAdminData.ts';
-import type { ClientTicket, ClientInvoice, ClientService } from './useClientData.ts';
+import type {
+  ClientTicket, ClientInvoice, ClientService, ClientDashboard,
+} from './useClientData.ts';
 import type { Task } from './useTaskData.ts';
 
 const hrs = (h: number) => new Date(Date.now() + h * 3_600_000).toISOString();
@@ -111,7 +113,41 @@ const clientServices: ClientService[] = [
   { id: 'sv4', service_type: 'seo_retainer', status: 'active', renewal_at: days(12), monthly_cost_kes: 18000, metadata: {}, created_at: days(-90) },
 ];
 
-export const mockClient = { tickets: clientTickets, invoices: clientInvoices, services: clientServices };
+const clientDashboard: ClientDashboard = {
+  projects: [
+    { id: 'p1', title: 'Homepage hero redesign', status: 'In review', kind: 'review', progress: 75, due: days(6), team: 'Design + Development', last_activity: 'Homepage approved' },
+    { id: 'p2', title: 'M-Pesa checkout integration', status: 'In development', kind: 'active', progress: 60, due: days(13), team: 'Development', last_activity: 'Sandbox wired' },
+    { id: 'p3', title: 'Q3 on-page SEO sprint', status: 'Active', kind: 'active', progress: 38, due: days(24), team: 'SEO', last_activity: '12 of 31 pages audited' },
+    { id: 'p4', title: 'Business email migration', status: 'Queued', kind: 'queued', progress: 10, due: days(20), team: 'Infrastructure', last_activity: 'Awaiting DNS access' },
+  ],
+  activity: [
+    { id: 'a1', kind: 'payment', text: 'Payment received · KES 13,705 (KWS-042)', at: hrs(-2) },
+    { id: 'a2', kind: 'deploy', text: 'maridadi.press deployed to production', at: hrs(-5) },
+    { id: 'a3', kind: 'ticket', text: 'KWS-T-0042 moved to In progress', at: hrs(-26) },
+    { id: 'a4', kind: 'invoice', text: 'Invoice INV-2026-031 generated', at: days(-2) },
+    { id: 'a5', kind: 'maintenance', text: 'Monthly maintenance completed', at: days(-3) },
+    { id: 'a6', kind: 'meeting', text: 'Strategy call scheduled · 18 Jul, 10:00 EAT', at: days(-4) },
+  ],
+  health: [
+    { key: 'website', label: 'Website', status: 'operational', detail: '200 OK · 178ms' },
+    { key: 'hosting', label: 'Hosting', status: 'operational', detail: 'eu-west-1 · 99.96%' },
+    { key: 'domain', label: 'Domain', status: 'operational', detail: 'Renews 12 Aug' },
+    { key: 'ssl', label: 'SSL certificate', status: 'operational', detail: 'Valid · 78 days' },
+    { key: 'email', label: 'Business email', status: 'operational', detail: 'Deliverable' },
+    { key: 'backups', label: 'Backups', status: 'operational', detail: 'Last 04:00 EAT' },
+    { key: 'security', label: 'Security monitoring', status: 'operational', detail: 'No threats' },
+  ],
+  trust: {
+    projects_completed: 18,
+    avg_response_hours: 3.2,
+    uptime_pct: 99.96,
+    satisfaction_pct: 96,
+    since: 'March 2024',
+    recent_deliverables: ['Homepage hero redesign', 'Q2 SEO audit (31 pages)', 'Newsletter + Mailchimp sync'],
+  },
+};
+
+export const mockClient = { tickets: clientTickets, invoices: clientInvoices, services: clientServices, dashboard: clientDashboard };
 
 // ── Task view ──
 const activeTasks: Task[] = [

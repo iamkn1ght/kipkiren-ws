@@ -1,10 +1,14 @@
 /**
- * Client Portal - ported verbatim from kws_client_portal_v3.html.
+ * Client Portal.
  *
- * The HTML mockup is the canonical design output of the founding session.
- * Markup, copy, class names, and visual states match it character-for-character.
- * Do not redesign in this file. If a token or layout needs to change, update
- * the canonical HTML first and re-port.
+ * The Ticket / Proforma / Invoices / Services views + payment modal are ported
+ * verbatim from kws_client_portal_v3.html (the canonical founding mockup).
+ *
+ * The DASHBOARD view was redesigned (founder-directed, June 2026) into a
+ * premium "client operating system" home: KPI row, welcome + quick actions,
+ * projects with progress, support center, invoices, activity feed, service
+ * health, and trust metrics (cdash-* styles in clientDashboard.css). It does
+ * NOT match the canonical mockup by design - the rest of the portal still does.
  *
  * State model mirrors the original vanilla JS:
  *   - view  : 'dashboard' | 'ticket' | 'proforma' | 'invoices' | 'services'
@@ -17,7 +21,7 @@
  * the markup with a "data-driven" rewrite.
  */
 
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { useAuth, useApi } from './auth.tsx';
 import {
   useClientData,
@@ -26,7 +30,9 @@ import {
   type ClientTicket,
   type ClientInvoice,
   type ClientService,
+  type ClientDashboard as ClientDashboardData,
 } from './useClientData.ts';
+import './clientDashboard.css';
 
 type View = 'dashboard' | 'ticket' | 'proforma' | 'invoices' | 'services';
 type ModalState = 'checkout' | 'stk' | 'proc' | 'confirm';
@@ -51,7 +57,7 @@ const VIEW_LABELS: Record<View, string> = {
 
 export function ClientPortal() {
   const { session, signOut } = useAuth();
-  const { tickets, invoices, services, loading, reload } = useClientData();
+  const { tickets, invoices, services, dashboard, loading, reload } = useClientData();
   const [view, setView] = useState<View>('dashboard');
   const [modal, setModal] = useState<ModalConfig | null>(null);
   const [proformaPaid, setProformaPaid] = useState(false);
@@ -122,7 +128,7 @@ export function ClientPortal() {
           <button type="button" className="btn-nt" onClick={() => setView('ticket')}>+ New Ticket</button>
         </div>
 
-        {view === 'dashboard' && <DashboardView name={displayName} tickets={tickets} services={services} invoices={invoices} loading={loading} onReviewProforma={() => setView('proforma')} />}
+        {view === 'dashboard' && <DashboardView name={displayName} tickets={tickets} services={services} invoices={invoices} dashboard={dashboard} loading={loading} onNav={setView} onReviewProforma={() => setView('proforma')} />}
         {view === 'ticket' && <TicketView onSubmitted={() => { reload(); setView('dashboard'); }} />}
         {view === 'proforma' && <ProformaView paid={proformaPaid} onApprove={() => openPayModal('proforma')} />}
         {view === 'invoices' && <InvoicesView invoices={invoices} loading={loading} />}
@@ -155,110 +161,218 @@ interface DashboardProps {
   tickets: ClientTicket[] | null;
   services: ClientService[] | null;
   invoices: ClientInvoice[] | null;
+  dashboard: ClientDashboardData | null;
   loading: boolean;
+  onNav: (v: View) => void;
   onReviewProforma: () => void;
 }
-function DashboardView({ name, tickets, services, invoices, loading, onReviewProforma }: DashboardProps) {
-  const d = '-';
+
+const cssVars = (vars: Record<string, string | number>) => vars as CSSProperties;
+
+function timeAgo(iso: string): string {
+  const ms = Date.now() - Date.parse(iso);
+  if (Number.isNaN(ms)) return '';
+  const min = Math.round(ms / 60_000);
+  if (min < 1) return 'just now';
+  if (min < 60) return `${min}m ago`;
+  const h = Math.round(min / 60);
+  if (h < 24) return `${h}h ago`;
+  return `${Math.round(h / 24)}d ago`;
+}
+function dueLabel(iso: string | null): string {
+  if (!iso) return 'No date set';
+  return `Due ${new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`;
+}
+const PRIORITY: Record<string, { cls: string; label: string }> = {
+  urgent: { cls: 'hi', label: 'High' },
+  elevated: { cls: 'md', label: 'Medium' },
+  standard: { cls: 'lo', label: 'Low' },
+};
+
+function DashboardView({ name, tickets, services, invoices, dashboard, loading, onNav, onReviewProforma }: DashboardProps) {
   const openTickets = tickets?.filter((t) => t.status !== 'complete' && t.status !== 'closed') ?? [];
   const activeServices = services?.filter((s) => s.status === 'active' || s.status === 'expiring') ?? [];
+  const dueInvoices = (invoices ?? []).filter((i) => !i.paid_at);
+  const dueTotal = dueInvoices.reduce((s, i) => s + i.total_kes, 0);
+  const now = new Date();
   const thisMonthTotal = (invoices ?? [])
-    .filter((i) => {
-      const m = new Date(i.issued_at);
-      const now = new Date();
-      return m.getFullYear() === now.getFullYear() && m.getMonth() === now.getMonth();
-    })
+    .filter((i) => { const m = new Date(i.issued_at); return m.getFullYear() === now.getFullYear() && m.getMonth() === now.getMonth(); })
     .reduce((s, i) => s + i.total_kes, 0);
-  const hasSlaBreaches = openTickets.some((t) => t.sla_deadline_at && Date.parse(t.sla_deadline_at) < Date.now());
+
+  const projects = dashboard?.projects ?? [];
+  const activeProjects = projects.filter((p) => p.kind !== 'done');
+  const completion = projects.length ? Math.round(projects.reduce((s, p) => s + p.progress, 0) / projects.length) : 0;
+  const activity = dashboard?.activity ?? [];
+  const health = dashboard?.health ?? [];
+  const allOperational = health.length > 0 && health.every((h) => h.status === 'operational');
+  const trust = dashboard?.trust ?? null;
+  const pendingProforma = openTickets.some((t) => t.status === 'ai_draft' || t.status === 'dispatched');
+
+  if (loading) {
+    return (
+      <div className="view">
+        <div className="cdash">
+          <div className="cdash-head"><div><div className="cdash-hi">Welcome back.</div><div className="cdash-subline">Loading your account...</div></div></div>
+          <div className="cdash-kpis">{Array.from({ length: 6 }).map((_, i) => <div key={i} className="cdash-kpi"><div className="cdash-kpi-l">Loading</div><div className="cdash-kpi-v">-</div></div>)}</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="view">
-      <div className="greeting">Welcome back, <em>{name}.</em></div>
-      <div className="g-sub">{loading ? d : `You have ${openTickets.length} open ticket${openTickets.length !== 1 ? 's' : ''}.`}</div>
-      {openTickets.some((t) => t.status === 'ai_draft' || t.status === 'dispatched') && (
-        <div className="alert">
-          <div className="alert-txt">
-            <strong>Proforma awaiting review</strong> - approve before work begins.
-          </div>
-          <button type="button" className="btn-rev" onClick={onReviewProforma}>Review →</button>
-        </div>
-      )}
-      <div className="stats">
-        <div className="sc">
-          <div className="sc-lbl">Active services</div>
-          <div className="sc-val" style={{ color: 'var(--teal-deep)' }}>{loading ? d : activeServices.length}</div>
-          <div className="sc-note">{loading ? d : activeServices.map((s) => serviceTypeLabel(s.service_type)).join(' · ') || 'None'}</div>
-        </div>
-        <div className="sc">
-          <div className="sc-lbl">Open tickets</div>
-          <div className="sc-val">{loading ? d : openTickets.length}</div>
-          <div className="sc-note">{loading ? d : `${openTickets.filter((t) => t.status === 'in_progress').length} in progress`}</div>
-        </div>
-        <div className="sc">
-          <div className="sc-lbl">This month</div>
-          <div className="sc-val" style={{ fontSize: 16, marginTop: 3, color: 'var(--teal-deep)' }}>{loading ? d : `KES ${formatKes(thisMonthTotal)}`}</div>
-          <div className="sc-note">{loading ? d : 'Retainer + task charges'}</div>
-        </div>
-        <div className="sc">
-          <div className="sc-lbl">SLA status</div>
-          <div className="sc-val" style={{ fontSize: 13, color: hasSlaBreaches ? 'var(--amber-deep)' : '#22c55e', marginTop: 4 }}>{loading ? d : hasSlaBreaches ? '● Breach' : '● All clear'}</div>
-          <div className="sc-note">{loading ? d : hasSlaBreaches ? 'Check open tickets' : 'No breaches this month'}</div>
-        </div>
-      </div>
-      <div className="shd">Active services</div>
-      <div className="svc-list">
-        {loading ? (
-          <div style={{ padding: 20, textAlign: 'center', color: 'var(--mid)' }}>Loading...</div>
-        ) : activeServices.length === 0 ? (
-          <div style={{ padding: 20, textAlign: 'center', color: 'var(--mid)' }}>No active services</div>
-        ) : activeServices.map((s) => {
-          const domain = (s.metadata as { domain?: string }).domain;
-          const isExpiring = s.status === 'expiring';
-          return (
-            <div key={s.id} className="svc-row">
-              <div className={`dot ${isExpiring ? 'da' : 'dg'}`} />
-              <div className="svc-nm">{serviceTypeLabel(s.service_type)}</div>
-              <div className="svc-mt">{domain ?? `KES ${formatKes(s.monthly_cost_kes)}/mo`}</div>
-              <div className={`bdg ${isExpiring ? 'bdg-a' : 'bdg-t'}`}>{isExpiring ? 'Renew soon' : 'Active'}</div>
+      <div className="cdash">
+        {/* welcome + quick actions */}
+        <div className="cdash-head cdash-reveal">
+          <div>
+            <div className="cdash-hi">Welcome back, <em>{name}</em>.</div>
+            <div className="cdash-subline">Your retainer is active and all systems are operational.</div>
+            <div className="cdash-chips">
+              <span className="cdash-chip"><span className="d" /><b>{openTickets.length}</b> ticket{openTickets.length !== 1 ? 's' : ''} open</span>
+              <span className="cdash-chip"><span className={`d ${dueInvoices.length ? 'a' : ''}`} /><b>{dueInvoices.length}</b> invoice{dueInvoices.length !== 1 ? 's' : ''} pending</span>
+              <span className="cdash-chip"><span className="d" /><b>{activeServices.length}</b> service{activeServices.length !== 1 ? 's' : ''} active</span>
             </div>
-          );
-        })}
-      </div>
-      <div className="shd">Open tickets</div>
-      <table className="tbl">
-        <thead>
-          <tr>
-            <th>Ticket</th><th>Subject</th><th>Category</th><th>SLA</th><th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {loading ? (
-            <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--mid)' }}>Loading...</td></tr>
-          ) : openTickets.length === 0 ? (
-            <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--mid)' }}>No open tickets</td></tr>
-          ) : openTickets.map((t) => {
-            const slaMs = t.sla_deadline_at ? Date.parse(t.sla_deadline_at) - Date.now() : null;
-            const slaLabel = slaMs === null ? 'N/A' : slaMs <= 0 ? 'Breached' : slaMs < 3_600_000 ? `${Math.floor(slaMs / 60_000)}m` : `${Math.floor(slaMs / 3_600_000)}h left`;
-            const slaClass = slaMs === null ? 'fl-g' : slaMs <= 0 ? 'fl-r' : slaMs < 6 * 3_600_000 ? 'fl-a' : 'fl-g';
-            const statusLabel = t.status === 'in_progress' ? 'In progress' : t.status === 'dispatched' ? 'Awaiting you' : t.status.replace(/_/g, ' ');
-            const statusCls = t.status === 'dispatched' || t.status === 'ai_draft' ? 'bdg-a' : 'bdg-t';
-            return (
-              <tr key={t.id}>
-                <td><span className="tid">{t.ref}</span></td>
-                <td>{t.description}</td>
-                <td style={{ fontFamily: 'var(--mono)', fontSize: 9, color: 'var(--mid)' }}>{t.category}</td>
-                <td>
-                  <div className="sla-w">
-                    <div className="sla-tr"><div className={`sla-fl ${slaClass}`} /></div>
-                    <span className="sla-t">{slaLabel}</span>
+          </div>
+          <div className="cdash-actions">
+            <button type="button" className="cdash-qa primary" onClick={() => onNav('ticket')}><span className="g">+</span> New request</button>
+            <button type="button" className="cdash-qa" onClick={() => onNav('invoices')}>View invoices</button>
+            <button type="button" className="cdash-qa" onClick={() => onNav('services')}>Manage services</button>
+            <a className="cdash-qa" href="mailto:hello@kipkiren.co.ke?subject=Book%20a%20call">Book a call</a>
+          </div>
+        </div>
+
+        {/* KPI row */}
+        <div className="cdash-kpis cdash-reveal" style={cssVars({ '--d': '60ms' })}>
+          <div className="cdash-kpi"><div className="cdash-kpi-l">Active projects</div><div className="cdash-kpi-v teal">{activeProjects.length}</div><div className="cdash-kpi-n">{completion}% avg complete</div></div>
+          <div className="cdash-kpi"><div className="cdash-kpi-l">Open tickets</div><div className="cdash-kpi-v">{openTickets.length}</div><div className="cdash-kpi-n">{openTickets.filter((t) => t.status === 'in_progress').length} in progress</div></div>
+          <div className="cdash-kpi"><div className="cdash-kpi-l">Invoices due</div><div className="cdash-kpi-v">{dueInvoices.length}</div><div className="cdash-kpi-n">{dueInvoices.length ? <span className="warn">KES {formatKes(dueTotal)} outstanding</span> : 'All settled'}</div></div>
+          <div className="cdash-kpi"><div className="cdash-kpi-l">Spend this month</div><div className="cdash-kpi-v teal">{formatKes(thisMonthTotal)}</div><div className="cdash-kpi-n">KES · retainer + tasks</div></div>
+          <div className="cdash-kpi"><div className="cdash-kpi-l">Avg response</div><div className="cdash-kpi-v">{trust ? `${trust.avg_response_hours}h` : '-'}</div><div className="cdash-kpi-n"><span className="up">Within SLA</span></div></div>
+          <div className="cdash-kpi"><div className="cdash-kpi-l">Project completion</div><div className="cdash-kpi-v">{completion}%</div><div className="cdash-kpi-n">across {projects.length} project{projects.length !== 1 ? 's' : ''}</div></div>
+        </div>
+
+        {pendingProforma && (
+          <div className="alert cdash-reveal" style={cssVars({ '--d': '90ms' })}>
+            <div className="alert-txt"><strong>Proforma awaiting review</strong> - approve before work begins.</div>
+            <button type="button" className="btn-rev" onClick={onReviewProforma}>Review →</button>
+          </div>
+        )}
+
+        {/* main grid */}
+        <div className="cdash-grid">
+          <div className="cdash-col">
+            {/* projects */}
+            <div className="cdash-card cdash-reveal" style={cssVars({ '--d': '120ms' })}>
+              <div className="cdash-sec"><h3>Active projects</h3><button type="button" onClick={() => onNav('ticket')}>New request</button></div>
+              {projects.length === 0 ? (
+                <div style={{ color: 'var(--mid)', fontSize: 12, padding: '8px 0' }}>No active projects. Submit a request to get started.</div>
+              ) : (
+                <div className="cdash-projs">
+                  {projects.map((p, i) => (
+                    <div key={p.id} className="cdash-proj">
+                      <div className="cdash-proj-top">
+                        <div className="cdash-proj-t">{p.title}</div>
+                        <span className={`cdash-proj-st ${p.kind}`}>{p.status}</span>
+                      </div>
+                      <div className="cdash-bar"><i style={cssVars({ '--p': p.progress / 100, '--d': `${100 + i * 60}ms` })} /></div>
+                      <div className="cdash-proj-meta"><span><b>{p.progress}%</b> complete</span><span>{dueLabel(p.due)}</span></div>
+                      <div className="cdash-proj-foot"><span className="dot" />{p.last_activity} · {p.team}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* support center */}
+            <div className="cdash-card cdash-reveal" style={cssVars({ '--d': '160ms' })}>
+              <div className="cdash-sec"><h3>Support center</h3><button type="button" onClick={() => onNav('ticket')}>New ticket</button></div>
+              {openTickets.length === 0 ? (
+                <div style={{ color: 'var(--mid)', fontSize: 12, padding: '8px 0' }}>No open tickets. You are all caught up.</div>
+              ) : openTickets.map((t) => {
+                const pri = PRIORITY[t.urgency] ?? PRIORITY.standard;
+                const waiting = t.status === 'dispatched' || t.status === 'ai_draft';
+                return (
+                  <div key={t.id} className="cdash-row">
+                    <span className="tid">{t.ref}</span>
+                    <span className="txt">{t.description}</span>
+                    <span className={`cdash-pill ${pri!.cls}`}>{pri!.label}</span>
+                    <span className={`cdash-pill ${waiting ? 'open' : 'wait'}`}>{waiting ? 'Waiting on you' : 'In progress'}</span>
                   </div>
-                </td>
-                <td><span className={`bdg ${statusCls}`}>{statusLabel}</span></td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                );
+              })}
+            </div>
+
+            {/* invoices */}
+            <div className="cdash-card cdash-reveal" style={cssVars({ '--d': '200ms' })}>
+              <div className="cdash-sec"><h3>Invoices</h3><button type="button" onClick={() => onNav('invoices')}>View all</button></div>
+              {(invoices ?? []).length === 0 ? (
+                <div style={{ color: 'var(--mid)', fontSize: 12, padding: '8px 0' }}>No invoices yet.</div>
+              ) : (invoices ?? []).slice(0, 4).map((inv) => {
+                const due = !inv.paid_at;
+                return (
+                  <div key={inv.id} className="cdash-row">
+                    <span className="tid">{inv.ref}</span>
+                    <span className="txt">{inv.kind === 'retainer' ? 'Monthly retainer' : inv.kind === 'onboarding' ? 'Onboarding' : 'Task charge'}</span>
+                    <span className="amt">KES {formatKes(inv.total_kes)}</span>
+                    {due
+                      ? <button type="button" className="cdash-pay" onClick={() => onNav('invoices')}>Pay now</button>
+                      : <span className="cdash-pill ok">Paid</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="cdash-col">
+            {/* activity feed */}
+            <div className="cdash-card cdash-reveal" style={cssVars({ '--d': '140ms' })}>
+              <div className="cdash-sec"><h3>Recent activity</h3></div>
+              {activity.length === 0 ? (
+                <div style={{ color: 'var(--mid)', fontSize: 12 }}>No recent activity.</div>
+              ) : (
+                <div className="cdash-feed">
+                  {activity.map((a) => (
+                    <div key={a.id} className={`cdash-fi ${a.kind}`}>
+                      <div className="cdash-fi-dot"><i /></div>
+                      <div><div className="cdash-fi-tx">{a.text}</div><div className="cdash-fi-at">{timeAgo(a.at)}</div></div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* service health */}
+            <div className="cdash-card cdash-reveal" style={cssVars({ '--d': '180ms' })}>
+              <div className="cdash-sec"><h3>Service health</h3></div>
+              <div className="cdash-health">
+                {health.map((h) => (
+                  <div key={h.key} className={`cdash-hr ${h.status}`}>
+                    <span className="hd" />
+                    <span className="hl">{h.label}</span>
+                    <span className="hv">{h.detail}</span>
+                  </div>
+                ))}
+              </div>
+              {allOperational && <div className="cdash-health-foot"><span className="hd" style={cssVars({ width: 7, height: 7, borderRadius: '50%', background: '#16a34a', display: 'inline-block' })} />All systems operational</div>}
+            </div>
+
+            {/* trust */}
+            {trust && (
+              <div className="cdash-card cdash-reveal" style={cssVars({ '--d': '220ms' })}>
+                <div className="cdash-sec"><h3>Your account</h3></div>
+                <div className="cdash-trust">
+                  <div><div className="cdash-tr-v">{trust.projects_completed}</div><div className="cdash-tr-l">Projects delivered</div></div>
+                  <div><div className="cdash-tr-v">{trust.avg_response_hours}h</div><div className="cdash-tr-l">Avg response</div></div>
+                  <div><div className="cdash-tr-v">{trust.uptime_pct}%</div><div className="cdash-tr-l">Uptime</div></div>
+                  <div><div className="cdash-tr-v">{trust.satisfaction_pct}%</div><div className="cdash-tr-l">Satisfaction</div></div>
+                </div>
+                <div className="cdash-deliv">{trust.recent_deliverables.map((dlv) => <span key={dlv}>{dlv}</span>)}</div>
+                <div className="cdash-subline" style={{ marginTop: 12, fontSize: 11 }}>Working together since {trust.since}.</div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

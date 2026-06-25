@@ -1,0 +1,144 @@
+/* ============================================================================
+ * Client dashboard "operating system" (cdash-*). Scoped to .app-client.
+ * Dense, reassuring, Stripe/Linear-flavored. Motion is Emil-tuned: snappy
+ * hovers (~160ms), first-load reveals + progress fills at 0.55-0.7s on
+ * [0.22,1,0.36,1], everything gated behind prefers-reduced-motion.
+ * ========================================================================== */
+.app-client .cdash { display: flex; flex-direction: column; gap: 22px; }
+
+/* reveal-on-mount (static fallback for reduced motion) */
+.app-client .cdash-reveal { opacity: 1; }
+@keyframes cdash-rise { to { opacity: 1; transform: none; } }
+@keyframes cdash-fill { from { transform: scaleX(0); } to { transform: scaleX(var(--p, 1)); } }
+@media (prefers-reduced-motion: no-preference) {
+  .app-client .cdash-reveal { opacity: 0; transform: translateY(10px); animation: cdash-rise .55s cubic-bezier(.22,1,.36,1) forwards; animation-delay: var(--d, 0ms); }
+}
+
+/* ── welcome header ── */
+.app-client .cdash-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap; }
+.app-client .cdash-hi { font-family: var(--serif); font-size: 28px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); }
+.app-client .cdash-hi em { font-style: normal; color: var(--teal-deep); }
+.app-client .cdash-subline { font-size: 13px; color: var(--slate); margin-top: 4px; }
+.app-client .cdash-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.app-client .cdash-chip { font-family: var(--mono); font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--slate); background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 5px 11px; display: inline-flex; align-items: center; gap: 7px; }
+.app-client .cdash-chip b { color: var(--ink); font-weight: 600; }
+.app-client .cdash-chip .d { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); }
+.app-client .cdash-chip .d.a { background: var(--amber-deep); }
+
+/* ── quick actions ── */
+.app-client .cdash-actions { display: flex; gap: 9px; flex-wrap: wrap; }
+.app-client .cdash-qa { font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--ink); background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; transition: transform .16s cubic-bezier(.23,1,.32,1), box-shadow .16s ease, border-color .16s ease, background .16s ease; }
+.app-client .cdash-qa .g { color: var(--teal-deep); font-weight: 700; }
+.app-client .cdash-qa.primary { background: var(--teal-deep); color: #fff; border-color: var(--teal-deep); }
+.app-client .cdash-qa.primary .g { color: #fff; }
+@media (hover: hover) and (pointer: fine) {
+  .app-client .cdash-qa:hover { transform: translateY(-1px); box-shadow: var(--shadow-1); border-color: var(--teal); }
+  .app-client .cdash-qa.primary:hover { background: var(--teal); }
+}
+.app-client .cdash-qa:active { transform: scale(.98); }
+
+/* ── KPI row ── */
+.app-client .cdash-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(155px, 1fr)); gap: 12px; }
+.app-client .cdash-kpi { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 15px 16px 14px; transition: transform .16s cubic-bezier(.23,1,.32,1), box-shadow .16s ease; }
+@media (hover: hover) and (pointer: fine) { .app-client .cdash-kpi:hover { transform: translateY(-2px); box-shadow: var(--shadow-2); } }
+.app-client .cdash-kpi-l { font-family: var(--mono); font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); }
+.app-client .cdash-kpi-v { font-family: var(--mono); font-size: 26px; font-weight: 500; color: var(--ink); margin-top: 7px; line-height: 1; }
+.app-client .cdash-kpi-v.teal { color: var(--teal-deep); }
+.app-client .cdash-kpi-n { font-size: 11px; color: var(--mid); margin-top: 6px; }
+.app-client .cdash-kpi-n .up { color: #16a34a; } .app-client .cdash-kpi-n .warn { color: var(--amber-deep); }
+
+/* ── main grid ── */
+.app-client .cdash-grid { display: grid; grid-template-columns: minmax(0, 1.62fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.app-client .cdash-col { display: flex; flex-direction: column; gap: 18px; }
+.app-client .cdash-card { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
+.app-client .cdash-sec { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.app-client .cdash-sec h3 { font-family: var(--mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--mid); font-weight: 500; }
+.app-client .cdash-sec button { font-family: var(--mono); font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--teal-deep); background: none; border: none; cursor: pointer; padding: 0; }
+.app-client .cdash-sec button:hover { color: var(--teal); }
+
+/* ── projects ── */
+.app-client .cdash-projs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.app-client .cdash-proj { border: 1px solid var(--border); border-radius: var(--radius); padding: 15px 15px 14px; background: var(--bg); transition: transform .16s cubic-bezier(.23,1,.32,1), box-shadow .16s ease, border-color .16s ease; }
+@media (hover: hover) and (pointer: fine) { .app-client .cdash-proj:hover { transform: translateY(-2px); box-shadow: var(--shadow-1); border-color: var(--teal); } }
+.app-client .cdash-proj-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.app-client .cdash-proj-t { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.35; }
+.app-client .cdash-proj-st { font-family: var(--mono); font-size: 8px; letter-spacing: 1px; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+.app-client .cdash-proj-st.active { background: var(--teal-light); color: var(--teal-deep); }
+.app-client .cdash-proj-st.review { background: var(--amber-light); color: var(--amber-deep); }
+.app-client .cdash-proj-st.queued { background: var(--bg); color: var(--mid); border: 1px solid var(--border); }
+.app-client .cdash-proj-st.done { background: var(--teal-light); color: var(--teal-deep); }
+.app-client .cdash-bar { height: 6px; background: var(--border); border-radius: 999px; overflow: hidden; margin: 4px 0 9px; }
+.app-client .cdash-bar > i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--teal), var(--teal-deep)); transform: scaleX(var(--p, 0)); transform-origin: left; }
+@media (prefers-reduced-motion: no-preference) { .app-client .cdash-bar > i { animation: cdash-fill .7s cubic-bezier(.22,1,.36,1) both; animation-delay: var(--d, 80ms); } }
+.app-client .cdash-proj-meta { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 9px; letter-spacing: .5px; color: var(--mid); }
+.app-client .cdash-proj-meta b { color: var(--ink); font-weight: 500; }
+.app-client .cdash-proj-foot { font-size: 11px; color: var(--slate); margin-top: 9px; display: flex; align-items: center; gap: 6px; }
+.app-client .cdash-proj-foot .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--teal); flex: none; }
+
+/* ── support + invoices-due rows ── */
+.app-client .cdash-row { display: flex; align-items: center; gap: 12px; padding: 11px 2px; border-top: 1px solid var(--border); }
+.app-client .cdash-row:first-child { border-top: none; }
+.app-client .cdash-row .tid { font-family: var(--mono); font-size: 10px; color: var(--teal-deep); flex: none; width: 92px; }
+.app-client .cdash-row .txt { flex: 1; font-size: 12.5px; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.app-client .cdash-row .amt { font-family: var(--mono); font-size: 12px; color: var(--ink); }
+.app-client .cdash-pill { font-family: var(--mono); font-size: 8px; letter-spacing: 1px; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+.app-client .cdash-pill.hi { background: #fde7e7; color: #b42318; }
+.app-client .cdash-pill.md { background: var(--amber-light); color: var(--amber-deep); }
+.app-client .cdash-pill.lo { background: var(--bg); color: var(--mid); border: 1px solid var(--border); }
+.app-client .cdash-pill.open { background: var(--amber-light); color: var(--amber-deep); }
+.app-client .cdash-pill.wait { background: var(--bg); color: var(--mid); border: 1px solid var(--border); }
+.app-client .cdash-pill.ok { background: var(--teal-light); color: var(--teal-deep); }
+.app-client .cdash-pay { font-family: var(--mono); font-size: 8px; letter-spacing: 1px; text-transform: uppercase; background: var(--teal-deep); color: #fff; border: none; border-radius: 6px; padding: 6px 11px; cursor: pointer; transition: background .16s ease, transform .16s cubic-bezier(.23,1,.32,1); }
+.app-client .cdash-pay:hover { background: var(--teal); } .app-client .cdash-pay:active { transform: scale(.97); }
+
+/* ── activity feed (timeline) ── */
+.app-client .cdash-feed { display: flex; flex-direction: column; }
+.app-client .cdash-fi { display: grid; grid-template-columns: 18px 1fr; gap: 10px; padding-bottom: 15px; position: relative; }
+.app-client .cdash-fi:not(:last-child)::before { content: ''; position: absolute; left: 8px; top: 16px; bottom: -1px; width: 1.5px; background: var(--border); }
+.app-client .cdash-fi-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid; display: grid; place-items: center; background: #fff; z-index: 1; margin-top: 1px; }
+.app-client .cdash-fi-dot i { width: 5px; height: 5px; border-radius: 50%; display: block; }
+.app-client .cdash-fi.payment .cdash-fi-dot, .app-client .cdash-fi.deploy .cdash-fi-dot { border-color: var(--teal); }
+.app-client .cdash-fi.payment i, .app-client .cdash-fi.deploy i { background: var(--teal); }
+.app-client .cdash-fi.invoice .cdash-fi-dot, .app-client .cdash-fi.meeting .cdash-fi-dot { border-color: var(--amber-deep); }
+.app-client .cdash-fi.invoice i, .app-client .cdash-fi.meeting i { background: var(--amber-deep); }
+.app-client .cdash-fi.ticket .cdash-fi-dot, .app-client .cdash-fi.maintenance .cdash-fi-dot { border-color: var(--mid); }
+.app-client .cdash-fi.ticket i, .app-client .cdash-fi.maintenance i { background: var(--mid); }
+.app-client .cdash-fi-tx { font-size: 12px; color: var(--ink); line-height: 1.45; }
+.app-client .cdash-fi-at { font-family: var(--mono); font-size: 9px; letter-spacing: .5px; color: var(--mid); margin-top: 3px; }
+
+/* ── service health ── */
+.app-client .cdash-health { display: flex; flex-direction: column; }
+.app-client .cdash-hr { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--border); }
+.app-client .cdash-hr:first-child { border-top: none; }
+.app-client .cdash-hr .hd { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.app-client .cdash-hr.operational .hd { background: #16a34a; box-shadow: 0 0 0 3px rgba(22,163,74,.14); }
+.app-client .cdash-hr.expiring .hd { background: var(--amber-deep); box-shadow: 0 0 0 3px var(--amber-light); }
+.app-client .cdash-hr.degraded .hd, .app-client .cdash-hr.down .hd { background: #b42318; box-shadow: 0 0 0 3px #fde7e7; }
+.app-client .cdash-hr .hl { flex: 1; font-size: 12.5px; color: var(--ink); }
+.app-client .cdash-hr .hv { font-family: var(--mono); font-size: 9.5px; letter-spacing: .5px; color: var(--mid); }
+.app-client .cdash-health-foot { font-family: var(--mono); font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: #16a34a; margin-top: 12px; display: flex; align-items: center; gap: 7px; }
+
+/* ── trust strip ── */
+.app-client .cdash-trust { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 14px; }
+.app-client .cdash-tr-v { font-family: var(--mono); font-size: 22px; font-weight: 500; color: var(--teal-deep); line-height: 1; }
+.app-client .cdash-tr-l { font-family: var(--mono); font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--mid); margin-top: 7px; }
+.app-client .cdash-deliv { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 14px; }
+.app-client .cdash-deliv span { font-size: 11px; color: var(--slate); background: var(--bg); border: 1px solid var(--border); border-radius: 999px; padding: 5px 11px; }
+
+@media (max-width: 900px) {
+  .app-client .cdash-grid { grid-template-columns: 1fr; }
+  .app-client .cdash-projs { grid-template-columns: 1fr; }
+}
+
+/* ── dark mode ── */
+[data-theme="dark"] .app-client .cdash-kpi,
+[data-theme="dark"] .app-client .cdash-card,
+[data-theme="dark"] .app-client .cdash-qa { background: #0E0E10; border-color: rgba(255,255,255,.10); }
+[data-theme="dark"] .app-client .cdash-proj,
+[data-theme="dark"] .app-client .cdash-chip { background: #161618; border-color: rgba(255,255,255,.10); }
+[data-theme="dark"] .app-client .cdash-fi-dot { background: #0E0E10; }
+[data-theme="dark"] .app-client .cdash-qa.primary { background: var(--teal); border-color: var(--teal); color: #06140f; }
+[data-theme="dark"] .app-client .cdash-pill.hi { background: rgba(180,35,24,.18); color: #ff9b8f; }
+[data-theme="dark"] .app-client .cdash-hr.operational .hd { background: #2ea043; box-shadow: 0 0 0 3px rgba(46,160,67,.18); }
+[data-theme="dark"] .app-client .cdash-health-foot { color: #2ea043; }
+[data-theme="dark"] .app-client .cdash-deliv span { background: #161618; border-color: rgba(255,255,255,.10); }
