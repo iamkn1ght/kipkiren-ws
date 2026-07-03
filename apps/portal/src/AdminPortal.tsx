@@ -16,8 +16,9 @@
  * in a follow-up ticket - never replace the markup with a "data-driven" rewrite.
  */
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type CSSProperties } from 'react';
 import { useAuth, useApi } from './auth.tsx';
+import './clientDashboard.css';
 import {
   useAdminData,
   slaBarClass,
@@ -27,6 +28,8 @@ import {
   type ReviewQueueItem,
   type RailHealth,
 } from './useAdminData.ts';
+
+const cssVars = (vars: Record<string, string | number>) => vars as CSSProperties;
 
 type Tab = 'dashboard' | 'queue' | 'review' | 'clients' | 'capacity' | 'services' | 'rails' | 'health';
 type QueueFilter = 'all' | 'awaiting' | 'progress' | 'review' | 'flagged';
@@ -302,91 +305,94 @@ export function AdminPortal() {
 
         {/* ═════════════ DASHBOARD ════════════════ */}
         <section className={`view ${tab === 'dashboard' ? 'active' : ''}`} id="dashboard">
-          <h1 className="greeting">Welcome back, <em>{displayName.split('@')[0]}</em>.</h1>
-          <p className="g-sub">{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} · Nairobi</p>
-
-          <div className="alert-stack">
-            {queueRows.filter((r) => r.sla_state === 'warn' || r.sla_state === 'breached').map((r) => (
-              <div key={r.id} className="alert">
-                <div className="alert-txt"><strong>{r.sla_state === 'breached' ? 'SLA BREACHED · ' : 'SLA APPROACHING · '}</strong>{r.ref} · {r.client.business_name} · {r.urgency} urgency · {slaLabel(r.sla_state, r.ms_until_breach)}</div>
-                <button type="button" className="btn-rev" onClick={() => setTab('queue')}>Open ticket</button>
+          <div className="cdash">
+            <div className="cdash-head cdash-reveal">
+              <div>
+                <div className="cdash-hi">Welcome back, <em>{displayName.split('@')[0]}</em>.</div>
+                <div className="cdash-subline">{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} · Nairobi</div>
+                <div className="cdash-chips">
+                  <span className="cdash-chip"><span className="d" /><b>{capacity?.open_tickets ?? 0}</b> open</span>
+                  <span className="cdash-chip"><span className={`d ${(capacity?.awaiting_ai_review ?? 0) ? 'a' : ''}`} /><b>{capacity?.awaiting_ai_review ?? 0}</b> awaiting review</span>
+                  <span className="cdash-chip"><span className={`d ${(capacity?.sla_breaches_open ?? 0) ? 'a' : ''}`} /><b>{capacity?.sla_breaches_open ?? 0}</b> SLA breaches</span>
+                </div>
               </div>
-            ))}
-            {queueRows.filter((r) => r.status === 'ai_draft' || r.status === 'flagged').map((r) => (
-              <div key={`flag-${r.id}`} className="alert">
-                <div className="alert-txt"><strong>AI FLAG · </strong>{r.ref} · {r.client.business_name} · flagged by decomposition</div>
-                <button type="button" className="btn-rev" onClick={() => setTab('review')}>Review</button>
+              <div className="cdash-actions">
+                <button type="button" className="cdash-qa primary" onClick={() => { setRaiseResult(null); setShowRaiseTicket(true); }}><span className="g">+</span> Raise ticket</button>
+                <button type="button" className="cdash-qa" onClick={() => setTab('queue')}>Ticket queue</button>
+                <button type="button" className="cdash-qa" onClick={() => setTab('review')}>AI review</button>
               </div>
-            ))}
-          </div>
+            </div>
 
-          <div className="shd">Today</div>
-          <div className="stats">
-            <div className="sc">
-              <div className="sc-lbl">Open tickets</div>
-              <div className="sc-val">{loading ? d : capacity?.open_tickets ?? 0}</div>
-              <div className="sc-note">{loading ? d : `${unassignedCount} awaiting assignment`}</div>
-            </div>
-            <div className="sc">
-              <div className="sc-lbl">Awaiting review</div>
-              <div className="sc-val">{loading ? d : capacity?.awaiting_ai_review ?? 0}</div>
-              <div className="sc-note warn">{loading ? d : `${capacity?.sla_breaches_open ?? 0} SLA breaches open`}</div>
-            </div>
-            <div className="sc">
-              <div className="sc-lbl">MRR</div>
-              <div className="sc-val">{loading ? d : `KES ${(capacity?.mrr_kes ?? 0).toLocaleString()}`}</div>
-              <div className="sc-note ok">{loading ? d : `${capacity?.active_clients ?? 0} active clients`}</div>
-            </div>
-            <div className="sc">
-              <div className="sc-lbl">Dispatched</div>
-              <div className="sc-val">{loading ? d : capacity?.dispatched ?? 0}</div>
-              <div className="sc-note">{loading ? d : `${capacity?.dispatched_proformas_30d ?? 0} in last 30d`}</div>
-            </div>
-          </div>
+            {(queueRows.some((r) => r.sla_state === 'warn' || r.sla_state === 'breached') || queueRows.some((r) => r.status === 'ai_draft' || r.status === 'flagged')) && (
+              <div className="alert-stack cdash-reveal" style={cssVars({ '--d': '60ms' })}>
+                {queueRows.filter((r) => r.sla_state === 'warn' || r.sla_state === 'breached').map((r) => (
+                  <div key={r.id} className="alert">
+                    <div className="alert-txt"><strong>{r.sla_state === 'breached' ? 'SLA BREACHED · ' : 'SLA APPROACHING · '}</strong>{r.ref} · {r.client.business_name} · {r.urgency} urgency · {slaLabel(r.sla_state, r.ms_until_breach)}</div>
+                    <button type="button" className="btn-rev" onClick={() => setTab('queue')}>Open ticket</button>
+                  </div>
+                ))}
+                {queueRows.filter((r) => r.status === 'ai_draft' || r.status === 'flagged').map((r) => (
+                  <div key={`flag-${r.id}`} className="alert">
+                    <div className="alert-txt"><strong>AI FLAG · </strong>{r.ref} · {r.client.business_name} · flagged by decomposition</div>
+                    <button type="button" className="btn-rev" onClick={() => setTab('review')}>Review</button>
+                  </div>
+                ))}
+              </div>
+            )}
 
-          <div className="split-2">
-            <div>
-              <div className="shd">Active queue · live</div>
-              <table className="tbl">
-                <thead>
-                  <tr><th>Ticket</th><th>Client</th><th>Status</th><th>Urgency</th><th>SLA</th></tr>
-                </thead>
-                <tbody>
-                  {loading ? (
-                    <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--mid)' }}>Loading...</td></tr>
-                  ) : queueRows.length === 0 ? (
-                    <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--mid)' }}>No open tickets</td></tr>
-                  ) : queueRows.slice(0, 8).map((r) => {
-                    const sb = statusBadge(r);
-                    const ub = urgencyBadge(r.urgency);
-                    const barPct = slaBarPercent(r.ms_until_breach, r.created_at);
-                    return (
-                      <tr key={r.id}>
-                        <td className="tid">{r.ref}</td>
-                        <td className="client-nm">{r.client.business_name}<small>{r.client.plan}{r.assigned_to ? ` · ${r.assigned_to}` : ''}</small></td>
-                        <td><span className={`bdg ${sb.cls}`}>{sb.label}</span></td>
-                        <td><span className={`bdg ${ub.cls}`}>{ub.label}</span></td>
-                        <td><div className="sla-w"><div className="sla-tr"><div className={`sla-fl ${slaBarClass(r.sla_state)}`} style={{ width: `${barPct}%` }}></div></div><span className="sla-t">{slaLabel(r.sla_state, r.ms_until_breach)}</span></div></td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <div className="cdash-kpis cdash-reveal" style={cssVars({ '--d': '90ms' })}>
+              <div className="cdash-kpi"><div className="cdash-kpi-l">Open tickets</div><div className="cdash-kpi-v">{loading ? d : capacity?.open_tickets ?? 0}</div><div className="cdash-kpi-n">{loading ? d : `${unassignedCount} awaiting assignment`}</div></div>
+              <div className="cdash-kpi"><div className="cdash-kpi-l">Awaiting review</div><div className="cdash-kpi-v">{loading ? d : capacity?.awaiting_ai_review ?? 0}</div><div className="cdash-kpi-n">{(capacity?.sla_breaches_open ?? 0) > 0 ? <span className="warn">{capacity?.sla_breaches_open} SLA breaches</span> : 'none flagged'}</div></div>
+              <div className="cdash-kpi"><div className="cdash-kpi-l">MRR</div><div className="cdash-kpi-v teal">{loading ? d : (capacity?.mrr_kes ?? 0).toLocaleString()}</div><div className="cdash-kpi-n">KES · {capacity?.active_clients ?? 0} active clients</div></div>
+              <div className="cdash-kpi"><div className="cdash-kpi-l">Dispatched</div><div className="cdash-kpi-v">{loading ? d : capacity?.dispatched ?? 0}</div><div className="cdash-kpi-n">{capacity?.dispatched_proformas_30d ?? 0} in last 30d</div></div>
+              <div className="cdash-kpi"><div className="cdash-kpi-l">Approval rate</div><div className="cdash-kpi-v">{capacity?.approval_rate_30d != null ? `${Math.round(capacity.approval_rate_30d * 100)}%` : '-'}</div><div className="cdash-kpi-n">last 30 days</div></div>
+              <div className="cdash-kpi"><div className="cdash-kpi-l">Active clients</div><div className="cdash-kpi-v">{loading ? d : capacity?.active_clients ?? 0}</div><div className="cdash-kpi-n">on retainer</div></div>
             </div>
-            <div>
-              <div className="shd">Recent approvals</div>
-              <table className="tbl">
-                <thead><tr><th>Ref</th><th>Client</th><th>Amount</th></tr></thead>
-                <tbody>
-                  {loading ? (
-                    <tr><td colSpan={3} style={{ textAlign: 'center', color: 'var(--mid)' }}>Loading...</td></tr>
-                  ) : !recentDispatches?.length ? (
-                    <tr><td colSpan={3} style={{ textAlign: 'center', color: 'var(--mid)' }}>No recent dispatches</td></tr>
-                  ) : recentDispatches.map((rd) => (
-                    <tr key={rd.ref}><td className="tid">{rd.ref}</td><td className="client-nm">{rd.client_name}</td><td style={{ textAlign: 'right', fontFamily: 'var(--mono)' }}>{rd.subtotal_kes.toLocaleString()}</td></tr>
-                  ))}
-                </tbody>
-              </table>
+
+            <div className="cdash-grid">
+              <div className="cdash-card cdash-reveal" style={cssVars({ '--d': '130ms' })}>
+                <div className="cdash-sec"><h3>Active queue · live</h3><button type="button" onClick={() => setTab('queue')}>View all</button></div>
+                <table className="tbl">
+                  <thead>
+                    <tr><th>Ticket</th><th>Client</th><th>Status</th><th>Urgency</th><th>SLA</th></tr>
+                  </thead>
+                  <tbody>
+                    {loading ? (
+                      <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--mid)' }}>Loading...</td></tr>
+                    ) : queueRows.length === 0 ? (
+                      <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--mid)' }}>No open tickets</td></tr>
+                    ) : queueRows.slice(0, 8).map((r) => {
+                      const sb = statusBadge(r);
+                      const ub = urgencyBadge(r.urgency);
+                      const barPct = slaBarPercent(r.ms_until_breach, r.created_at);
+                      return (
+                        <tr key={r.id}>
+                          <td className="tid">{r.ref}</td>
+                          <td className="client-nm">{r.client.business_name}<small>{r.client.plan}{r.assigned_to ? ` · ${r.assigned_to}` : ''}</small></td>
+                          <td><span className={`bdg ${sb.cls}`}>{sb.label}</span></td>
+                          <td><span className={`bdg ${ub.cls}`}>{ub.label}</span></td>
+                          <td><div className="sla-w"><div className="sla-tr"><div className={`sla-fl ${slaBarClass(r.sla_state)}`} style={{ width: `${barPct}%` }}></div></div><span className="sla-t">{slaLabel(r.sla_state, r.ms_until_breach)}</span></div></td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="cdash-card cdash-reveal" style={cssVars({ '--d': '170ms' })}>
+                <div className="cdash-sec"><h3>Recent approvals</h3><button type="button" onClick={() => setTab('review')}>Review queue</button></div>
+                <table className="tbl">
+                  <thead><tr><th>Ref</th><th>Client</th><th>Amount</th></tr></thead>
+                  <tbody>
+                    {loading ? (
+                      <tr><td colSpan={3} style={{ textAlign: 'center', color: 'var(--mid)' }}>Loading...</td></tr>
+                    ) : !recentDispatches?.length ? (
+                      <tr><td colSpan={3} style={{ textAlign: 'center', color: 'var(--mid)' }}>No recent dispatches</td></tr>
+                    ) : recentDispatches.map((rd) => (
+                      <tr key={rd.ref}><td className="tid">{rd.ref}</td><td className="client-nm">{rd.client_name}</td><td style={{ textAlign: 'right', fontFamily: 'var(--mono)' }}>{rd.subtotal_kes.toLocaleString()}</td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </section>
