@@ -5,6 +5,7 @@ import { getServiceClient } from '../lib/supabase.js';
 import { verifyKipkirenPaySignature, verifyPaystackSignature, verifyTodokuSignature } from '../lib/hmac.js';
 import { writeAuditEvent } from '../services/audit.js';
 import { sendClientSms } from '../services/notifications.js';
+import { sendClientEmail } from '../services/email.js';
 import { logger } from '../lib/logger.js';
 
 export const webhooksRouter: Router = Router();
@@ -168,6 +169,13 @@ async function recordConfirmedPayment(input: ConfirmInput): Promise<{ ok: boolea
     clientId,
     template: 'kws_payment_confirmed',
     variables: { ref: pf.ref, amount: String(input.amount_kes), gateway_ref: input.gateway_ref },
+    entity_type: 'payment',
+    entity_id: pending.id,
+  });
+  void sendClientEmail({
+    clientId,
+    template: 'payment_confirmed',
+    variables: { ref: pf.ref, amount: input.amount_kes.toLocaleString() },
     entity_type: 'payment',
     entity_id: pending.id,
   });

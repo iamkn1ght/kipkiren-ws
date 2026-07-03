@@ -63,6 +63,14 @@ const CoreEnvSchema = z.object({
   CLOUDFLARE_API_TOKEN: z.string().optional().default(''),
   CLOUDFLARE_ACCOUNT_ID: z.string().optional().default(''),
 
+  // Transactional email - support-ticket, proforma and payment notices to the
+  // client's registered address. Generic HTTPS provider (Resend-compatible):
+  // POST {from,to,subject,html,text} with a bearer key. Optional at boot; sends
+  // are a no-op until all three are set.
+  EMAIL_API_URL: z.string().optional().default(''),
+  EMAIL_API_KEY: z.string().optional().default(''),
+  EMAIL_FROM: z.string().optional().default(''),
+
   // Todoku SMS (S9-003) - transactional SMS on 5 KWS events. Todoku signs
   // with base64 HMAC-SHA256 (NOT hex - distinct from KP/Paystack).
   TODOKU_API_BASE: z.string().optional().default(''),
@@ -115,12 +123,13 @@ export function loadEnv(): Env {
  *   requireFeatureEnv('kipkiren_pay');
  *   requireFeatureEnv('paystack');
  */
-export type Feature = 'anthropic' | 'kipkiren_pay' | 'paystack' | 'cloudflare' | 'todoku';
+export type Feature = 'anthropic' | 'kipkiren_pay' | 'paystack' | 'cloudflare' | 'todoku' | 'email';
 
 const FEATURE_REQUIRED: Record<Feature, (keyof z.infer<typeof CoreEnvSchema>)[]> = {
   anthropic: ['ANTHROPIC_API_KEY'],
   kipkiren_pay: ['KIPKIREN_PAY_BASE_URL', 'KIPKIREN_PAY_API_KEY', 'KIPKIREN_PAY_HMAC_SECRET'],
   paystack: ['PAYSTACK_SECRET_KEY', 'PAYSTACK_WEBHOOK_SECRET'],
+  email: ['EMAIL_API_URL', 'EMAIL_API_KEY', 'EMAIL_FROM'],
   // Account id is optional - the scoped API token already identifies the zone.
   cloudflare: ['CLOUDFLARE_API_TOKEN'],
   todoku: [

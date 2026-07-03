@@ -56,6 +56,9 @@ export type AuditEventType =
   | 'ssl_certificate_expired'
   // S9-003 SLA breach notification (also the per-ticket dedup marker)
   | 'sla_breach_notified'
+  // Transactional email notifications
+  | 'email_sent'
+  | 'email_failed'
   // S9-004 agent autonomous execution ledger
   | 'agent_execution_started'
   | 'agent_execution_completed'

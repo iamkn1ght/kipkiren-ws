@@ -17,6 +17,7 @@ import { writeAuditEvent } from './audit.js';
 import { decomposeTicket } from './decomposition.js';
 import { createDraftProforma, loadActiveRateCard } from './proforma.js';
 import { computeSlaDeadline } from './sla.js';
+import { sendClientEmail } from './email.js';
 import { logger } from '../lib/logger.js';
 import type { UserRole } from '../middleware/auth.js';
 
@@ -158,6 +159,19 @@ export async function intakeTicket(params: IntakeParams): Promise<IntakeResult> 
       payload_snapshot: { error: (err as Error).message },
     });
   }
+
+  // Email the client that their request is logged (covers admin-raised-on-behalf).
+  // Gated + fire-and-forget: a no-op until EMAIL_* are set; never blocks intake.
+  void sendClientEmail({
+    clientId: clientCtx.client_id,
+    template: 'ticket_raised',
+    variables: {
+      ref: ticket.ref,
+      summary: input.description.length > 140 ? `${input.description.slice(0, 137)}...` : input.description,
+    },
+    entity_type: 'ticket',
+    entity_id: ticket.id,
+  });
 
   return { ticket_id: ticket.id, ref: ticket.ref, proforma_id };
 }

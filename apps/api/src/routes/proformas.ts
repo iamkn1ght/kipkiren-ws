@@ -8,6 +8,7 @@ import { getServiceClient } from '../lib/supabase.js';
 import { dispatchProforma } from '../services/proforma.js';
 import { writeAuditEvent } from '../services/audit.js';
 import { sendClientSms } from '../services/notifications.js';
+import { sendClientEmail } from '../services/email.js';
 import { computeContentHash } from '../lib/content-hash.js';
 import { logger } from '../lib/logger.js';
 import { loadEnv, requireFeatureEnv } from '../config/env.js';
@@ -204,10 +205,18 @@ proformasRouter.put(
     const dispatchTicketRel = (proforma as { tickets: { client_id: string } | { client_id: string }[] | null }).tickets;
     const dispatchClientId = Array.isArray(dispatchTicketRel) ? dispatchTicketRel[0]?.client_id : dispatchTicketRel?.client_id;
     if (dispatchClientId) {
+      const pfRef = (proforma as { ref: string }).ref;
       void sendClientSms({
         clientId: dispatchClientId,
         template: 'kws_proforma_dispatched',
-        variables: { ref: (proforma as { ref: string }).ref, total: String(dispatched.total_kes) },
+        variables: { ref: pfRef, total: String(dispatched.total_kes) },
+        entity_type: 'proforma',
+        entity_id: id,
+      });
+      void sendClientEmail({
+        clientId: dispatchClientId,
+        template: 'proforma_ready',
+        variables: { ref: pfRef, total: dispatched.total_kes.toLocaleString() },
         entity_type: 'proforma',
         entity_id: id,
       });
