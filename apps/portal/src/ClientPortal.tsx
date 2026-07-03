@@ -226,7 +226,7 @@ function DashboardView({ name, tickets, services, invoices, dashboard, loading, 
         <div className="cdash-head cdash-reveal">
           <div>
             <div className="cdash-hi">Welcome back, <em>{name}</em>.</div>
-            <div className="cdash-subline">Your retainer is active and all systems are operational.</div>
+            <div className="cdash-subline">Your online presence is live, and every system is operational.</div>
             <div className="cdash-chips">
               <span className="cdash-chip"><span className="d" /><b>{openTickets.length}</b> ticket{openTickets.length !== 1 ? 's' : ''} open</span>
               <span className="cdash-chip"><span className={`d ${dueInvoices.length ? 'a' : ''}`} /><b>{dueInvoices.length}</b> invoice{dueInvoices.length !== 1 ? 's' : ''} pending</span>

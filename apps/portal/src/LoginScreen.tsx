@@ -50,7 +50,7 @@ export function LoginScreen({ role, onBack }: { role: PortalRole; onBack: () => 
             <div className="lg-sub">/ web-services</div>
           </div>
           <div className="lg-aside-quote">
-            Managed web services for Kenyan SMEs — every task priced and approved on a proforma before we build.
+            The operating system for your business online. One subscription, one team, every change approved before we build.
           </div>
           <div className="lg-aside-foot">
             <span className="lg-aside-role">{SUBLABEL[role]}</span>
