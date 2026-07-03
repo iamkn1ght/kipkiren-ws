@@ -63,20 +63,20 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
       <header className="lp-wrap lp-hero">
         <div className="lp-hero-grid">
           <div>
-            <span className="lp-tagchip">◆ MANAGED WEB SERVICES · KENYA · <span className="lp-diamond">● NOW ONBOARDING</span></span>
-            <h1 className="lp-h1">We run the quiet parts of your <em>website</em><span className="lp-dot">.</span></h1>
-            <p className="lp-lede"><strong>Websites, hosting, SEO and business email for Kenyan SMEs</strong> - on a monthly retainer. Every task is priced and approved on a proforma before we build, so there are no surprise invoices.</p>
+            <span className="lp-tagchip">◆ THE OPERATING SYSTEM FOR YOUR ONLINE PRESENCE · <span className="lp-diamond">● NOW ONBOARDING</span></span>
+            <h1 className="lp-h1">The <em>operating system</em> for your business online<span className="lp-dot">.</span></h1>
+            <p className="lp-lede"><strong>Your website, hosting, domains, business email and search presence, run as one system.</strong> One subscription, one team. Every change is priced and approved on a proforma before we build, so nothing ever surprises you.</p>
             <div className="lp-cta-row">
               <button className="lp-btn lp-btn-primary" onClick={onSignIn}>Get started →</button>
               <button className="lp-btn lp-btn-ghost" onClick={go('plans')}>See plans →</button>
             </div>
-            <div className="lp-scroll">↓ Scroll · the stack</div>
+            <div className="lp-scroll">↓ Scroll · what runs on it</div>
 
             <div className="lp-strip">
-              <div><div className="k">Languages</div><div className="v">TS / Rust / SQL</div></div>
-              <div><div className="k">Runtimes</div><div className="v">Edge / Workers</div></div>
-              <div><div className="k">Surfaces</div><div className="v">Web · API · CMS</div></div>
-              <div><div className="k">Coverage</div><div className="v">WCAG 2.2 AA</div></div>
+              <div><div className="k">Uptime</div><div className="v">99.9% target</div></div>
+              <div><div className="k">Support</div><div className="v">Same-day · EAT</div></div>
+              <div><div className="k">Covers</div><div className="v">Web · Email · Search</div></div>
+              <div><div className="k">Billing</div><div className="v">One monthly line</div></div>
             </div>
           </div>
 
@@ -88,8 +88,8 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
       {/* ── §01 systems ── */}
       <section className="lp-sec grid-bg" id="systems">
         <div className="lp-wrap">
-          <div className="lp-eyebrow"><span className="lp-mono">§01 · <span className="lp-diamond">systems we ship</span></span><span className="lp-rule" /><span className="lp-num">01 / 05</span></div>
-          <p className="lp-intro">Four things every small business needs online - done properly and kept running. Pick a retainer; we handle the rest, priced and approved before we build.</p>
+          <div className="lp-eyebrow"><span className="lp-mono">§01 · <span className="lp-diamond">the modules</span></span><span className="lp-rule" /><span className="lp-num">01 / 05</span></div>
+          <p className="lp-intro">Everything your business needs online, run as one system. Four modules, one subscription, one team. Each priced and approved before we build.</p>
           <div className="lp-cards">
             {[
               { pkg: '@kipkiren/site', kind: 'WEBSITE', title: 'Websites that load fast', body: 'Marketing sites, landing and pricing pages - built to load quickly on a thin Kenyan pipe and rank on Google.', tags: ['Design', 'Build', 'SEO'] },
@@ -252,7 +252,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
         <div className="lp-wrap">
           <div>
             <h4><span className="lp-diamond">◆</span> KIPKIREN <span style={{ color: 'rgba(255,255,255,.4)' }}>/web-services</span></h4>
-            <p>Managed web services for Kenyan SMEs - websites, hosting, SEO, email and cloud on a monthly retainer, every task priced on a proforma before we build. Based in Nairobi.</p>
+            <p>The operating system for your business online. Website, hosting, email, domains and search, run as one system on a monthly subscription, every change priced on a proforma before we build. Built in Nairobi, deployed at the edge.</p>
           </div>
           <div><div className="lp-fcol-l">/pages</div><a onClick={go('systems')}>Services</a><a onClick={go('plans')}>Plans</a><a onClick={go('process')}>How it works</a></div>
           <div><div className="lp-fcol-l">/talk</div><a onClick={go('contact')}>Contact</a><a>hello@kipkiren.co.ke</a></div>

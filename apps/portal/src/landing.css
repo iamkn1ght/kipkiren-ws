@@ -26,7 +26,7 @@
 .lp-status b { color: #34C6A6; font-weight: 500; }
 
 /* ── nav ── */
-.lp-nav { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.lp-nav { position: sticky; top: 0; z-index: 20; background: rgba(255,255,255,.85); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
 .lp-nav .lp-wrap { display: flex; align-items: center; justify-content: space-between; height: 68px; }
 .lp-brand { display: flex; align-items: baseline; gap: 10px; }
 .lp-brand-mark { font-family: var(--mono); font-size: 13px; letter-spacing: 4px; font-weight: 700; color: var(--ink); }
@@ -282,6 +282,19 @@
 [data-theme="dark"] .lp-booking { background: #fff; color: #0B0B0C; box-shadow: 0 2px 14px rgba(0,0,0,.55); }
 [data-theme="dark"] .lp-brand-sub { color: #34C6A6; }
 [data-theme="dark"] .lp-navlink::after { background: #34C6A6; }
+
+/* ============================================================================
+ * Editorial typography refinement. Optical spacing, balanced headlines,
+ * pretty paragraph rag, tabular figures. Additive - degrades gracefully where
+ * text-wrap isn't supported.
+ * ========================================================================== */
+.lp { font-feature-settings: "kern" 1, "liga" 1, "calt" 1; text-rendering: optimizeLegibility; -moz-osx-font-smoothing: grayscale; }
+.lp-h1, .lp-h2, .lp-intro, .lp-quote, .lp-card-title, .lp-contact h2 { text-wrap: balance; }
+.lp-lede, .lp-card-body, .lp-proc-body, .lp-contact p, .lp-fineprint { text-wrap: pretty; }
+.lp-h1 { letter-spacing: -0.025em; }
+.lp-h1 em, .lp-h2 em { letter-spacing: -0.012em; }
+.lp-lede { max-width: 34em; }
+.lp-mono, .lp-num, .lp-strip .v, .lp-plan-price, .lp-statcard .n, .lp-table td, .lp-term { font-variant-numeric: tabular-nums; }
 
 /* ── AI proforma terminal rows ── */
 .lp-trow { display: flex; justify-content: space-between; gap: 16px; color: rgba(255,255,255,.62); }
