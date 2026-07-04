@@ -191,3 +191,8 @@
 [data-theme="dark"] .kwsp .cdash-hi em { color: var(--teal); }
 /* audit: align pay-button radius to the token scale */
 .kwsp .cdash-pay { border-radius: var(--radius-sm); }
+/* audit: let dense rows (invoices/support) wrap on phones instead of crushing */
+@media (max-width: 520px) {
+  .kwsp .cdash-row { flex-wrap: wrap; }
+  .kwsp .cdash-row .txt { flex-basis: 100%; white-space: normal; overflow: visible; order: 5; }
+}

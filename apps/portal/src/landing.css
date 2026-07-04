@@ -303,6 +303,8 @@
   .lp-term-cursor { animation: none; }
   .lp-btn:hover, .lp-booking:hover, .lp-send:hover, .lp-card:hover, .lp-plan:hover, .lp-navlink:hover { transform: none; }
 }
+/* audit: tighten the page gutter on phones (40px was 22% of a 360px screen) */
+@media (max-width: 600px) { .lp-wrap { padding: 0 20px; } }
 
 /* ── AI proforma terminal rows ── */
 .lp-trow { display: flex; justify-content: space-between; gap: 16px; color: rgba(255,255,255,.62); }
