@@ -75,7 +75,7 @@ export function LoginScreen({ role, onBack }: { role: PortalRole; onBack: () => 
             <div className="lg-pass-row">
               <input type={showPass ? 'text' : 'password'} autoComplete="current-password" required minLength={8} className="lg-input"
                 value={password} onChange={(e) => setPassword(e.target.value)} disabled={submitting} />
-              <button type="button" className="lg-pass-toggle" onClick={() => setShowPass((v) => !v)} tabIndex={-1}>
+              <button type="button" className="lg-pass-toggle" onClick={() => setShowPass((v) => !v)} aria-label={showPass ? 'Hide password' : 'Show password'}>
                 {showPass ? 'Hide' : 'Show'}
               </button>
             </div>

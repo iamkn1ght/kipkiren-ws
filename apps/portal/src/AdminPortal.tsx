@@ -421,7 +421,7 @@ export function AdminPortal() {
             <select className="filter-sel" defaultValue="ALL URGENCY">
               <option>ALL URGENCY</option><option>Standard</option><option>Elevated</option><option>Urgent</option>
             </select>
-            <input className="qsearch" placeholder="Search ticket or client..." />
+            <input className="qsearch" aria-label="Search tickets or clients" placeholder="Search ticket or client..." />
           </div>
 
           <div className="q-row-hd">
@@ -460,7 +460,7 @@ export function AdminPortal() {
             ) : reviewItems.length === 0 ? (
               <div style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--mid)', padding: 40 }}>No proformas awaiting review</div>
             ) : reviewItems.map((item) => (
-              <div key={item.id} className={`ai-card ${item.ai_flag_reason ? 'flagged' : ''}`} onClick={() => openReview(item)}>
+              <div key={item.id} role="button" tabIndex={0} className={`ai-card ${item.ai_flag_reason ? 'flagged' : ''}`} onClick={() => openReview(item)} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openReview(item); } }}>
                 <div className="ai-card-hd">
                   <div>
                     <div className="ai-ref">{item.ref} · {item.ai_flag_reason ? 'Flagged' : 'Awaiting review'}</div>
@@ -774,14 +774,14 @@ export function AdminPortal() {
 
               <div className="rev-line" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                 <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--mid)', minWidth: 100 }}>Client</span>
-                <select className="rev-inp" value={newTicket.client_id} onChange={(e) => setNewTicket({ ...newTicket, client_id: e.target.value })}>
+                <select className="rev-inp" aria-label="Client" value={newTicket.client_id} onChange={(e) => setNewTicket({ ...newTicket, client_id: e.target.value })}>
                   <option value="">Select client...</option>
                   {(clients ?? []).map((c) => <option key={c.id} value={c.id}>{c.business_name}</option>)}
                 </select>
               </div>
               <div className="rev-line" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                 <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--mid)', minWidth: 100 }}>Category</span>
-                <select className="rev-inp" value={newTicket.category} onChange={(e) => setNewTicket({ ...newTicket, category: e.target.value })}>
+                <select className="rev-inp" aria-label="Service category" value={newTicket.category} onChange={(e) => setNewTicket({ ...newTicket, category: e.target.value })}>
                   <option value="web">Web</option>
                   <option value="cloud">Cloud</option>
                   <option value="seo">SEO</option>
@@ -792,7 +792,7 @@ export function AdminPortal() {
               </div>
               <div className="rev-line" style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                 <span style={{ fontFamily: 'var(--mono)', fontSize: 9, letterSpacing: 2, textTransform: 'uppercase', color: 'var(--mid)', minWidth: 100 }}>Urgency</span>
-                <select className="rev-inp" value={newTicket.urgency} onChange={(e) => setNewTicket({ ...newTicket, urgency: e.target.value })}>
+                <select className="rev-inp" aria-label="Urgency" value={newTicket.urgency} onChange={(e) => setNewTicket({ ...newTicket, urgency: e.target.value })}>
                   <option value="standard">Standard · 1.0×</option>
                   <option value="elevated">Elevated · 1.25×</option>
                   <option value="urgent">Urgent · 1.5×</option>
@@ -919,6 +919,7 @@ export function AdminPortal() {
                   <button
                     type="button"
                     className="rev-del"
+                    aria-label="Remove line item"
                     onClick={() => setEditLines(editLines.filter((_, j) => j !== i))}
                   >
                     ✕

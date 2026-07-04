@@ -909,7 +909,10 @@ html, body, #root { background: var(--bg); -webkit-font-smoothing: antialiased; 
 [data-theme="dark"] .greeting em, [data-theme="dark"] .rp-title em, [data-theme="dark"] .ai-conf-val,
 [data-theme="dark"] .tid, [data-theme="dark"] .done-tid, [data-theme="dark"] .pf-ref,
 [data-theme="dark"] .inv-id, [data-theme="dark"] .sb-mark, [data-theme="dark"] .lg-mark,
-[data-theme="dark"] .rp-mark { color: var(--teal); }
+[data-theme="dark"] .rp-mark,
+[data-theme="dark"] .shd, [data-theme="dark"] .tb-crumb span { color: var(--teal); }
+/* audit: task portal sb-scope should stay teal, not inherit admin's amber (unscoped conflict) */
+.app-task .sb-scope { color: var(--teal); }
 
 [data-theme="dark"] .lg-input, [data-theme="dark"] .qsearch, [data-theme="dark"] .rev-inp,
 [data-theme="dark"] .pfield input, [data-theme="dark"] .fld input, [data-theme="dark"] .fld select,

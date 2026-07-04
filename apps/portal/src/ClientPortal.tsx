@@ -93,7 +93,7 @@ export function ClientPortal() {
       {/* SIDEBAR */}
       <div className="sb">
         <div className="sb-logo">
-          <div className="sb-mark">KWS</div>
+          <div className="sb-mark">KIPKIREN</div>
           <div className="sb-sub">Web Services</div>
         </div>
         <div className="sb-nav">
@@ -226,7 +226,7 @@ function DashboardView({ name, tickets, services, invoices, dashboard, loading, 
         <div className="cdash-head cdash-reveal">
           <div>
             <div className="cdash-hi">Welcome back, <em>{name}</em>.</div>
-            <div className="cdash-subline">Your online presence is live, and every system is operational.</div>
+            <div className="cdash-subline">{allOperational ? 'Your online presence is live, and every system is operational.' : 'Here is where your account stands today.'}</div>
             <div className="cdash-chips">
               <span className="cdash-chip"><span className="d" /><b>{openTickets.length}</b> ticket{openTickets.length !== 1 ? 's' : ''} open</span>
               <span className="cdash-chip"><span className={`d ${dueInvoices.length ? 'a' : ''}`} /><b>{dueInvoices.length}</b> invoice{dueInvoices.length !== 1 ? 's' : ''} pending</span>
@@ -437,8 +437,9 @@ function TicketView({ onSubmitted }: { onSubmitted: () => void }) {
           {/* request form */}
           <div className="cdash-card cdash-reveal" style={cssVars({ '--d': '60ms' })}>
             <div className="fld">
-              <label>Describe your request</label>
+              <label htmlFor="tk-desc">Describe your request</label>
               <textarea
+                id="tk-desc"
                 placeholder="e.g. Add a services page with 4 sections - intro, what we offer, a pricing table, and a contact form."
                 value={desc}
                 onChange={(e) => setDesc(e.target.value)}
@@ -447,8 +448,8 @@ function TicketView({ onSubmitted }: { onSubmitted: () => void }) {
             </div>
             <div className="fg2">
               <div className="fld">
-                <label>Service category</label>
-                <select value={category} onChange={(e) => setCategory(e.target.value)} disabled={submitting}>
+                <label htmlFor="tk-cat">Service category</label>
+                <select id="tk-cat" value={category} onChange={(e) => setCategory(e.target.value)} disabled={submitting}>
                   <option>Web Development</option>
                   <option>Cloud Services</option>
                   <option>SEO</option>
@@ -458,8 +459,8 @@ function TicketView({ onSubmitted }: { onSubmitted: () => void }) {
                 </select>
               </div>
               <div className="fld">
-                <label>Urgency</label>
-                <select value={urgency} onChange={(e) => setUrgency(e.target.value)} disabled={submitting}>
+                <label htmlFor="tk-urg">Urgency</label>
+                <select id="tk-urg" value={urgency} onChange={(e) => setUrgency(e.target.value)} disabled={submitting}>
                   <option>Standard (within SLA)</option>
                   <option>Elevated - within 48hrs</option>
                   <option>Urgent - within 24hrs</option>

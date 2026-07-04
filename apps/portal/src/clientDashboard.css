@@ -184,3 +184,10 @@
 [data-theme="dark"] .kwsp .cdash-pill.md,
 [data-theme="dark"] .kwsp .cdash-pill.open,
 [data-theme="dark"] .kwsp .cdash-proj-st.review { color: var(--amber); }
+/* audit: remaining teal-deep-on-dark accents that missed AA */
+[data-theme="dark"] .kwsp .cdash-row .tid,
+[data-theme="dark"] .kwsp .cdash-qa .g,
+[data-theme="dark"] .kwsp .cdash-pay.ghost,
+[data-theme="dark"] .kwsp .cdash-hi em { color: var(--teal); }
+/* audit: align pay-button radius to the token scale */
+.kwsp .cdash-pay { border-radius: var(--radius-sm); }

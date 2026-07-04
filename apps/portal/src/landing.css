@@ -296,6 +296,14 @@
 .lp-lede { max-width: 34em; }
 .lp-mono, .lp-num, .lp-strip .v, .lp-plan-price, .lp-statcard .n, .lp-table td, .lp-term { font-variant-numeric: tabular-nums; }
 
+/* ── audit fixes: dark-mode accent contrast + reduced-motion ── */
+[data-theme="dark"] .lp-proc-top .step,
+[data-theme="dark"] .lp-plan-name { color: #34C6A6; }
+@media (prefers-reduced-motion: reduce) {
+  .lp-term-cursor { animation: none; }
+  .lp-btn:hover, .lp-booking:hover, .lp-send:hover, .lp-card:hover, .lp-plan:hover, .lp-navlink:hover { transform: none; }
+}
+
 /* ── AI proforma terminal rows ── */
 .lp-trow { display: flex; justify-content: space-between; gap: 16px; color: rgba(255,255,255,.62); }
 .lp-trow span:last-child { color: #DCE7E2; }

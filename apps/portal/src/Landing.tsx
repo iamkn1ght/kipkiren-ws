@@ -234,10 +234,10 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
               </div>
             </div>
             <form onSubmit={submit}>
-              <div className="lp-field"><label>$ Name</label><input placeholder="Your name" /></div>
-              <div className="lp-field"><label>$ Email</label><input type="email" placeholder="you@yourcompany.co.ke" /></div>
-              <div className="lp-field"><label>$ Company</label><input placeholder="Your company" /></div>
-              <div className="lp-field"><label>$ Brief</label><textarea placeholder="One sentence about what you're making and a date you'd like to ship by." /></div>
+              <div className="lp-field"><label htmlFor="lp-name">$ Name</label><input id="lp-name" placeholder="Your name" /></div>
+              <div className="lp-field"><label htmlFor="lp-email">$ Email</label><input id="lp-email" type="email" placeholder="you@yourcompany.co.ke" /></div>
+              <div className="lp-field"><label htmlFor="lp-company">$ Company</label><input id="lp-company" placeholder="Your company" /></div>
+              <div className="lp-field"><label htmlFor="lp-brief">$ Brief</label><textarea id="lp-brief" placeholder="One sentence about your business and what you'd like to fix or improve online." /></div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span className="lp-mono" style={{ color: 'rgba(255,255,255,.55)' }}>◆ no trackers · no autoresponders</span>
                 <button type="submit" className="lp-send">Send →</button>
@@ -254,9 +254,16 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
             <h4><span className="lp-diamond">◆</span> KIPKIREN <span style={{ color: 'rgba(255,255,255,.4)' }}>/web-services</span></h4>
             <p>The operating system for your business online. Website, hosting, email, domains and search, run as one system on a monthly subscription, every change priced on a proforma before we build. Built in Nairobi, deployed at the edge.</p>
           </div>
-          <div><div className="lp-fcol-l">/pages</div><a onClick={go('systems')}>Services</a><a onClick={go('plans')}>Plans</a><a onClick={go('process')}>How it works</a></div>
-          <div><div className="lp-fcol-l">/talk</div><a onClick={go('contact')}>Contact</a><a>hello@kipkiren.co.ke</a></div>
-          <div><div className="lp-fcol-l">/where</div><a>Nairobi, Kenya</a><a>eu-west-1 edge</a></div>
+          <div><div className="lp-fcol-l">/pages</div>
+            <a href="#systems" onClick={(e) => { e.preventDefault(); go('systems')(); }}>Services</a>
+            <a href="#plans" onClick={(e) => { e.preventDefault(); go('plans')(); }}>Plans</a>
+            <a href="#process" onClick={(e) => { e.preventDefault(); go('process')(); }}>How it works</a>
+          </div>
+          <div><div className="lp-fcol-l">/talk</div>
+            <a href="#contact" onClick={(e) => { e.preventDefault(); go('contact')(); }}>Contact</a>
+            <a href="mailto:hello@kipkiren.co.ke">hello@kipkiren.co.ke</a>
+          </div>
+          <div><div className="lp-fcol-l">/where</div><span style={{ display: 'block' }}>Nairobi, Kenya</span><span style={{ display: 'block' }}>eu-west-1 edge</span></div>
         </div>
         <div className="lp-wrap"><div className="lp-footbar"><span>© 2026 Kipkiren Web Services · Nairobi, Kenya</span><span><span className="lp-diamond">●</span> Proforma-priced · no surprise invoices</span></div></div>
       </footer>
