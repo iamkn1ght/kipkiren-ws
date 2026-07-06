@@ -1,40 +1,39 @@
 import type { PortalRole } from './auth.tsx';
+import './landing.css';
 
 const OPTIONS: { role: PortalRole; title: string; tag: string; blurb: string }[] = [
-  { role: 'client', title: 'Client', tag: 'CLIENT PORTAL', blurb: 'Your services, tickets, proformas and invoices.' },
-  { role: 'admin', title: 'Admin', tag: 'DELIVERY LEAD · ADMIN', blurb: 'Ticket queue, AI review, clients, capacity, services.' },
-  { role: 'technical_delivery', title: 'Task view', tag: 'TECHNICAL DELIVERY', blurb: 'Tasks assigned to you. No client or billing data.' },
+  { role: 'client', title: 'Client', tag: 'Client portal', blurb: 'Your services, tickets, proformas and invoices.' },
+  { role: 'admin', title: 'Admin', tag: 'Delivery lead', blurb: 'The ticket queue, AI review, clients, capacity and rails.' },
+  { role: 'technical_delivery', title: 'Task view', tag: 'Technical delivery', blurb: 'The tasks assigned to you. No client or billing data.' },
 ];
 
 export function RolePicker({ onPick, onExit }: { onPick: (role: PortalRole) => void; onExit?: () => void }) {
   return (
-    <div className="rp-wrap">
-      <div className="rp-inner">
-        <div className="rp-top">
-          <div className="rp-brand">
-            <span className="rp-diamond">◆</span>
-            <span className="rp-mark">KIPKIREN</span>
-            <span className="rp-sub">/ web-services</span>
-          </div>
-          {onExit && <button type="button" className="rp-exit" onClick={onExit}>‹ Back to site</button>}
+    <div className="klp">
+      <div className="klp-container klp-authwrap">
+        <div className="klp-topbrand">
+          <span className="mark">K</span>
+          <span className="name">Kipkiren<small>WEB SERVICES</small></span>
+          {onExit && <button type="button" className="klp-back exit" onClick={onExit}>‹ Back to site</button>}
         </div>
 
-        <h1 className="rp-title">Choose your <em>workspace</em>.</h1>
-        <p className="rp-hint">Select how you're signing in. You can switch any time after.</p>
+        <div className="klp-rp-head">
+          <span className="klp-eyebrow teal">Sign in</span>
+          <h1 className="klp-display-lg">Choose your <em>workspace.</em></h1>
+          <p className="klp-lead">Select how you're signing in. You can switch any time after.</p>
+        </div>
 
-        <div className="rp-grid">
+        <div className="klp-rp-grid">
           {OPTIONS.map((o, i) => (
-            <button key={o.role} type="button" className="rp-card" onClick={() => onPick(o.role)}>
-              <span className="rp-card-num">{String(i + 1).padStart(2, '0')}</span>
-              <div className="rp-card-tag">{o.tag}</div>
-              <div className="rp-card-title">{o.title}</div>
-              <div className="rp-card-blurb">{o.blurb}</div>
-              <div className="rp-card-go">Continue →</div>
+            <button key={o.role} type="button" className="klp-rp-card" onClick={() => onPick(o.role)}>
+              <span className="klp-rp-num">{String(i + 1).padStart(2, '0')}</span>
+              <span className="klp-rp-tag">{o.tag}</span>
+              <span className="klp-rp-title">{o.title}</span>
+              <span className="klp-rp-blurb">{o.blurb}</span>
+              <span className="klp-rp-go">Continue <span>→</span></span>
             </button>
           ))}
         </div>
-
-        <div className="rp-foot">ws.kipkiren.co.ke</div>
       </div>
     </div>
   );

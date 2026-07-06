@@ -36,7 +36,7 @@ function Router() {
 
   return (
     <>
-      <ThemeToggle />
+      {session && <ThemeToggle />}
       {view}
     </>
   );

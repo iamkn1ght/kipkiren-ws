@@ -202,3 +202,54 @@
   .klp-reveal.in { opacity: 1; transform: none; }
 }
 @media (prefers-reduced-motion: reduce) { .klp-marquee-track { animation: none; } }
+
+/* ---------- auth + role picker (warm editorial) ---------- */
+.klp-authwrap { min-height: 100vh; padding-block: 40px 72px; }
+.klp-topbrand { display: flex; align-items: center; gap: 12px; padding-block: 16px; margin-bottom: 40px; border-bottom: 1px solid var(--hairline); }
+.klp-topbrand .mark { display: grid; place-items: center; height: 32px; width: 32px; border-radius: 999px; background: var(--ink); color: var(--paper); font-family: var(--font-serif); font-size: 15px; }
+.klp-topbrand .name { font-family: var(--font-mono); font-size: 11px; line-height: 1.15; letter-spacing: .18em; text-transform: uppercase; }
+.klp-topbrand .name small { display: block; font-size: 9px; letter-spacing: .28em; color: var(--mid); }
+.klp-topbrand .exit { margin-left: auto; }
+
+.klp-auth-grid { display: grid; gap: 48px; align-items: start; }
+@media (min-width: 1024px) { .klp-auth-grid { grid-template-columns: repeat(12, minmax(0,1fr)); gap: 64px; } .klp-auth-grid .intro { grid-column: span 6 / span 6; } .klp-auth-grid .panel { grid-column: span 5 / span 5; grid-column-start: 8; } }
+.klp-auth-intro h1 { margin-top: 22px; }
+.klp-auth-intro .klp-lead { margin-top: 22px; max-width: 28rem; }
+.klp-auth-list { margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--hairline); }
+.klp-auth-list ul { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+.klp-auth-list li { display: flex; gap: 12px; color: var(--slate); font-size: 14px; }
+.klp-auth-list li .m { color: var(--teal-deep); }
+
+.klp-card { background: var(--card); border: 1px solid var(--hairline); border-radius: 18px; transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease; }
+.klp-authcard { padding: 28px; }
+@media (min-width: 768px) { .klp-authcard { padding: 36px; } }
+.klp-authcard .head { font-family: var(--font-serif); font-size: 22px; margin-bottom: 22px; }
+.klp-form { display: flex; flex-direction: column; gap: 16px; }
+.klp-field-label { display: block; font-family: var(--font-mono); font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: var(--mid); margin-bottom: 8px; }
+.klp-field-input { width: 100%; background: transparent; border: 1px solid var(--hairline); border-radius: 8px; padding: 12px 16px; color: var(--ink); font: inherit; transition: border-color .2s; }
+.klp-field-input:focus { outline: none; border-color: var(--ink); }
+.klp-passrow { position: relative; }
+.klp-passrow .klp-field-input { padding-right: 60px; }
+.klp-passtoggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-family: var(--font-mono); font-size: 9px; letter-spacing: .1em; text-transform: uppercase; color: var(--mid); padding: 6px 8px; }
+.klp-passtoggle:hover { color: var(--teal-deep); }
+.klp-btn.full { width: 100%; justify-content: center; }
+.klp-auth-terms { margin-top: 22px; font-size: 12px; color: var(--mid); text-align: center; }
+.klp-auth-terms a { text-decoration: underline; }
+.klp-auth-error { font-family: var(--font-mono); font-size: 11px; letter-spacing: .03em; color: var(--amber-deep); background: var(--amber-light); border: 1px solid color-mix(in oklab, var(--amber-deep) 30%, transparent); border-radius: 8px; padding: 10px 12px; }
+.klp-back { background: none; border: none; cursor: pointer; font-family: var(--font-mono); font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: var(--mid); padding: 0; transition: color .2s; }
+.klp-back:hover { color: var(--teal-deep); }
+
+/* role picker */
+.klp-rp-head h1 { margin-top: 22px; }
+.klp-rp-head .klp-lead { margin-top: 18px; max-width: 34rem; }
+.klp-rp-grid { display: grid; gap: 16px; margin-top: 44px; }
+@media (min-width: 768px) { .klp-rp-grid { grid-template-columns: repeat(3, 1fr); } }
+.klp-rp-card { position: relative; overflow: hidden; text-align: left; background: var(--card); border: 1px solid var(--hairline); border-radius: 18px; padding: 28px; cursor: pointer; display: flex; flex-direction: column; gap: 10px; min-height: 208px; transition: transform .3s ease, border-color .3s ease, box-shadow .3s ease; }
+@media (hover: hover) { .klp-rp-card:hover { transform: translateY(-2px); border-color: color-mix(in oklab, var(--teal) 40%, var(--hairline)); box-shadow: 0 24px 60px -30px color-mix(in oklab, var(--teal-deep) 40%, transparent); } }
+.klp-rp-num { position: absolute; top: 20px; right: 24px; font-family: var(--font-serif); font-size: 44px; color: var(--hairline); line-height: 1; }
+.klp-rp-tag { font-family: var(--font-mono); font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: var(--teal-deep); }
+.klp-rp-title { font-family: var(--font-serif); font-size: 26px; margin-top: 2px; }
+.klp-rp-blurb { color: var(--slate); font-size: 14px; line-height: 1.55; flex: 1; }
+.klp-rp-go { font-family: var(--font-mono); font-size: 10px; letter-spacing: .22em; text-transform: uppercase; color: var(--teal-deep); display: inline-flex; gap: 8px; align-items: center; }
+.klp-rp-card:hover .klp-rp-go span { transform: translateX(3px); }
+.klp-rp-go span { transition: transform .25s ease; }

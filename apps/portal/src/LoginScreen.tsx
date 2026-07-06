@@ -1,17 +1,39 @@
 import { useState, type FormEvent } from 'react';
 import { useAuth, type PortalRole } from './auth.tsx';
 import { ApiError } from './api.ts';
+import './landing.css';
 
-const SUBLABEL: Record<PortalRole, string> = {
-  client: 'CLIENT PORTAL',
-  admin: 'ADMIN',
-  technical_delivery: 'TASK VIEW · TECHNICAL DELIVERY',
-};
-
-const HINT: Record<PortalRole, string> = {
-  client: 'Access your services, tickets, and invoices.',
-  admin: 'Manage the queue, proformas, clients, and capacity.',
-  technical_delivery: 'Access the tasks assigned to you.',
+const INTRO: Record<PortalRole, { eyebrow: string; hint: string; list: string[] }> = {
+  client: {
+    eyebrow: 'Client portal',
+    hint: 'Sign in to view your tickets, proformas and current work.',
+    list: [
+      'Open and track custom tickets',
+      'Approve proformas with one click',
+      'Full history of every conversation and quote',
+      'A direct line to your project team',
+    ],
+  },
+  admin: {
+    eyebrow: 'Delivery console',
+    hint: 'Sign in to manage the queue, proformas, clients and capacity.',
+    list: [
+      'Triage the live ticket queue by SLA',
+      'Review and dispatch AI-drafted proformas',
+      'Watch client health, capacity and the rails',
+      'Raise a ticket on a client\'s behalf',
+    ],
+  },
+  technical_delivery: {
+    eyebrow: 'Task view',
+    hint: 'Sign in to see the tasks assigned to you.',
+    list: [
+      'Your assigned tasks, in order of SLA',
+      'Start and complete work in one place',
+      'Only what you need, no client or billing data',
+      'A clean, focused surface',
+    ],
+  },
 };
 
 export function LoginScreen({ role, onBack }: { role: PortalRole; onBack: () => void }) {
@@ -21,6 +43,7 @@ export function LoginScreen({ role, onBack }: { role: PortalRole; onBack: () => 
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const intro = INTRO[role];
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -38,57 +61,57 @@ export function LoginScreen({ role, onBack }: { role: PortalRole; onBack: () => 
   };
 
   return (
-    <div className="lg-wrap">
-      <div className="lg-shell">
-        {/* brand panel */}
-        <aside className="lg-aside">
-          <div className="lg-aside-top">
-            <div className="lg-brand">
-              <span className="lg-diamond">◆</span>
-              <span className="lg-mark">KIPKIREN</span>
+    <div className="klp">
+      <div className="klp-container klp-authwrap">
+        <div className="klp-topbrand">
+          <span className="mark">K</span>
+          <span className="name">Kipkiren<small>WEB SERVICES</small></span>
+          <button type="button" className="klp-back exit" onClick={onBack}>‹ Change role</button>
+        </div>
+
+        <div className="klp-auth-grid">
+          <div className="intro klp-auth-intro">
+            <span className="klp-eyebrow teal">{intro.eyebrow}</span>
+            <h1 className="klp-display-lg">Welcome back.</h1>
+            <p className="klp-lead">{intro.hint}</p>
+            <div className="klp-auth-list">
+              <p className="klp-mono">Inside your portal</p>
+              <ul>
+                {intro.list.map((item) => (
+                  <li key={item}><span className="m">—</span> {item}</li>
+                ))}
+              </ul>
             </div>
-            <div className="lg-sub">/ web-services</div>
           </div>
-          <div className="lg-aside-quote">
-            The operating system for your business online. One subscription, one team, every change approved before we build.
-          </div>
-          <div className="lg-aside-foot">
-            <span className="lg-aside-role">{SUBLABEL[role]}</span>
-          </div>
-        </aside>
 
-        {/* form panel */}
-        <form className="lg-panel" onSubmit={onSubmit}>
-          <button type="button" className="lg-back" onClick={onBack}>‹ Change role</button>
-          <h1 className="lg-title">Sign in</h1>
-          <p className="lg-hint">{HINT[role]}</p>
-
-          <label className="lg-label">
-            <span>Email</span>
-            <input type="email" autoComplete="email" required className="lg-input"
-              placeholder="you@company.co.ke"
-              value={email} onChange={(e) => setEmail(e.target.value)} disabled={submitting} />
-          </label>
-
-          <label className="lg-label">
-            <span>Password</span>
-            <div className="lg-pass-row">
-              <input type={showPass ? 'text' : 'password'} autoComplete="current-password" required minLength={8} className="lg-input"
-                value={password} onChange={(e) => setPassword(e.target.value)} disabled={submitting} />
-              <button type="button" className="lg-pass-toggle" onClick={() => setShowPass((v) => !v)} aria-label={showPass ? 'Hide password' : 'Show password'}>
-                {showPass ? 'Hide' : 'Show'}
-              </button>
+          <div className="panel">
+            <div className="klp-card klp-authcard">
+              <div className="head">Sign in</div>
+              <form className="klp-form" onSubmit={onSubmit}>
+                <div>
+                  <label className="klp-field-label" htmlFor="au-email">Email</label>
+                  <input id="au-email" className="klp-field-input" type="email" autoComplete="email" required
+                    placeholder="you@company.co.ke" value={email} onChange={(e) => setEmail(e.target.value)} disabled={submitting} />
+                </div>
+                <div>
+                  <label className="klp-field-label" htmlFor="au-pass">Password</label>
+                  <div className="klp-passrow">
+                    <input id="au-pass" className="klp-field-input" type={showPass ? 'text' : 'password'} autoComplete="current-password"
+                      required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} disabled={submitting} />
+                    <button type="button" className="klp-passtoggle" onClick={() => setShowPass((v) => !v)} aria-label={showPass ? 'Hide password' : 'Show password'}>
+                      {showPass ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
+                </div>
+                {error && <div className="klp-auth-error">{error}</div>}
+                <button type="submit" className="klp-btn primary full" disabled={submitting}>
+                  {submitting ? 'Signing in...' : 'Sign in →'}
+                </button>
+              </form>
+              <p className="klp-auth-terms">Accounts are provisioned during onboarding. Need access? <a href="mailto:studio@kipkiren.co.ke">Talk to the studio.</a></p>
             </div>
-          </label>
-
-          {error && <div className="lg-error">{error}</div>}
-
-          <button type="submit" className="lg-submit" disabled={submitting}>
-            {submitting ? 'Signing in...' : 'Sign in →'}
-          </button>
-
-          <div className="lg-foot">ws.kipkiren.co.ke</div>
-        </form>
+          </div>
+        </div>
       </div>
     </div>
   );
