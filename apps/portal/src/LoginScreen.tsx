@@ -78,7 +78,7 @@ export function LoginScreen({ role, onBack }: { role: PortalRole; onBack: () => 
               <p className="klp-mono">Inside your portal</p>
               <ul>
                 {intro.list.map((item) => (
-                  <li key={item}><span className="m">—</span> {item}</li>
+                  <li key={item}><span className="m" />{item}</li>
                 ))}
               </ul>
             </div>
