@@ -306,6 +306,24 @@
 /* audit: tighten the page gutter on phones (40px was 22% of a 360px screen) */
 @media (max-width: 600px) { .lp-wrap { padding: 0 20px; } }
 
+/* ============================================================================
+ * Elevation pass - spatial rhythm + display confidence (editorial pacing).
+ * Fluid, varied section rhythm (kills the flat equal-spacing tell), a stronger
+ * hero scale, and more air around eyebrows/intros. Foundation toward the
+ * Linear/Stripe/Vercel bar; tunable to the exact reference once shots are in.
+ * ========================================================================== */
+.lp-sec { padding: clamp(84px, 11vw, 132px) 0; }
+.lp-sec.dark, .lp-sec.teal { padding: clamp(96px, 12vw, 148px) 0; }
+.lp-hero { padding: clamp(52px, 7vw, 96px) 0 clamp(72px, 9vw, 116px); }
+.lp-hero-grid { gap: clamp(40px, 5vw, 72px); }
+.lp-h1 { font-size: clamp(48px, 6.4vw, 96px); line-height: 0.95; letter-spacing: -0.03em; margin-bottom: clamp(24px, 2.4vw, 34px); }
+.lp-h2 { font-size: clamp(36px, 4.6vw, 60px); line-height: 1.0; letter-spacing: -0.025em; }
+.lp-lede { font-size: clamp(16px, 1.35vw, 18.5px); line-height: 1.7; max-width: 33em; margin-bottom: clamp(26px, 2.6vw, 34px); }
+.lp-intro { font-size: clamp(20px, 2vw, 26px); line-height: 1.45; margin-bottom: clamp(32px, 3.6vw, 48px); }
+.lp-eyebrow { margin-bottom: clamp(28px, 3vw, 40px); }
+.lp-btn { padding: 15px 26px; font-size: 12px; border-radius: 12px; }
+.lp-cta-row { gap: 14px; margin-bottom: 26px; }
+
 /* ── AI proforma terminal rows ── */
 .lp-trow { display: flex; justify-content: space-between; gap: 16px; color: rgba(255,255,255,.62); }
 .lp-trow span:last-child { color: #DCE7E2; }
