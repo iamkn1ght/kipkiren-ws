@@ -14,8 +14,25 @@ const cssVars = (v: Record<string, string | number>) => v as CSSProperties;
 const NAV = [
   { id: 'services', label: 'Services' },
   { id: 'process', label: 'Process' },
+  { id: 'pricing', label: 'Pricing' },
   { id: 'about', label: 'About' },
   { id: 'contact', label: 'Contact' },
+];
+
+// Real KWS retainer plans (not the reference's placeholder numbers).
+const PLANS = [
+  { kick: '01 · starter', name: 'Starter', desc: 'A managed presence for a small business getting online properly.', amt: '4,999', per: 'per month · 48-hour SLA', feats: ['2 task-hours included / month', 'Up to 3 open tickets', 'Hosting, domain and business email', 'Uptime, SSL and backups', 'Content edits on request'], cta: 'Choose Starter', featured: false },
+  { kick: '02 · growth', name: 'Growth', desc: 'For teams that treat their site as core infrastructure.', amt: '9,999', per: 'per month · 24-hour SLA', feats: ['5 task-hours included / month', 'Up to 5 open tickets', 'On-page SEO and social add-ons', 'A named delivery lead', 'Everything in Starter'], cta: 'Choose Growth', featured: true },
+  { kick: '03 · business', name: 'Business', desc: 'Mid-market sites, portals and integrations, actively operated.', amt: '24,999', per: 'per month · 12-hour SLA', feats: ['12 task-hours included / month', 'Up to 10 open tickets', 'Priority delivery', 'Cloud provisioning', 'Everything in Growth'], cta: 'Choose Business', featured: false },
+];
+
+const FAQ = [
+  { q: 'Do prices include VAT?', a: 'No. All figures exclude 16% VAT, which is itemised on your proforma.' },
+  { q: 'How does payment work?', a: 'Every task is priced on a proforma you approve first. Pay by M-Pesa or card; retainers are billed monthly. No surprise invoices.' },
+  { q: "What's included in a retainer?", a: 'Your included task-hours, hosting, uptime, backups, patches and support. Anything beyond the allocation is quoted on the rate card before we build.' },
+  { q: 'Where are you based?', a: 'Nairobi. We work with clients across East Africa, and occasionally further afield.' },
+  { q: 'Can we bring our own hosting?', a: 'Yes, though our operations SLA only applies to sites we host. Most clients let us handle it.' },
+  { q: 'What if we want to leave?', a: 'We hand over the codebase, database, DNS and any accounts. No lock-in, ever.' },
 ];
 
 const CLIENTS = ['Riverside Capital', 'Mara Coffee', 'Nyali Ceramics', 'Kilifi Cargo', 'Sable & Sons', 'Two Rivers Legal', 'Ubuntu Health', 'Amber Threads'];
@@ -88,7 +105,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
                 considered site, and a phone number that answers.
               </p>
               <div className="klp-hero-ctas klp-reveal" style={cssVars({ '--d': '240ms' })}>
-                <button type="button" className="klp-btn primary" onClick={onSignIn}>See plans <span>→</span></button>
+                <button type="button" className="klp-btn primary" onClick={go('pricing')}>See plans <span>→</span></button>
                 <button type="button" className="klp-btn ghost" onClick={go('contact')}>Book a conversation</button>
               </div>
             </div>
@@ -186,6 +203,59 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
           </div>
         </section>
 
+        {/* ── pricing ── */}
+        <section className="klp-container klp-section klp-hairline-t" id="pricing">
+          <span className="klp-eyebrow teal klp-reveal">Pricing</span>
+          <h2 className="klp-display-lg klp-reveal" style={cssVars({ marginTop: 20 })}>Real plans.<br /><em style={cssVars({ color: 'var(--teal-deep)' })}>Or a proper conversation.</em></h2>
+          <p className="klp-lead klp-reveal" style={cssVars({ marginTop: 22, maxWidth: '42rem' })}>Every plan is a real retainer, not a marketing tier. If none quite fit, open a ticket and we write you a proforma in Kenyan shillings, usually within 24 hours.</p>
+
+          <div className="klp-plans klp-reveal" style={cssVars({ marginTop: 48 })}>
+            {PLANS.map((p) => (
+              <div key={p.name} className={`klp-card klp-plan ${p.featured ? 'feat' : ''}`}>
+                {p.featured && <div className="klp-plan-flag">Most chosen</div>}
+                <div className="klp-plan-kick">{p.kick}</div>
+                <div className="klp-plan-name">{p.name}</div>
+                <p className="klp-plan-desc">{p.desc}</p>
+                <div className="klp-plan-price">
+                  <div className="row"><span className="cur">KES</span><span className="amt">{p.amt}</span></div>
+                  <div className="per">{p.per}</div>
+                </div>
+                <ul className="klp-plan-feats">
+                  {p.feats.map((f) => <li key={f}><span className="m" />{f}</li>)}
+                </ul>
+                <button type="button" className={`klp-btn ${p.featured ? 'primary' : 'ghost'}`} onClick={onSignIn}>{p.cta}</button>
+              </div>
+            ))}
+          </div>
+
+          <div className="klp-band-grid klp-reveal" style={cssVars({ marginTop: 72, paddingTop: 56, borderTop: '1px solid var(--hairline)' })}>
+            <div className="l">
+              <span className="klp-eyebrow teal">Custom</span>
+              <h2 className="klp-display-lg" style={cssVars({ marginTop: 20 })}>Something else in mind?</h2>
+            </div>
+            <div className="r">
+              <p className="klp-lead">Larger builds, migrations, rescue projects, ongoing product work. Open a ticket describing what you have and what you need. We reply personally, always.</p>
+              <div className="klp-hero-ctas" style={cssVars({ marginTop: 24 })}>
+                <button type="button" className="klp-btn primary" onClick={onSignIn}>Open a ticket</button>
+                <a className="klp-btn ghost" href="mailto:studio@kipkiren.co.ke">Or email us</a>
+              </div>
+            </div>
+          </div>
+
+          <div className="klp-reveal" style={cssVars({ marginTop: 72, paddingTop: 56, borderTop: '1px solid var(--hairline)' })}>
+            <h2 className="klp-display-md" style={cssVars({ marginBottom: 40 })}>Questions people ask, plainly answered.</h2>
+            <div className="klp-faq">
+              {FAQ.map((f) => (
+                <div key={f.q}>
+                  <div className="qk">Question</div>
+                  <div className="q">{f.q}</div>
+                  <p className="a">{f.a}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* ── testimonial ── */}
         <section className="klp-container klp-section">
           <figure className="klp-quote klp-reveal">
@@ -204,7 +274,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
               <p className="klp-lead">Pick a plan or open a ticket for something custom. Either path starts a real conversation with a real designer, usually the same day.</p>
             </div>
             <div className="r">
-              <button type="button" className="klp-btn primary" onClick={onSignIn}>See plans →</button>
+              <button type="button" className="klp-btn primary" onClick={go('pricing')}>See plans →</button>
               <button type="button" className="klp-btn ghost" onClick={onSignIn}>Open a custom ticket</button>
             </div>
           </div>
