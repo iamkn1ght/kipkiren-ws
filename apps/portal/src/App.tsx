@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { AuthProvider, useAuth, portalForRole } from './auth.tsx';
-import { ThemeToggle } from './ThemeToggle.tsx';
 import { Landing } from './Landing.tsx';
 import { RolePicker } from './RolePicker.tsx';
 import { LoginScreen } from './LoginScreen.tsx';
@@ -34,12 +33,7 @@ function Router() {
     view = <RolePicker onPick={pickRole} onExit={() => setEntered(false)} />;
   }
 
-  return (
-    <>
-      {session && <ThemeToggle />}
-      {view}
-    </>
-  );
+  return view;
 }
 
 export function App() {
