@@ -1,63 +1,35 @@
 /**
- * Task view - Kamau (technical_delivery).
- *
- * Ports the canonical kws_task_view.html layout. It binds ONLY the safe
- * fields the API exposes (ref, category, urgency, status, description, SLA
- * deadline, created/updated). The mockup's estimate/logged-hours, ref-docs
- * count, weekly-capacity stats, and the "Add note" modal are intentionally
- * omitted - there is no data source for them and the architecture forbids
- * fabricating Kamau-facing detail. See ADR-KWS-003 / KWS-SEC-007.
+ * Task view — Kamau (technical_delivery). Warm editorial rebuild on the .klp
+ * portal shell. Binds ONLY the safe fields the API exposes (ref, category,
+ * urgency, status, description, SLA deadline, created/updated). No client or
+ * billing data — ADR-KWS-003 / KWS-SEC-007.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { useAuth } from './auth.tsx';
 import { useTaskData, type Task } from './useTaskData.ts';
+import './landing.css';
 
 type Tab = 'active' | 'completed';
+const cssVars = (v: Record<string, string | number>) => v as CSSProperties;
 
-const CATEGORY_LABEL: Record<string, string> = {
-  web: 'Web',
-  cloud: 'Cloud',
-  seo: 'SEO',
-  social: 'Social',
-  dns: 'DNS',
-  general: 'General',
-};
+const CATEGORY_LABEL: Record<string, string> = { web: 'Web', cloud: 'Cloud', seo: 'SEO', social: 'Social', dns: 'DNS', general: 'General' };
+const URGENCY_LABEL: Record<Task['urgency'], string> = { standard: 'Standard', elevated: 'Elevated urgency', urgent: 'Urgent' };
+const URGENCY_BADGE: Record<Task['urgency'], string> = { standard: 'Standard', elevated: '1.25× urgency', urgent: '1.5× urgency' };
 
-const URGENCY_LABEL: Record<Task['urgency'], string> = {
-  standard: 'Standard',
-  elevated: 'Elevated urgency',
-  urgent: 'Urgent',
-};
-
-const URGENCY_BADGE: Record<Task['urgency'], string> = {
-  standard: 'Standard',
-  elevated: '1.25× urgency',
-  urgent: '1.5× urgency',
-};
-
-function isElevated(u: Task['urgency']): boolean {
-  return u === 'elevated' || u === 'urgent';
-}
-
-function categoryLabel(c: string): string {
-  return `${CATEGORY_LABEL[c] ?? c} task`;
-}
+const isElevated = (u: Task['urgency']) => u === 'elevated' || u === 'urgent';
+const categoryLabel = (c: string) => `${CATEGORY_LABEL[c] ?? c} task`;
 
 function fmtDate(iso: string | null): string {
   if (!iso) return '-';
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '-';
-  return d.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
+  return Number.isNaN(d.getTime()) ? '-' : d.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
 }
-
 function fmtDateTime(iso: string | null): string {
   if (!iso) return '-';
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return '-';
-  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  return Number.isNaN(d.getTime()) ? '-' : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
-
 function dueWithin7Days(iso: string | null): boolean {
   if (!iso) return false;
   const due = new Date(iso).getTime();
@@ -65,23 +37,10 @@ function dueWithin7Days(iso: string | null): boolean {
   const now = Date.now();
   return due >= now && due <= now + 7 * 24 * 60 * 60 * 1000;
 }
-
-interface PillSpec {
-  cls: string;
-  text: string;
-}
-
-function statusPill(status: string): PillSpec {
-  switch (status) {
-    case 'in_progress':
-      return { cls: 'progress', text: 'In progress' };
-    case 'complete':
-    case 'closed':
-      return { cls: 'done', text: 'Complete' };
-    case 'paid':
-    default:
-      return { cls: 'assigned', text: 'Assigned · not started' };
-  }
+function statusPill(status: string): { cls: string; text: string } {
+  if (status === 'in_progress') return { cls: 'progress', text: 'In progress' };
+  if (status === 'complete' || status === 'closed') return { cls: 'done', text: 'Complete' };
+  return { cls: 'draft', text: 'Assigned · not started' };
 }
 
 export function TaskView() {
@@ -98,201 +57,124 @@ export function TaskView() {
   }, [toast]);
 
   const email = session?.email ?? '';
-  const displayName = email ? (email.split('@')[0] ?? 'there') : 'there';
+  const name = email ? (email.split('@')[0] ?? 'there') : 'there';
   const inProgress = active.filter((t) => t.status === 'in_progress').length;
   const dueThisWeek = active.filter((t) => dueWithin7Days(t.sla_deadline_at)).length;
   const elevatedCount = active.filter((t) => isElevated(t.urgency)).length;
 
-  const runAction = async (
-    id: string,
-    fn: (id: string) => Promise<void>,
-    label: string,
-  ) => {
+  const runAction = async (id: string, fn: (id: string) => Promise<void>, label: string) => {
     setPendingId(id);
-    try {
-      await fn(id);
-      setToast(label);
-    } catch {
-      setToast('Action failed · try again');
-    } finally {
-      setPendingId(null);
-    }
+    try { await fn(id); setToast(label); }
+    catch { setToast('Action failed · try again'); }
+    finally { setPendingId(null); }
   };
 
   return (
-    <div className="kwsp app-task">
-      {/* ── SIDEBAR ── */}
-      <aside className="sb">
-        <div className="sb-logo">
-          <div className="sb-mark">KIPKIREN · WS</div>
-          <div className="sb-sub">TASKS</div>
-          <div className="sb-scope">TECHNICAL DELIVERY</div>
-        </div>
-        <nav className="sb-nav">
-          <button
-            type="button"
-            className={tab === 'active' ? 'sni active' : 'sni'}
-            onClick={() => setTab('active')}
-          >
-            <span className="sni-dot" />
-            My Tasks
-            {active.length > 0 && <span className="sni-badge">{active.length}</span>}
-          </button>
-          <button
-            type="button"
-            className={tab === 'completed' ? 'sni active' : 'sni'}
-            onClick={() => setTab('completed')}
-          >
-            <span className="sni-dot" />
-            Completed
-          </button>
-        </nav>
-        <div className="sb-restrict">
-          Scope · assigned tasks only.
-          <br />
-          No client data · no billing.
-        </div>
-        <div className="sb-foot">
-          <div className="sb-role">Technical Delivery</div>
-          <div className="sb-email">{email || 'signed in'}</div>
-          <button type="button" className="sb-signout" onClick={() => void signOut()}>
-            Sign out
-          </button>
-        </div>
-      </aside>
-
-      {/* ── MAIN ── */}
-      <div className="main">
-        <div className="topbar">
-          <div className="tb-crumb">
-            Tasks · <span>{tab === 'active' ? 'My Tasks' : 'Completed'}</span>
-          </div>
-          <div className="tb-right">{active.length} active · {completed.length} completed</div>
-        </div>
-
-        {/* ═══ MY TASKS ═══ */}
-        <section className={tab === 'active' ? 'view active' : 'view'}>
-          <h1 className="greeting">
-            Good day, <em>{displayName}</em>.
-          </h1>
-          <p className="g-sub">
-            {loading ? 'Loading tasks...' : `${active.length} active task${active.length === 1 ? '' : 's'} assigned to you`}
-          </p>
-
-          {error && <div className="lg-error">Couldn't load tasks · {error}</div>}
-
-          <div className="stats">
-            <div className="sc">
-              <div className="sc-lbl">Active</div>
-              <div className="sc-val">{active.length}</div>
-              <div className="sc-note">{inProgress} in progress</div>
-            </div>
-            <div className="sc">
-              <div className="sc-lbl">Due this week</div>
-              <div className="sc-val">{dueThisWeek}</div>
-              <div className={elevatedCount > 0 ? 'sc-note warn' : 'sc-note'}>
-                {elevatedCount > 0 ? `${elevatedCount} elevated urgency` : 'on track'}
-              </div>
-            </div>
-            <div className="sc">
-              <div className="sc-lbl">Completed</div>
-              <div className="sc-val">{completed.length}</div>
-              <div className="sc-note">all time</div>
-            </div>
-          </div>
-
-          <div className="shd">Active · assigned to you</div>
-
-          {!loading && active.length === 0 && (
-            <p className="g-sub">No active tasks assigned to you right now.</p>
-          )}
-
-          {active.map((t) => {
-            const pill = statusPill(t.status);
-            const elev = isElevated(t.urgency);
-            const busy = pendingId === t.id;
-            return (
-              <div key={t.id} className={elev ? 'task elev' : 'task'}>
-                <div className="task-hd">
-                  <div>
-                    <div className="task-ref">
-                      {t.ref} · {URGENCY_LABEL[t.urgency]}
-                    </div>
-                    <div className="task-title">{categoryLabel(t.category)}</div>
-                    <div className="task-mt">Created · {fmtDate(t.created_at)}</div>
-                  </div>
-                  <span className={elev ? 'bdg bdg-a' : 'bdg bdg-o'}>{URGENCY_BADGE[t.urgency]}</span>
-                </div>
-                <div className="task-desc">{t.description}</div>
-                <div className="task-meta-row">
-                  <div className="tmr">
-                    <div className="tmr-l">Due</div>
-                    <div className={elev ? 'tmr-v due urg' : 'tmr-v due'}>{fmtDate(t.sla_deadline_at)}</div>
-                  </div>
-                  <div className="tmr">
-                    <div className="tmr-l">Created</div>
-                    <div className="tmr-v">{fmtDate(t.created_at)}</div>
-                  </div>
-                </div>
-                <div className="task-foot">
-                  <div className={`status-pill ${pill.cls}`}>{pill.text}</div>
-                  <div className="task-acts">
-                    {t.status === 'paid' && (
-                      <button
-                        type="button"
-                        className="btn-act btn-start"
-                        disabled={busy}
-                        onClick={() => void runAction(t.id, startTask, `Started · ${t.ref}`)}
-                      >
-                        {busy ? 'Starting...' : 'Start work'}
-                      </button>
-                    )}
-                    {t.status === 'in_progress' && (
-                      <button
-                        type="button"
-                        className="btn-act btn-done"
-                        disabled={busy}
-                        onClick={() => void runAction(t.id, completeTask, `Marked complete · ${t.ref}`)}
-                      >
-                        {busy ? 'Saving...' : 'Mark complete'}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </section>
-
-        {/* ═══ COMPLETED ═══ */}
-        <section className={tab === 'completed' ? 'view active' : 'view'}>
-          <h1 className="greeting">Completed tasks</h1>
-          <p className="g-sub">
-            {completed.length} completed task{completed.length === 1 ? '' : 's'}
-          </p>
-
-          {completed.length > 0 && (
-            <>
-              <div className="done-row-hd">
-                <span>Ref</span>
-                <span>Task</span>
-                <span>Completed</span>
-              </div>
-              {completed.map((t) => (
-                <div key={t.id} className="done-row">
-                  <div className="done-tid">{t.ref}</div>
-                  <div className="done-title">{categoryLabel(t.category)}</div>
-                  <div className="done-date">{fmtDateTime(t.updated_at)}</div>
-                </div>
-              ))}
-            </>
-          )}
-
-          {completed.length === 0 && <p className="g-sub">Nothing completed yet.</p>}
-        </section>
+    <div className="klp">
+      <div className="klp-topbrand klp-container">
+        <span className="mark">K</span>
+        <span className="name">Kipkiren<small>WEB SERVICES</small></span>
       </div>
 
-      <div className={toast ? 'toast show' : 'toast'}>{toast}</div>
+      <div className="klp-container klp-portal">
+        <div className="klp-portal-layout">
+          <aside className="klp-portal-aside">
+            <div className="klp-mono lbl">Technical delivery</div>
+            <nav className="klp-portal-nav">
+              <button type="button" className={tab === 'active' ? 'active' : ''} onClick={() => setTab('active')}>
+                <span>My tasks</span>{active.length > 0 && <span className="badge">{active.length}</span>}
+              </button>
+              <button type="button" className={tab === 'completed' ? 'active' : ''} onClick={() => setTab('completed')}>
+                <span>Completed</span>
+              </button>
+            </nav>
+            <div className="klp-scope-note">Scope · assigned tasks only. No client data, no billing.</div>
+            <div className="klp-portal-foot">
+              <div className="who">{email || 'signed in'}</div>
+              <button type="button" className="klp-portal-signout" onClick={() => void signOut()}>Sign out</button>
+            </div>
+          </aside>
+
+          <div className="klp-portal-content">
+            <header className="klp-portal-head">
+              <div style={cssVars({ minWidth: 0 })}>
+                <div className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>{tab === 'active' ? 'My tasks' : 'Completed'}</div>
+                <h1 className="klp-display-md">{tab === 'active' ? <>Good day, {name}.</> : 'Completed tasks'}</h1>
+              </div>
+            </header>
+
+            {tab === 'active' && (
+              <>
+                {error && <div className="klp-note amber" style={cssVars({ marginBottom: 24 })}>Couldn't load tasks · {error}</div>}
+                <div className="klp-kpis">
+                  <div className="klp-card klp-kpi"><div className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>Active</div><div className="n">{loading ? '-' : active.length}</div><div className="klp-mono" style={cssVars({ color: 'var(--mid)', marginTop: 10, fontSize: 10 })}>{inProgress} in progress</div></div>
+                  <div className="klp-card klp-kpi"><div className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>Due this week</div><div className={`n ${elevatedCount > 0 ? 'amber' : ''}`}>{loading ? '-' : dueThisWeek}</div><div className="klp-mono" style={cssVars({ color: 'var(--mid)', marginTop: 10, fontSize: 10 })}>{elevatedCount > 0 ? `${elevatedCount} elevated` : 'on track'}</div></div>
+                  <div className="klp-card klp-kpi"><div className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>Completed</div><div className="n">{loading ? '-' : completed.length}</div><div className="klp-mono" style={cssVars({ color: 'var(--mid)', marginTop: 10, fontSize: 10 })}>all time</div></div>
+                </div>
+
+                {!loading && active.length === 0
+                  ? <div className="klp-list-empty" style={cssVars({ border: '1px solid var(--hairline)', borderRadius: 18 })}>No active tasks assigned to you right now.</div>
+                  : (
+                    <div className="klp-tasks">
+                      {active.map((t) => {
+                        const pill = statusPill(t.status);
+                        const elev = isElevated(t.urgency);
+                        const busy = pendingId === t.id;
+                        return (
+                          <div key={t.id} className={`klp-card klp-task ${elev ? 'elev' : ''}`}>
+                            <div className="klp-task-hd">
+                              <div style={cssVars({ minWidth: 0 })}>
+                                <div className="klp-task-ref">{t.ref} · {URGENCY_LABEL[t.urgency]}</div>
+                                <div className="klp-task-title">{categoryLabel(t.category)}</div>
+                              </div>
+                              <span className={`klp-pill ${elev ? 'warn' : 'draft'}`}>{URGENCY_BADGE[t.urgency]}</span>
+                            </div>
+                            <div className="klp-task-desc">{t.description}</div>
+                            <div className="klp-task-meta">
+                              <div><div className="k">Due</div><div className={`v ${elev ? 'urg' : ''}`}>{fmtDate(t.sla_deadline_at)}</div></div>
+                              <div><div className="k">Created</div><div className="v">{fmtDate(t.created_at)}</div></div>
+                            </div>
+                            <div className="klp-task-foot">
+                              <span className={`klp-pill ${pill.cls}`}>{pill.text}</span>
+                              <div>
+                                {t.status === 'paid' && (
+                                  <button type="button" className="klp-btn primary" style={cssVars({ padding: '10px 18px', fontSize: 11 })} disabled={busy}
+                                    onClick={() => void runAction(t.id, startTask, `Started · ${t.ref}`)}>{busy ? 'Starting...' : 'Start work'}</button>
+                                )}
+                                {t.status === 'in_progress' && (
+                                  <button type="button" className="klp-btn primary" style={cssVars({ padding: '10px 18px', fontSize: 11 })} disabled={busy}
+                                    onClick={() => void runAction(t.id, completeTask, `Marked complete · ${t.ref}`)}>{busy ? 'Saving...' : 'Mark complete'}</button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+              </>
+            )}
+
+            {tab === 'completed' && (
+              completed.length === 0
+                ? <div className="klp-list-empty" style={cssVars({ border: '1px solid var(--hairline)', borderRadius: 18 })}>Nothing completed yet.</div>
+                : (
+                  <div className="klp-list">
+                    {completed.map((t) => (
+                      <div key={t.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: 'minmax(120px,auto) 1fr auto' })}>
+                        <span className="ref">{t.ref}</span>
+                        <span className="title">{categoryLabel(t.category)}</span>
+                        <span className="date">{fmtDateTime(t.updated_at)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className={toast ? 'klp-toast show' : 'klp-toast'}>{toast}</div>
     </div>
   );
 }
