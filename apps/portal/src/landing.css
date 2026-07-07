@@ -456,3 +456,25 @@
 .klp button:focus-visible, .klp a:focus-visible, .klp input:focus-visible, .klp select:focus-visible, .klp textarea:focus-visible, .klp .klp-rp-card:focus-visible { outline: 2px solid var(--teal-deep); outline-offset: 3px; border-radius: 6px; }
 .klp-btn:focus-visible { outline-offset: 4px; }
 .klp-btn:active { transform: translateY(0) scale(.985); }
+
+/* ---- subtle film grain for tactile depth (Arc/Linear-style) ---- */
+.klp::after { content: ""; position: fixed; inset: 0; z-index: 60; pointer-events: none; opacity: .02; mix-blend-mode: multiply; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+[data-mode="dark"] .klp::after { opacity: .045; mix-blend-mode: screen; }
+
+/* ---- mobile header: toggle + primary CTA always reachable ---- */
+.klp-header .auth { display: flex; }
+@media (max-width: 560px) {
+  .klp-header .auth .klp-btn.ghost { display: none; }
+  .klp-header .auth .klp-btn.primary { padding: 10px 15px; }
+  .klp-brand .name small { display: none; }
+  .klp-brand .mark { height: 38px; width: 38px; font-size: 18px; }
+}
+
+/* ---- nav: animated underline instead of a static border ---- */
+.klp-nav button { border-bottom: none; position: relative; }
+.klp-nav button::after { content: ""; position: absolute; left: 15px; right: 15px; bottom: 0; height: 2px; border-radius: 2px; background: var(--teal-deep); transform: scaleX(0); transform-origin: left; transition: transform .3s cubic-bezier(.2,.7,.2,1); }
+.klp-nav button:hover::after, .klp-nav button.active::after { transform: scaleX(1); }
+.klp-nav button:hover { color: var(--ink); }
+
+/* ---- more dramatic stats ---- */
+.klp-stat .n { font-size: clamp(44px, 5.6vw, 74px); }
