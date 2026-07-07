@@ -362,3 +362,29 @@
 
 .klp-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); opacity: 0; pointer-events: none; background: var(--ink); color: var(--paper); padding: 12px 22px; border-radius: 999px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; transition: opacity .3s ease, transform .3s cubic-bezier(.2,.7,.2,1); z-index: 100; }
 .klp-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---------- modal ---------- */
+.klp-overlay { position: fixed; inset: 0; background: color-mix(in oklab, var(--ink) 50%, transparent); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); display: grid; place-items: center; padding: 24px; z-index: 90; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
+.klp-overlay.open { opacity: 1; pointer-events: auto; }
+.klp-modal { background: var(--card); border: 1px solid var(--hairline); border-radius: 20px; width: 100%; max-width: 540px; max-height: 90vh; overflow: auto; box-shadow: 0 40px 90px -40px color-mix(in oklab, var(--ink) 50%, transparent); }
+.klp-modal-hd { display: flex; align-items: center; justify-content: space-between; padding: 22px 24px; border-bottom: 1px solid var(--hairline); }
+.klp-modal-hd .t { font-family: var(--font-serif); font-size: 22px; }
+.klp-modal-close { background: none; border: none; cursor: pointer; font-family: var(--font-mono); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--mid); }
+.klp-modal-close:hover { color: var(--teal-deep); }
+.klp-modal-body { padding: 24px; display: flex; flex-direction: column; gap: 16px; }
+
+/* admin extras */
+.klp-cards-grid { display: grid; gap: 16px; }
+@media (min-width: 640px) { .klp-cards-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1100px) { .klp-cards-grid { grid-template-columns: repeat(3, 1fr); } }
+.klp-metric { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; border-top: 1px solid var(--hairline); font-size: 13px; }
+.klp-metric .k { color: var(--mid); }
+.klp-metric .v { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.klp-review-card { padding: 24px; }
+.klp-review-items { margin: 16px 0; border-top: 1px solid var(--hairline); }
+.klp-review-items .r { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--hairline); font-size: 13px; }
+.klp-review-items .r .amt { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.klp-healthdot { display: inline-block; width: 8px; height: 8px; border-radius: 999px; margin-right: 8px; }
+.klp-healthdot.ok { background: #16a34a; }
+.klp-healthdot.warn { background: var(--amber-deep); }
+.klp-healthdot.down { background: #b42318; }
