@@ -209,6 +209,8 @@
 .klp-topbrand .mark { display: grid; place-items: center; height: 32px; width: 32px; border-radius: 999px; background: var(--ink); color: var(--paper); font-family: var(--font-serif); font-size: 15px; }
 .klp-topbrand .name { font-family: var(--font-mono); font-size: 11px; line-height: 1.15; letter-spacing: .18em; text-transform: uppercase; }
 .klp-topbrand .name small { display: block; font-size: 9px; letter-spacing: .28em; color: var(--mid); }
+.klp-topbrand-r { margin-left: auto; display: flex; align-items: center; gap: 16px; }
+.klp-topbrand-r .exit { margin-left: 0; }
 .klp-topbrand .exit { margin-left: auto; }
 
 .klp-auth-grid { display: grid; gap: 48px; align-items: start; }
@@ -388,3 +390,69 @@
 .klp-healthdot.ok { background: #16a34a; }
 .klp-healthdot.warn { background: var(--amber-deep); }
 .klp-healthdot.down { background: #b42318; }
+
+/* ============================================================================
+ * ELEVATION PASS — warm dark mode + premium toggle, confident nav, hero depth,
+ * focus rings, refined motion. Awwwards-grade polish over the editorial base.
+ * ========================================================================== */
+
+/* ---- warm dark mode (a quiet-luxury night, not true black) ---- */
+[data-mode="dark"] .klp {
+  --paper: #15120C; --ink: #F3EFE5; --slate: #CBC4B5; --mid: #968F80;
+  --hairline: rgba(243,239,229,0.13); --card: #1D1811; --muted: #241E16;
+  --teal-deep: #58C1A5; --teal: #47B393; --teal-light: rgba(88,193,165,0.15);
+  --amber-deep: #E7AB59; --amber: #F5BA66; --amber-light: rgba(231,171,89,0.15);
+}
+/* the philosophy band is a fixed brand moment in both modes */
+.klp-band { background: #0B4B3F; color: #EAF3F0; }
+.klp-band h2 { color: #FBF8F1; }
+.klp-band .eb { color: rgba(251,248,241,0.72); }
+.klp-band .r { color: rgba(251,248,241,0.86); }
+.klp-band .r .big { color: #FBF8F1; }
+[data-mode="dark"] .klp-band { background: #0A3B31; }
+[data-mode="dark"] .klp-pill.paid { background: rgba(88,193,165,0.16); color: #82DDC1; }
+[data-mode="dark"] .klp-plan-flag { color: #15120C; }
+[data-mode="dark"] .klp-toast { background: var(--card); color: var(--ink); border: 1px solid var(--hairline); }
+[data-mode="dark"] .klp-topbrand .mark, [data-mode="dark"] .klp-brand .mark,
+[data-mode="dark"] .klp-footer .brandmark .mark { background: var(--ink); color: var(--paper); }
+
+/* ---- premium light/dark toggle ---- */
+.klp-toggle { position: relative; height: 38px; width: 38px; border-radius: 999px; border: 1px solid var(--hairline); background: var(--card); color: var(--ink); cursor: pointer; display: grid; place-items: center; overflow: hidden; flex: none; transition: border-color .25s ease, transform .18s cubic-bezier(.2,.7,.2,1), box-shadow .25s ease; }
+@media (hover: hover) { .klp-toggle:hover { border-color: var(--ink); box-shadow: 0 8px 20px -12px color-mix(in oklab, var(--ink) 55%, transparent); } }
+.klp-toggle:active { transform: scale(.92); }
+.klp-toggle .ic { position: absolute; width: 17px; height: 17px; transition: opacity .35s ease, transform .5s cubic-bezier(.2,.7,.2,1); }
+.klp-toggle .sun { opacity: 1; transform: rotate(0deg) scale(1); }
+.klp-toggle .moon { opacity: 0; transform: rotate(-70deg) scale(.5); }
+[data-mode="dark"] .klp-toggle .sun { opacity: 0; transform: rotate(70deg) scale(.5); }
+[data-mode="dark"] .klp-toggle .moon { opacity: 1; transform: rotate(0deg) scale(1); }
+
+/* ---- confident header ---- */
+.klp-header .row { min-height: 76px; align-items: center; }
+.klp-brand { gap: 14px; padding-block: 14px; }
+.klp-brand .mark { height: 42px; width: 42px; font-size: 20px; box-shadow: 0 8px 20px -10px color-mix(in oklab, var(--ink) 45%, transparent); }
+.klp-brand .name { font-size: 13px; letter-spacing: .16em; font-weight: 500; }
+.klp-brand .name small { font-size: 9px; letter-spacing: .3em; margin-top: 3px; }
+.klp-nav { margin-left: 40px; }
+.klp-nav button { font-size: 11px; padding: 0 15px; }
+.klp-header .auth { gap: 12px; }
+.klp-header .auth .klp-btn.primary { padding: 11px 20px; font-size: 11px; box-shadow: 0 12px 26px -14px color-mix(in oklab, var(--ink) 55%, transparent); }
+.klp-header .auth .klp-btn.ghost { border-color: var(--hairline); }
+@media (hover: hover) { .klp-header .auth .klp-btn.ghost:hover { border-color: var(--ink); } }
+
+/* ---- hero depth (soft, slow aurora) ---- */
+.klp-hero { position: relative; }
+.klp-hero::before {
+  content: ""; position: absolute; inset: -12% -18% auto -18%; height: 560px; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(58% 58% at 18% 28%, color-mix(in oklab, var(--teal) 16%, transparent), transparent 70%),
+    radial-gradient(48% 48% at 86% 16%, color-mix(in oklab, var(--amber) 13%, transparent), transparent 70%);
+  filter: blur(8px); animation: klp-aurora 20s ease-in-out infinite alternate;
+}
+.klp-hero > * { position: relative; z-index: 1; }
+@keyframes klp-aurora { from { transform: translate3d(0,0,0) scale(1); opacity: .85; } to { transform: translate3d(2%, -1.5%, 0) scale(1.07); opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .klp-hero::before { animation: none; } }
+
+/* ---- focus rings + tactile press (micro-details) ---- */
+.klp button:focus-visible, .klp a:focus-visible, .klp input:focus-visible, .klp select:focus-visible, .klp textarea:focus-visible, .klp .klp-rp-card:focus-visible { outline: 2px solid var(--teal-deep); outline-offset: 3px; border-radius: 6px; }
+.klp-btn:focus-visible { outline-offset: 4px; }
+.klp-btn:active { transform: translateY(0) scale(.985); }

@@ -8,6 +8,7 @@
 
 import { useState, type FormEvent, type CSSProperties } from 'react';
 import { useAuth, useApi } from './auth.tsx';
+import { KlpToggle } from './klpTheme.tsx';
 import {
   useClientData, serviceTypeLabel, formatKes,
   type ClientTicket, type ClientInvoice,
@@ -53,6 +54,7 @@ export function ClientPortal() {
       <div className="klp-topbrand klp-container">
         <span className="mark">K</span>
         <span className="name">Kipkiren<small>WEB SERVICES</small></span>
+        <div className="klp-topbrand-r"><KlpToggle /></div>
       </div>
 
       <div className="klp-container klp-portal">

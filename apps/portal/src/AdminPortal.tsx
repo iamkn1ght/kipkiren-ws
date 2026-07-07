@@ -7,6 +7,7 @@
 
 import { useState, type CSSProperties } from 'react';
 import { useAuth, useApi } from './auth.tsx';
+import { KlpToggle } from './klpTheme.tsx';
 import { useAdminData, slaLabel, type QueueRow, type RailHealth } from './useAdminData.ts';
 import './landing.css';
 
@@ -77,6 +78,7 @@ export function AdminPortal() {
       <div className="klp-topbrand klp-container">
         <span className="mark">K</span>
         <span className="name">Kipkiren<small>WEB SERVICES</small></span>
+        <div className="klp-topbrand-r"><KlpToggle /></div>
       </div>
 
       <div className="klp-container klp-portal">

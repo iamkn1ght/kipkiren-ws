@@ -1,4 +1,5 @@
 import type { PortalRole } from './auth.tsx';
+import { KlpToggle } from './klpTheme.tsx';
 import './landing.css';
 
 const OPTIONS: { role: PortalRole; title: string; tag: string; blurb: string }[] = [
@@ -14,7 +15,10 @@ export function RolePicker({ onPick, onExit }: { onPick: (role: PortalRole) => v
         <div className="klp-topbrand">
           <span className="mark">K</span>
           <span className="name">Kipkiren<small>WEB SERVICES</small></span>
-          {onExit && <button type="button" className="klp-back exit" onClick={onExit}>‹ Back to site</button>}
+          <div className="klp-topbrand-r">
+            <KlpToggle />
+            {onExit && <button type="button" className="klp-back exit" onClick={onExit}>‹ Back to site</button>}
+          </div>
         </div>
 
         <div className="klp-rp-head">

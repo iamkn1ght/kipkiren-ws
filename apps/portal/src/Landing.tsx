@@ -1,4 +1,5 @@
 import { useEffect, type CSSProperties } from 'react';
+import { KlpToggle } from './klpTheme.tsx';
 import './landing.css';
 
 /**
@@ -86,6 +87,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
             {NAV.map((n) => <button key={n.id} type="button" onClick={go(n.id)}>{n.label}</button>)}
           </nav>
           <div className="auth">
+            <KlpToggle />
             <button type="button" className="klp-btn ghost" onClick={onSignIn}>Sign in</button>
             <button type="button" className="klp-btn primary" onClick={onSignIn}>Start a project</button>
           </div>

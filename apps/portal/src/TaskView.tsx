@@ -7,6 +7,7 @@
 
 import { useEffect, useState, type CSSProperties } from 'react';
 import { useAuth } from './auth.tsx';
+import { KlpToggle } from './klpTheme.tsx';
 import { useTaskData, type Task } from './useTaskData.ts';
 import './landing.css';
 
@@ -74,6 +75,7 @@ export function TaskView() {
       <div className="klp-topbrand klp-container">
         <span className="mark">K</span>
         <span className="name">Kipkiren<small>WEB SERVICES</small></span>
+        <div className="klp-topbrand-r"><KlpToggle /></div>
       </div>
 
       <div className="klp-container klp-portal">

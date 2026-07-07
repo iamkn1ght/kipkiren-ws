@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useAuth, type PortalRole } from './auth.tsx';
+import { KlpToggle } from './klpTheme.tsx';
 import { ApiError } from './api.ts';
 import './landing.css';
 
@@ -66,7 +67,10 @@ export function LoginScreen({ role, onBack }: { role: PortalRole; onBack: () => 
         <div className="klp-topbrand">
           <span className="mark">K</span>
           <span className="name">Kipkiren<small>WEB SERVICES</small></span>
-          <button type="button" className="klp-back exit" onClick={onBack}>‹ Change role</button>
+          <div className="klp-topbrand-r">
+            <KlpToggle />
+            <button type="button" className="klp-back exit" onClick={onBack}>‹ Change role</button>
+          </div>
         </div>
 
         <div className="klp-auth-grid">
