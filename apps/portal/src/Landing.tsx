@@ -1,4 +1,4 @@
-import { useEffect, type CSSProperties } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import { KlpToggle } from './klpTheme.tsx';
 import './landing.css';
 
@@ -62,7 +62,9 @@ const PROCESS = [
 ];
 
 export function Landing({ onSignIn }: { onSignIn: () => void }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const go = (id: string) => () => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const goClose = (id: string) => () => { setMenuOpen(false); document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -90,9 +92,23 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
             <KlpToggle />
             <button type="button" className="klp-btn ghost" onClick={onSignIn}>Sign in</button>
             <button type="button" className="klp-btn primary" onClick={onSignIn}>Start a project</button>
+            <button type="button" className={`klp-burger ${menuOpen ? 'open' : ''}`} aria-label="Menu" aria-expanded={menuOpen ? 'true' : 'false'} onClick={() => setMenuOpen((o) => !o)}><span className="bl" /></button>
           </div>
         </div>
       </header>
+
+      {/* ── mobile menu ── */}
+      <div className={`klp-mobilemenu ${menuOpen ? 'open' : ''}`}>
+        <div className="klp-container">
+          <nav>
+            {NAV.map((n) => <button key={n.id} type="button" onClick={goClose(n.id)}>{n.label}</button>)}
+          </nav>
+          <div className="mm-cta">
+            <button type="button" className="klp-btn ghost" onClick={() => { setMenuOpen(false); onSignIn(); }}>Sign in</button>
+            <button type="button" className="klp-btn primary" onClick={() => { setMenuOpen(false); onSignIn(); }}>Start a project</button>
+          </div>
+        </div>
+      </div>
 
       <main id="top">
         {/* ── hero ── */}

@@ -110,11 +110,28 @@ export function ClientPortal() {
 }
 
 // ── overview ──
+function OverviewSkeleton() {
+  return (
+    <>
+      <div className="klp-skel-kpis">{Array.from({ length: 3 }).map((_, i) => <div key={i} className="klp-skeleton klp-skel-kpi" />)}</div>
+      {[0, 1].map((s) => (
+        <section key={s} className="klp-portal-sec">
+          <div className="klp-skel-list">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="klp-skel-row"><span className="a klp-skeleton" /><span className="b klp-skeleton" /><span className="c klp-skeleton" /></div>
+            ))}
+          </div>
+        </section>
+      ))}
+    </>
+  );
+}
 function Overview({ name, tickets, invoices, openCount, activeCount, awaitingCount, loading, onNav }: {
   name: string; tickets: ClientTicket[] | null; invoices: ClientInvoice[] | null;
   openCount: number; activeCount: number; awaitingCount: number; loading: boolean; onNav: (v: View) => void;
 }) {
   void name;
+  if (loading) return <OverviewSkeleton />;
   return (
     <>
       <div className="klp-kpis">
