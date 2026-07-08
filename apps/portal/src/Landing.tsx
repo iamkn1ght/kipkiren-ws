@@ -207,7 +207,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
 
         {/* ── pricing ── */}
         <section className="klp-container klp-section klp-hairline-t" id="pricing">
-          <span className="klp-eyebrow teal klp-reveal">Pricing</span>
+          <span className="klp-eyebrow teal klp-reveal">Pricing · 04</span>
           <h2 className="klp-display-lg klp-reveal" style={cssVars({ marginTop: 20 })}>Real plans.<br /><em style={cssVars({ color: 'var(--teal-deep)' })}>Or a proper conversation.</em></h2>
           <p className="klp-lead klp-reveal" style={cssVars({ marginTop: 22, maxWidth: '42rem' })}>Every plan is a real retainer, not a marketing tier. If none quite fit, open a ticket and we write you a proforma in Kenyan shillings, usually within 24 hours.</p>
 
@@ -271,7 +271,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
         <section className="klp-container klp-section" id="contact" style={cssVars({ paddingTop: 0 })}>
           <div className="klp-cta klp-reveal">
             <div className="l">
-              <span className="klp-eyebrow teal">Start</span>
+              <span className="klp-eyebrow teal">Start · 05</span>
               <h2 className="klp-display-lg">Ready when you are.</h2>
               <p className="klp-lead">Pick a plan or open a ticket for something custom. Either path starts a real conversation with a real designer, usually the same day.</p>
             </div>
