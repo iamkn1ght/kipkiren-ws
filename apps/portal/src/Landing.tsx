@@ -262,7 +262,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
         <section className="klp-container klp-section">
           <figure className="klp-quote klp-reveal">
             <span className="klp-eyebrow teal">In their words</span>
-            <blockquote className="klp-display-md">"We interviewed six studios. Kipkiren was the only one that asked about our support process before showing us design mockups. Two years in, they still answer within the hour."</blockquote>
+            <blockquote className="klp-display-md">We interviewed six studios. Kipkiren was the only one that asked about our support process before showing us design mockups. Two years in, they still answer within the hour.</blockquote>
             <figcaption className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>Wanjiku Njoroge · Head of Marketing, Riverside Capital</figcaption>
           </figure>
         </section>

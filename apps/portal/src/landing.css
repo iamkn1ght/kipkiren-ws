@@ -505,3 +505,20 @@
 /* pricing: the featured tier earns a quiet depth ring */
 .klp-plan.feat { box-shadow: 0 30px 72px -42px color-mix(in oklab, var(--teal-deep) 42%, transparent); }
 .klp-plan-name { text-wrap: nowrap; }
+
+/* ---- button arrow micro-interaction ---- */
+.klp-btn span { display: inline-block; transition: transform .25s cubic-bezier(.2,.7,.2,1); }
+@media (hover: hover) { .klp-btn:hover span { transform: translateX(3px); } }
+
+/* ---- testimonial: an editorial pull-quote mark ---- */
+.klp-quote { position: relative; }
+.klp-quote::before { content: "\201C"; position: absolute; top: -0.42em; left: 50%; transform: translateX(-50%); font-family: var(--font-serif); font-size: clamp(140px, 20vw, 240px); line-height: 1; color: var(--teal-deep); opacity: .09; pointer-events: none; z-index: 0; }
+.klp-quote blockquote, .klp-quote figcaption, .klp-quote .klp-eyebrow { position: relative; z-index: 1; }
+
+/* ---- CTA card + plan depth ---- */
+.klp-cta { background: linear-gradient(180deg, var(--card), color-mix(in oklab, var(--card) 86%, var(--muted))); }
+[data-mode="dark"] .klp-cta { background: linear-gradient(180deg, var(--card), color-mix(in oklab, var(--card) 78%, #000)); }
+@media (hover: hover) {
+  .klp-plan { transition: transform .35s cubic-bezier(.2,.7,.2,1), border-color .35s ease, box-shadow .35s ease; }
+  .klp-plan:hover { transform: translateY(-3px); border-color: color-mix(in oklab, var(--teal) 42%, var(--hairline)); }
+}
