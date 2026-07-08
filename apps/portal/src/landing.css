@@ -559,3 +559,36 @@
 @media (min-width: 768px) { .klp-skel-kpis { grid-template-columns: repeat(3, 1fr); } }
 .klp-skel-kpi { height: 118px; border-radius: 18px; }
 @media (prefers-reduced-motion: reduce) { .klp-skeleton::after { animation: none; } }
+
+/* ============================================================================
+ * CONFIDENCE PASS — commanding brand lockup, prominent CTAs, bolder hero,
+ * fewer dead zones. Bolder than the reference while holding the brand.
+ * ========================================================================== */
+
+/* ---- header: a brand lockup that commands the top-left ---- */
+.klp-header .row { min-height: 90px; }
+.klp-brand { gap: 15px; padding-block: 16px; }
+.klp-brand .mark { height: 48px; width: 48px; font-size: 23px; box-shadow: 0 10px 26px -12px color-mix(in oklab, var(--ink) 48%, transparent); }
+.klp-brand .name { font-size: 15px; letter-spacing: .13em; font-weight: 600; }
+.klp-brand .name small { font-size: 9.5px; letter-spacing: .32em; margin-top: 4px; }
+.klp-nav { margin-left: 44px; }
+.klp-nav button { font-size: 12px; padding: 0 17px; }
+.klp-header .auth { gap: 14px; }
+.klp-header .auth .klp-btn { padding: 13px 24px; font-size: 12px; }
+.klp-header .auth .klp-btn.primary { box-shadow: 0 14px 34px -14px color-mix(in oklab, var(--teal-deep) 58%, transparent); }
+.klp-toggle { height: 40px; width: 40px; }
+
+/* ---- portal top-bar brand matches the header's confidence ---- */
+.klp-topbrand { padding-block: 18px; gap: 14px; }
+.klp-topbrand .mark { height: 44px; width: 44px; font-size: 21px; box-shadow: 0 8px 20px -10px color-mix(in oklab, var(--ink) 42%, transparent); }
+.klp-topbrand .name { font-size: 13px; letter-spacing: .13em; font-weight: 600; }
+
+/* ---- footer brand grows too ---- */
+.klp-footer .brandmark .mark { height: 48px; width: 48px; font-size: 22px; }
+
+/* ---- hero: bolder headline + a credentials bar that closes the dead space ---- */
+.klp-display-xl { font-size: clamp(52px, 9vw, 138px); letter-spacing: -0.04em; }
+.klp-hero-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 30px; margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--hairline); }
+.klp-hero-meta span { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--mid); display: inline-flex; align-items: center; gap: 14px; }
+.klp-hero-meta span::before { content: ""; width: 5px; height: 5px; border-radius: 999px; background: var(--teal-deep); flex: none; }
+.klp-hero-meta span:first-child::before { display: none; }

@@ -12,11 +12,12 @@ import './landing.css';
 
 const cssVars = (v: Record<string, string | number>) => v as CSSProperties;
 
+// Ordered to match the page's story: Services 01 -> About 02 -> Process 03 -> Pricing 04 -> Contact 05.
 const NAV = [
   { id: 'services', label: 'Services' },
+  { id: 'about', label: 'About' },
   { id: 'process', label: 'Process' },
   { id: 'pricing', label: 'Pricing' },
-  { id: 'about', label: 'About' },
   { id: 'contact', label: 'Contact' },
 ];
 
@@ -130,8 +131,15 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
             <aside className="klp-hero-aside klp-reveal" style={cssVars({ '--d': '320ms' })}>
               <div className="klp-mono">Studio note · 004</div>
               <p className="quote">"The web is quieter than it looks. Almost every site we're asked to rescue was shipped in a rush by someone who wasn't going to answer the phone six months later."</p>
-              <div className="klp-mono by" style={cssVars({ color: 'var(--mid)' })}>— Kipkiren Studio<br />on why we do managed work</div>
+              <div className="klp-mono by" style={cssVars({ color: 'var(--mid)' })}>Kipkiren Studio<br />on why we do managed work</div>
             </aside>
+          </div>
+          <div className="klp-hero-meta klp-reveal" style={cssVars({ '--d': '400ms' })}>
+            <span>A managed studio, Nairobi</span>
+            <span>Est. 2019</span>
+            <span>68 sites in operation</span>
+            <span>99.98% uptime</span>
+            <span>Senior team only</span>
           </div>
         </section>
 
