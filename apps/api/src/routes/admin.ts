@@ -9,6 +9,7 @@ import { intakeTicket } from '../services/ticket-intake.js';
 import { loadQueue, loadClientAccounts, loadCapacitySnapshot, loadReviewQueue, loadCapacityDetail, loadRecentDispatches, loadSlaAudit, loadAgentRegistry } from '../services/admin-views.js';
 import { runUptimeChecks } from '../services/uptime.js';
 import { runSslChecks } from '../services/ssl.js';
+import { runAutonomousSslRenewals } from '../services/ssl-renewal.js';
 import { runDomainExpiryAlerts } from '../services/domain-expiry.js';
 import { runSlaBreachAlerts } from '../services/sla-alerts.js';
 import { loadSiteHealth } from '../services/observability.js';
@@ -224,6 +225,22 @@ adminRouter.post(
   async (_req: Request, res: Response) => {
     const results = await runSslChecks();
     res.json({ checked: results.length, results });
+  },
+);
+
+// ----------------------------------------------------------------------------
+// POST /v1/admin/ssl-renewal-run - autonomous SSL renewal pass (KWS-S9-005).
+// Plans a renewal for every due certificate and, only when AGENT_DNS_EXECUTION
+// is enabled AND the S9-004 guard allows, executes it; otherwise escalates.
+// Inert (plan-only) while the flag is off - which is the default.
+// ----------------------------------------------------------------------------
+adminRouter.post(
+  '/ssl-renewal-run',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (_req: Request, res: Response) => {
+    const summary = await runAutonomousSslRenewals();
+    res.json(summary);
   },
 );
 

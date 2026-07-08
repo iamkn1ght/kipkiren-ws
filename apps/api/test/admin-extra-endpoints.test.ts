@@ -18,7 +18,7 @@ beforeAll(() => {
 });
 
 const GETS = ['/v1/admin/sla-audit', '/v1/admin/agents', '/v1/admin/site-health'];
-const POSTS = ['/v1/admin/ssl-check', '/v1/admin/domain-expiry-scan', '/v1/admin/sla-breach-scan'];
+const POSTS = ['/v1/admin/ssl-check', '/v1/admin/ssl-renewal-run', '/v1/admin/domain-expiry-scan', '/v1/admin/sla-breach-scan'];
 
 describe('new admin endpoints - role gate', () => {
   it('GET endpoints forbid client + technical_delivery (403) and require auth (401)', async () => {
