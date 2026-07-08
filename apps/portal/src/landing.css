@@ -592,3 +592,14 @@
 .klp-hero-meta span { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--mid); display: inline-flex; align-items: center; gap: 14px; }
 .klp-hero-meta span::before { content: ""; width: 5px; height: 5px; border-radius: 999px; background: var(--teal-deep); flex: none; }
 .klp-hero-meta span:first-child::before { display: none; }
+
+/* ---- bolder rhythm: tighter, more intentional spacing + section drama ---- */
+.klp-section { padding-block: 78px; }
+@media (min-width: 768px) { .klp-section { padding-block: 112px; } }
+.klp-display-lg { font-size: clamp(42px, 6.2vw, 92px); }
+.klp-sec-head { margin-bottom: 52px; }
+
+/* stats as a warm full-bleed band — visual rhythm + tactile depth */
+.klp-statband { background: color-mix(in oklab, var(--paper) 52%, var(--muted)); border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); }
+.klp-statband .klp-sec-head { margin-bottom: 44px; }
+.klp-statband .klp-stat .n { color: var(--teal-deep); }

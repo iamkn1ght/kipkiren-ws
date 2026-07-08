@@ -196,21 +196,30 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
           </div>
         </section>
 
-        {/* ── stats ── */}
-        <section className="klp-container klp-section">
-          <div className="klp-stats klp-reveal">
-            {STATS.map((s) => (
-              <div key={s.n} className="klp-stat">
-                <div className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>{s.n}</div>
-                <div className="n">{s.v}</div>
-                <div className="l">{s.l}</div>
+        {/* ── stats band ── */}
+        <section className="klp-statband">
+          <div className="klp-container klp-section">
+            <div className="klp-sec-head">
+              <div className="h">
+                <span className="klp-eyebrow teal">By the numbers</span>
+                <h2 className="klp-display-lg">The kind of numbers<br /><em>that take years.</em></h2>
               </div>
-            ))}
+              <p className="klp-lead p">Operations you can see. Uptime, longevity and response times are the metrics that only exist when someone stays after launch.</p>
+            </div>
+            <div className="klp-stats klp-reveal">
+              {STATS.map((s) => (
+                <div key={s.n} className="klp-stat">
+                  <div className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>{s.n}</div>
+                  <div className="n">{s.v}</div>
+                  <div className="l">{s.l}</div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
         {/* ── process ── */}
-        <section className="klp-container klp-section klp-hairline-t" id="process">
+        <section className="klp-container klp-section" id="process">
           <div className="klp-proc-grid">
             <div className="l klp-reveal">
               <span className="klp-eyebrow teal">Process · 03</span>
