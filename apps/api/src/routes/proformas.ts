@@ -410,8 +410,21 @@ proformasRouter.post(
 
     // Card rail
     requireFeatureEnv('paystack');
+    // Paystack ties the transaction + receipt to a customer email. Use the real
+    // client email; if the client record has none, still let checkout proceed
+    // (blocking a paying customer over a missing profile field is worse) but log
+    // loudly with a non-routable placeholder so ops can backfill the record.
+    const { data: clientRow } = await sb
+      .from('clients')
+      .select('email')
+      .eq('id', ownerClientId)
+      .single();
+    const clientEmail = typeof clientRow?.email === 'string' ? clientRow.email : null;
+    if (!clientEmail) {
+      logger.warn({ clientId: ownerClientId, proformaId: id }, 'paystack_init_missing_client_email');
+    }
     const init = await ps().initialize({
-      email: req.auth.sub + '@unknown.local', // TODO: load real client email in S3 polish
+      email: clientEmail ?? `client-${ownerClientId}@no-email.kipkiren.local`,
       amount_kes: proforma.total_kes,
       reference: proforma.ref,
       callback_url: `${callbackBase}/portal/proforma/${id}`,
