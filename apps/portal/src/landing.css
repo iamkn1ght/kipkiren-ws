@@ -732,3 +732,34 @@
 .klp-footlegal { display: flex; flex-wrap: wrap; gap: 8px 20px; }
 .klp-footlegal button { background: none; border: none; cursor: pointer; font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--mid); transition: color .16s ease; }
 .klp-footlegal button:hover { color: var(--ink); }
+
+/* ============================================================================
+   BRAND AUTHORITY - a commanding, memorable lockup (serif wordmark + mono
+   kicker, pairing the serif K mark) without adding navigation bulk. Applies
+   to the header, portal top-bars and auth screens alike.
+   ============================================================================ */
+.klp-brand .name, .klp-topbrand .name {
+  font-family: var(--font-serif); font-size: 21px; font-weight: 500; line-height: .92;
+  letter-spacing: -.015em; text-transform: none; color: var(--ink);
+}
+.klp-brand .name small, .klp-topbrand .name small {
+  display: block; font-family: var(--font-mono); font-size: 8.5px; font-weight: 500;
+  letter-spacing: .3em; color: var(--mid); text-transform: uppercase; margin-top: 4px;
+}
+@media (max-width: 480px) { .klp-brand .name, .klp-topbrand .name { font-size: 18px; } }
+
+/* process: 'what you always get' commitments panel (fills the sparse column
+   with genuine trust content rather than whitespace) */
+.klp-proc-promise { margin-top: 40px; padding-top: 28px; border-top: 1px solid var(--hairline); }
+.klp-proc-promise .klp-mono { color: var(--teal-deep); margin-bottom: 16px; }
+.klp-proc-promise ul { display: flex; flex-direction: column; gap: 13px; }
+.klp-proc-promise li { display: flex; gap: 12px; align-items: baseline; font-size: 14.5px; color: var(--slate); line-height: 1.5; }
+.klp-proc-promise li .m { flex: none; width: 12px; height: 1.5px; background: var(--teal-deep); align-self: center; }
+
+/* hero scroll cue - a quiet nudge into the page for continuity */
+.klp-scrollcue { display: inline-flex; align-items: center; gap: 12px; margin-top: 44px; background: none; border: none; cursor: pointer; padding: 0; font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--mid); transition: color .18s ease; }
+.klp-scrollcue:hover { color: var(--teal-deep); }
+.klp-scrollcue .line { width: 40px; height: 1px; background: var(--hairline); position: relative; overflow: hidden; }
+.klp-scrollcue .line::after { content: ""; position: absolute; inset: 0; width: 14px; background: var(--teal-deep); animation: klp-scrollcue 2.4s cubic-bezier(.7,0,.3,1) infinite; }
+@keyframes klp-scrollcue { 0% { transform: translateX(-14px); } 60%,100% { transform: translateX(40px); } }
+@media (prefers-reduced-motion: reduce) { .klp-scrollcue .line::after { animation: none; } }

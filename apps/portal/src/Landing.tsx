@@ -141,9 +141,10 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
                 considered site, and a phone number that answers.
               </p>
               <div className="klp-hero-ctas klp-reveal" style={cssVars({ '--d': '240ms' })}>
-                <button type="button" className="klp-btn primary" onClick={go('pricing')}>See plans <span>→</span></button>
+                <button type="button" className="klp-btn primary" onClick={go('pricing')}>See pricing <span>→</span></button>
                 <button type="button" className="klp-btn ghost" onClick={go('contact')}>Book a conversation</button>
               </div>
+              <button type="button" className="klp-scrollcue klp-reveal" style={cssVars({ '--d': '480ms' })} onClick={go('services')}><span className="line" />What we do</button>
             </div>
             <aside className="klp-hero-aside klp-reveal" style={cssVars({ '--d': '320ms' })}>
               <div className="klp-mono">Studio note · 004</div>
@@ -243,6 +244,15 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
               <h2 className="klp-display-lg">How the work moves.</h2>
               <p className="klp-lead">Six steps. Predictable calendar. No mystery deliverables.</p>
               <button type="button" className="klp-btn ghost" onClick={go('contact')}>Start the conversation</button>
+              <div className="klp-proc-promise">
+                <div className="klp-mono">On every project</div>
+                <ul>
+                  <li><span className="m" />A fixed-price proforma before any work begins</li>
+                  <li><span className="m" />Weekly demos with real content, never mockup theatre</li>
+                  <li><span className="m" />The same senior team from the first call to year three</li>
+                  <li><span className="m" />Everything handed over. You own all of it.</li>
+                </ul>
+              </div>
             </div>
             <ol className="klp-proc-list r klp-reveal" style={cssVars({ '--d': '120ms' })}>
               {PROCESS.map((p) => (
