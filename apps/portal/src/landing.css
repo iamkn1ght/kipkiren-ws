@@ -134,10 +134,11 @@
 .klp-sec-head { display: grid; gap: 32px; margin-bottom: 56px; }
 @media (min-width: 1024px) { .klp-sec-head { grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: end; } .klp-sec-head .h { grid-column: span 5 / span 5; } .klp-sec-head .p { grid-column: span 6 / span 6; grid-column-start: 7; } }
 .klp-sec-head h2 { margin-top: 22px; }
-.klp-grid-cells { display: grid; gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); border-radius: 20px; overflow: hidden; }
-@media (min-width: 768px) { .klp-grid-cells { grid-template-columns: 1fr 1fr; } }
-.klp-cell { background: var(--paper); padding: 32px; transition: background .25s ease; }
-@media (min-width: 768px) { .klp-cell { padding: 40px; } }
+.klp-grid-cells { display: grid; gap: 14px; }
+@media (min-width: 768px) { .klp-grid-cells { grid-template-columns: 1fr 1fr; gap: 16px; } }
+.klp-cell { background: var(--card); border: 1px solid var(--hairline); border-radius: 20px; padding: 28px; transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease; }
+@media (min-width: 768px) { .klp-cell { padding: 34px; } }
+@media (hover: hover) { .klp-cell:hover { border-color: color-mix(in oklab, var(--teal) 40%, var(--hairline)); box-shadow: 0 26px 60px -44px color-mix(in oklab, var(--teal-deep) 42%, transparent); transform: translateY(-2px); } }
 .klp-cell:hover { background: color-mix(in oklab, var(--paper) 78%, var(--card)); }
 .klp-cell h3 { margin-top: 16px; font-family: var(--font-serif); font-size: 24px; }
 .klp-cell p { margin-top: 16px; color: var(--slate); max-width: 28rem; }
@@ -184,21 +185,42 @@
 @media (min-width: 1024px) { .klp-cta .r { align-items: flex-end; } }
 .klp-cta .r .klp-btn { justify-content: center; }
 
-/* ---------- footer ---------- */
-.klp-footer { margin-top: 0; border-top: 1px solid var(--hairline); background: color-mix(in oklab, var(--paper) 55%, var(--muted)); padding-top: 64px; padding-bottom: 72px; }
+/* ============================================================================
+   FOOTER - structured brand + columns with contact icons (mobile-first).
+   ============================================================================ */
+.klp-footer { margin-top: 0; border-top: 1px solid var(--hairline); background: color-mix(in oklab, var(--paper) 55%, var(--muted)); padding-top: 52px; padding-bottom: 40px; }
 .klp-footer ul { list-style: none; margin: 0; padding: 0; }
 .klp-footer li { list-style: none; }
-.klp-footer-grid { display: grid; gap: 48px; }
-@media (min-width: 1024px) { .klp-footer-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); } .klp-footer .col-brand { grid-column: span 5 / span 5; } .klp-footer .col-nav { grid-column: span 2 / span 2; } .klp-footer .col-contact { grid-column: span 3 / span 3; } }
-.klp-footer .brandmark { display: flex; align-items: center; gap: 12px; }
-.klp-footer .brandmark .mark { display: grid; place-items: center; height: 36px; width: 36px; border-radius: 999px; background: var(--ink); color: var(--paper); font-family: var(--font-serif); font-size: 17px; }
-.klp-footer .tagline { font-family: var(--font-serif); font-style: italic; font-size: clamp(28px, 3vw, 40px); line-height: 1.1; margin-top: 28px; max-width: 28rem; }
-.klp-footer .blurb { margin-top: 22px; color: var(--mid); max-width: 28rem; }
-.klp-footer .col-nav ul, .klp-footer .col-contact ul { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
-.klp-footer .col-nav button, .klp-footer .col-contact li { color: var(--slate); font-size: 14px; }
-.klp-footer .col-nav button { background: none; border: none; padding: 0; margin: 0; cursor: pointer; font: inherit; font-size: 14px; text-align: left; transition: color .2s; }
-.klp-footer .col-nav button:hover { color: var(--teal-deep); }
-.klp-footbar { border-top: 1px solid var(--hairline); margin-top: 56px; padding-top: 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+
+/* top: brand + tagline + social */
+.klp-foot-top { padding-bottom: 36px; border-bottom: 1px solid var(--hairline); }
+.klp-foot-brand { display: inline-flex; align-items: center; gap: 12px; }
+.klp-foot-brand .mark { display: grid; place-items: center; height: 44px; width: 44px; border-radius: 999px; background: var(--ink); color: var(--paper); font-family: var(--font-serif); font-size: 21px; }
+.klp-foot-brand .wm { font-family: var(--font-serif); font-size: 21px; font-weight: 500; letter-spacing: -.015em; line-height: .9; color: var(--ink); }
+.klp-foot-brand .wm small { display: block; font-family: var(--font-mono); font-size: 8px; letter-spacing: .3em; text-transform: uppercase; color: var(--mid); margin-top: 4px; }
+.klp-foot-tag { margin-top: 20px; font-family: var(--font-serif); font-style: italic; font-size: clamp(19px, 2.4vw, 25px); line-height: 1.35; color: var(--slate); max-width: 30rem; text-wrap: pretty; }
+.klp-foot-social { margin-top: 22px; display: flex; gap: 10px; }
+.klp-foot-social a { display: grid; place-items: center; height: 44px; width: 44px; border-radius: 12px; border: 1px solid var(--hairline); background: var(--card); color: var(--ink); transition: border-color .18s, color .18s, transform .18s; }
+.klp-foot-social a svg { width: 19px; height: 19px; }
+@media (hover: hover) { .klp-foot-social a:hover { border-color: var(--teal-deep); color: var(--teal-deep); transform: translateY(-2px); } }
+
+/* three columns */
+.klp-foot-cols { margin-top: 36px; display: grid; grid-template-columns: 1fr 1fr 1.25fr; gap: 30px 16px; }
+@media (min-width: 768px) { .klp-foot-cols { grid-template-columns: 1fr 1fr 1.5fr; gap: 44px; } }
+.klp-foot-col .h { color: var(--mid); margin-bottom: 16px; }
+.klp-foot-col ul { display: flex; flex-direction: column; gap: 12px; }
+.klp-foot-col button, .klp-foot-col a { background: none; border: none; padding: 0; margin: 0; cursor: pointer; font: inherit; font-size: 14px; text-align: left; color: var(--slate); transition: color .18s; }
+@media (hover: hover) { .klp-foot-col button:hover, .klp-foot-col a:hover { color: var(--teal-deep); } }
+.klp-foot-contact ul { gap: 15px; }
+.klp-foot-contact li { display: flex; align-items: flex-start; gap: 10px; font-size: 13.5px; color: var(--slate); line-height: 1.4; }
+.klp-foot-contact .fi { width: 17px; height: 17px; flex: none; color: var(--teal-deep); margin-top: 1px; }
+.klp-foot-contact li span { min-width: 0; }
+
+/* bottom bar */
+.klp-footbar { border-top: 1px solid var(--hairline); margin-top: 40px; padding-top: 22px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+.klp-footbar .klp-mono { font-size: 10px; letter-spacing: .1em; color: var(--mid); }
+.klp-foot-toplink { background: none; border: none; cursor: pointer; font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--mid); transition: color .18s; }
+.klp-foot-toplink:hover { color: var(--ink); }
 
 /* ---------- motion (scroll reveal + reduced motion) ---------- */
 .klp-reveal { opacity: 1; }
@@ -836,9 +858,6 @@
 .klp-legal-cross button:hover span { transform: translateX(3px); }
 
 /* footer legal-links row */
-.klp-footlegal { display: flex; flex-wrap: wrap; gap: 8px 20px; }
-.klp-footlegal button { background: none; border: none; cursor: pointer; font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--mid); transition: color .16s ease; }
-.klp-footlegal button:hover { color: var(--ink); }
 
 /* ============================================================================
    BRAND AUTHORITY - a commanding, memorable lockup (serif wordmark + mono
@@ -969,9 +988,9 @@
   .klp-stats { grid-template-columns: 1fr 1fr; gap: 30px 20px; }
   .klp-statband .klp-stat .n, .klp-stat .n { font-size: clamp(38px, 12vw, 52px); }
 
-  /* footer: lighter and better composed on a phone */
-  .klp-footer { padding-top: 48px; padding-bottom: 52px; }
-  .klp-footer-grid { gap: 34px; }
-  .klp-footbar { flex-direction: column; align-items: flex-start; gap: 14px; margin-top: 40px; }
-  .klp-footer .tagline { font-size: clamp(26px, 8vw, 34px); }
+  /* footer: lighter on a phone; contact column drops full-width for readability */
+  .klp-footer { padding-top: 44px; padding-bottom: 40px; }
+  .klp-foot-cols { grid-template-columns: 1fr 1fr; gap: 30px 18px; }
+  .klp-foot-contact { grid-column: 1 / -1; }
+  .klp-footbar { flex-direction: row; align-items: center; gap: 12px; }
 }

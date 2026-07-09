@@ -90,6 +90,17 @@ const PROCESS = [
   { n: '06', t: 'Operation', d: 'The part most studios skip. We stay.' },
 ];
 
+// Short labels for the footer legal column (the full names live on the pages).
+const FOOTER_LEGAL: Record<string, string> = { terms: 'Terms', privacy: 'Privacy', refunds: 'Refunds', sla: 'Service', cookies: 'Cookies', faq: 'FAQ' };
+
+// Small stroke icons for the footer contact column + social.
+const IconPin = () => (<svg className="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10Z" /><circle cx="12" cy="11" r="2" /></svg>);
+const IconMail = () => (<svg className="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3.5 7 8.5 6 8.5-6" /></svg>);
+const IconClock = () => (<svg className="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7.5V12l3 2" /></svg>);
+const IconUser = () => (<svg className="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 20a7.5 7.5 0 0 1 15 0" /><circle cx="12" cy="8" r="4" /></svg>);
+const IconLinkedIn = () => (<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9h4v12H3V9Zm6 0h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V21h-4v-5.4c0-1.3 0-2.95-1.8-2.95-1.8 0-2.08 1.4-2.08 2.85V21H9V9Z" /></svg>);
+const IconInstagram = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="3.5" y="3.5" width="17" height="17" rx="5" /><circle cx="12" cy="12" r="3.8" /><circle cx="17.3" cy="6.7" r="1.1" fill="currentColor" stroke="none" /></svg>);
+
 export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: (id: LegalDocId) => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
@@ -446,50 +457,51 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
       {/* footer */}
       <footer className="klp-footer">
         <div className="klp-container">
-          <div className="klp-footer-grid">
-            <div className="col-brand">
-              <div className="brandmark">
-                <span className="mark">K</span>
-                <div>
-                  <div className="klp-mono" style={cssVars({ fontSize: 11, color: 'var(--ink)' })}>Kipkiren</div>
-                  <div className="klp-mono" style={cssVars({ fontSize: 9, color: 'var(--mid)' })}>WEB SERVICES · NAIROBI</div>
-                </div>
-              </div>
-              <p className="tagline">Precision websites,<br />managed end-to-end.</p>
-              <p className="blurb klp-lead">A small, senior team designing, building, and quietly operating the web presence for teams that treat their site as core infrastructure.</p>
+          <div className="klp-foot-top">
+            <div className="klp-foot-brand">
+              <span className="mark">K</span>
+              <span className="wm">Kipkiren<small>WEB SERVICES</small></span>
             </div>
-            <div className="col-nav">
-              <div className="klp-mono">Studio</div>
+            <p className="klp-foot-tag">Precision websites, quietly operated. Designed, built and run by a small senior team in Nairobi.</p>
+            <div className="klp-foot-social">
+              <a aria-label="Kipkiren on LinkedIn" href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer"><IconLinkedIn /></a>
+              <a aria-label="Kipkiren on Instagram" href="https://www.instagram.com" target="_blank" rel="noopener noreferrer"><IconInstagram /></a>
+            </div>
+          </div>
+
+          <div className="klp-foot-cols">
+            <div className="klp-foot-col">
+              <div className="klp-mono h">Studio</div>
               <ul>
                 <li><button type="button" onClick={go('services')}>Services</button></li>
                 <li><button type="button" onClick={go('process')}>Process</button></li>
                 <li><button type="button" onClick={go('about')}>About</button></li>
+                <li><button type="button" onClick={go('pricing')}>Pricing</button></li>
                 <li><button type="button" onClick={go('contact')}>Contact</button></li>
               </ul>
             </div>
-            <div className="col-nav">
-              <div className="klp-mono">Legal &amp; trust</div>
+            <div className="klp-foot-col">
+              <div className="klp-mono h">Legal</div>
               <ul>
                 {LEGAL_NAV.map((n) => (
-                  <li key={n.id}><button type="button" onClick={() => onLegal(n.id)}>{n.label}</button></li>
+                  <li key={n.id}><button type="button" onClick={() => onLegal(n.id)}>{FOOTER_LEGAL[n.id] ?? n.label}</button></li>
                 ))}
               </ul>
             </div>
-            <div className="col-contact">
-              <div className="klp-mono">Get in touch</div>
+            <div className="klp-foot-col klp-foot-contact">
+              <div className="klp-mono h">Contact</div>
               <ul>
-                <li><a href="mailto:studio@kipkiren.co.ke">studio@kipkiren.co.ke</a></li>
-                <li>Riverside Drive, Nairobi</li>
-                <li>Monday to Friday, 09:00 to 18:00 EAT</li>
-                <li><button type="button" onClick={onSignIn}>Client portal · Sign in</button></li>
+                <li><IconPin /><span>Nairobi, Kenya. Serving locally and beyond.</span></li>
+                <li><IconMail /><a href="mailto:studio@kipkiren.co.ke">studio@kipkiren.co.ke</a></li>
+                <li><IconClock /><span>Mon to Fri, 09:00 to 18:00 EAT</span></li>
+                <li><IconUser /><button type="button" onClick={onSignIn}>Client portal</button></li>
               </ul>
             </div>
           </div>
+
           <div className="klp-footbar">
-            <div className="klp-mono">© 2026 Kipkiren Web Services Ltd.</div>
-            <nav className="klp-footlegal">
-              {LEGAL_NAV.map((n) => <button key={n.id} type="button" onClick={() => onLegal(n.id)}>{n.label}</button>)}
-            </nav>
+            <div className="klp-mono">© 2026 Kipkiren Web Services Ltd. · Nairobi</div>
+            <button type="button" className="klp-foot-toplink" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Back to top</button>
           </div>
         </div>
       </footer>
