@@ -27,13 +27,15 @@
   text-rendering: optimizeLegibility;
 }
 .klp * { box-sizing: border-box; }
-/* subtle warm wash behind everything */
+/* subtle warm wash behind everything (light mode only - it reads as a murky
+   tint on the dark theme, so dark mode stays cleanly flat) */
 .klp::before {
   content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background-image:
     radial-gradient(circle at 25% 12%, color-mix(in oklab, var(--amber) 7%, transparent), transparent 55%),
     radial-gradient(circle at 82% 88%, color-mix(in oklab, var(--teal) 6%, transparent), transparent 55%);
 }
+[data-mode="dark"] .klp::before { background-image: none; }
 .klp > * { position: relative; z-index: 1; }
 .klp ::selection { background: var(--amber); color: var(--ink); }
 
@@ -461,21 +463,10 @@
 .klp-header .auth .klp-btn.ghost { border-color: var(--hairline); }
 @media (hover: hover) { .klp-header .auth .klp-btn.ghost:hover { border-color: var(--ink); } }
 
-/* ---- hero depth (soft, slow aurora) ---- */
-/* overflow: hidden contains the aurora so its negative insets + drift animation
-   cannot push past the viewport and cause a horizontal scrollbar (the hero is
-   not a sticky ancestor, so clipping it is safe and universally supported). */
-.klp-hero { position: relative; overflow: hidden; }
-.klp-hero::before {
-  content: ""; position: absolute; inset: -12% -18% auto -18%; height: 560px; z-index: 0; pointer-events: none;
-  background:
-    radial-gradient(58% 58% at 18% 28%, color-mix(in oklab, var(--teal) 16%, transparent), transparent 70%),
-    radial-gradient(48% 48% at 86% 16%, color-mix(in oklab, var(--amber) 13%, transparent), transparent 70%);
-  filter: blur(8px); animation: klp-aurora 20s ease-in-out infinite alternate;
-}
-.klp-hero > * { position: relative; z-index: 1; }
-@keyframes klp-aurora { from { transform: translate3d(0,0,0) scale(1); opacity: .85; } to { transform: translate3d(2%, -1.5%, 0) scale(1.07); opacity: 1; } }
-@media (prefers-reduced-motion: reduce) { .klp-hero::before { animation: none; } }
+/* Hero kept clean and flat - the coloured aurora glow was removed (it read as a
+   murky green/olive wash in dark mode). Horizontal-scroll containment now lives
+   on the body via overflow-x: clip. */
+.klp-hero { position: relative; }
 
 /* ---- focus rings + tactile press (micro-details) ---- */
 .klp button:focus-visible, .klp a:focus-visible, .klp input:focus-visible, .klp select:focus-visible, .klp textarea:focus-visible, .klp .klp-rp-card:focus-visible { outline: 2px solid var(--teal-deep); outline-offset: 3px; border-radius: 6px; }
