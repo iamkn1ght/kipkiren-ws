@@ -21,20 +21,36 @@ const NAV = [
   { id: 'contact', label: 'Contact' },
 ];
 
-// Real KWS retainer plans (not the reference's placeholder numbers).
+// Build + Care pricing. A one-time build (priced below the one-time-only shops)
+// plus a monthly care plan - the differentiator: we build it, then we run it.
 const PLANS = [
-  { kick: '01 · starter', name: 'Starter', desc: 'A managed presence for a small business getting online properly.', amt: '4,999', per: 'per month · 48-hour SLA', feats: ['2 task-hours included / month', 'Up to 3 open tickets', 'Hosting, domain and business email', 'Uptime, SSL and backups', 'Content edits on request'], cta: 'Choose Starter', featured: false },
-  { kick: '02 · growth', name: 'Growth', desc: 'For teams that treat their site as core infrastructure.', amt: '9,999', per: 'per month · 24-hour SLA', feats: ['5 task-hours included / month', 'Up to 5 open tickets', 'On-page SEO and social add-ons', 'A named delivery lead', 'Everything in Starter'], cta: 'Choose Growth', featured: true },
-  { kick: '03 · business', name: 'Business', desc: 'Mid-market sites, portals and integrations, actively operated.', amt: '24,999', per: 'per month · 12-hour SLA', feats: ['12 task-hours included / month', 'Up to 10 open tickets', 'Priority delivery', 'Cloud provisioning', 'Everything in Growth'], cta: 'Choose Business', featured: false },
+  { kick: '01 · starter', name: 'Starter', desc: 'A polished presence for a small business getting online properly.',
+    build: '45,000', care: '3,500',
+    feats: ['Up to 5 pages, designed and built', 'Domain, hosting and business email', 'Mobile-perfect, fast, SEO-ready', 'Care: uptime, SSL, backups, edits', '48-hour support SLA'],
+    cta: 'Start with Starter', featured: false },
+  { kick: '02 · growth', name: 'Growth', desc: 'For teams that treat their website as core infrastructure.',
+    build: '89,000', care: '7,500',
+    feats: ['Up to 10 pages, blog or simple CMS', 'On-page SEO and analytics built in', 'Payment or M-Pesa integration', 'Care: everything, plus monthly SEO', 'Named delivery lead · 24-hour SLA'],
+    cta: 'Choose Growth', featured: true },
+  { kick: '03 · business', name: 'Business', desc: 'Mid-market sites, portals and integrations, actively operated.',
+    build: '165,000', care: '18,000',
+    feats: ['Unlimited pages and integrations', 'E-commerce or booking systems', 'Priority delivery and support', 'Care: everything, plus cloud provisioning', '12-hour SLA · quarterly reviews'],
+    cta: 'Choose Business', featured: false },
 ];
+
+// The competitive contrast - answers "why you, not a cheaper one-time build?"
+const COMPARE_THEM = ['Pay once, then you are on your own', 'Maintenance billed separately, if at all', 'Slow to reach when something breaks', 'The site quietly rots within a year', 'You chase them for every small fix'];
+const COMPARE_US = ['Built once, then run for years', 'Care included from the first day', 'A named team and a phone that answers', 'Monitored, patched and updated for you', 'We watch it so you never have to'];
+
+const GUARANTEES = ['You own everything', 'No lock-in, ever', 'Every price approved before we build', 'A proforma within 48 hours'];
 
 const FAQ = [
   { q: 'Do prices include VAT?', a: 'No. All figures exclude 16% VAT, which is itemised on your proforma.' },
-  { q: 'How does payment work?', a: 'Every task is priced on a proforma you approve first. Pay by M-Pesa or card; retainers are billed monthly. No surprise invoices.' },
-  { q: "What's included in a retainer?", a: 'Your included task-hours, hosting, uptime, backups, patches and support. Anything beyond the allocation is quoted on the rate card before we build.' },
+  { q: 'How does payment work?', a: 'Every build and every change is priced on a proforma you approve first. Pay by M-Pesa or card. The one-time build is invoiced in stages; monthly care is billed on the 1st. No surprise invoices, ever.' },
+  { q: 'Do I have to take a care plan?', a: 'The build and its first year of care go together, so your site is looked after from day one. After that, care is month to month and you can pause any time. You always keep the site.' },
+  { q: 'What does monthly care cover?', a: 'Hosting, uptime monitoring, SSL, daily backups, security patches and a block of change requests each month. Anything larger is quoted on the rate card before we start.' },
   { q: 'Where are you based?', a: 'Nairobi. We work with clients across East Africa, and occasionally further afield.' },
-  { q: 'Can we bring our own hosting?', a: 'Yes, though our operations SLA only applies to sites we host. Most clients let us handle it.' },
-  { q: 'What if we want to leave?', a: 'We hand over the codebase, database, DNS and any accounts. No lock-in, ever.' },
+  { q: 'What if we want to leave?', a: 'We hand over the codebase, database, DNS and every account. No lock-in, ever. The site is yours.' },
 ];
 
 const CLIENTS = ['Riverside Capital', 'Mara Coffee', 'Nyali Ceramics', 'Kilifi Cargo', 'Sable & Sons', 'Two Rivers Legal', 'Ubuntu Health', 'Amber Threads'];
@@ -170,7 +186,7 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
           <div className="klp-grid-cells klp-reveal">
             {SERVICES.map((s) => (
               <article key={s.n} className="klp-cell">
-                <div className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>{s.n} —</div>
+                <div className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>{s.n}</div>
                 <h3>{s.title}</h3>
                 <p>{s.body}</p>
                 <a className="klp-readmore" onClick={onSignIn} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSignIn(); } }}>Read more <span>→</span></a>
@@ -240,11 +256,19 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
 
         {/* ── pricing ── */}
         <section className="klp-container klp-section klp-hairline-t" id="pricing">
-          <span className="klp-eyebrow teal klp-reveal">Pricing · 04</span>
-          <h2 className="klp-display-lg klp-reveal" style={cssVars({ marginTop: 20 })}>Real plans.<br /><em style={cssVars({ color: 'var(--teal-deep)' })}>Or a proper conversation.</em></h2>
-          <p className="klp-lead klp-reveal" style={cssVars({ marginTop: 22, maxWidth: '42rem' })}>Every plan is a real retainer, not a marketing tier. If none quite fit, open a ticket and we write you a proforma in Kenyan shillings, usually within 24 hours.</p>
+          <div className="klp-sec-head klp-reveal">
+            <div className="h">
+              <span className="klp-eyebrow teal">Pricing · 04</span>
+              <h2 className="klp-display-lg">Built once.<br /><em style={cssVars({ color: 'var(--teal-deep)' })}>Run for years.</em></h2>
+            </div>
+            <p className="klp-lead p" style={cssVars({ alignSelf: 'end' })}>One transparent build price to launch, one monthly care plan to keep it fast, secure and growing. No agency will quote you cleaner. Every figure is in Kenyan shillings, VAT itemised on the proforma.</p>
+          </div>
 
-          <div className="klp-plans klp-reveal" style={cssVars({ marginTop: 48 })}>
+          <div className="klp-guarantees klp-reveal">
+            {GUARANTEES.map((g) => <span key={g} className="klp-guarantee"><span className="tick" />{g}</span>)}
+          </div>
+
+          <div className="klp-plans klp-reveal" style={cssVars({ marginTop: 44 })}>
             {PLANS.map((p) => (
               <div key={p.name} className={`klp-card klp-plan ${p.featured ? 'feat' : ''}`}>
                 {p.featured && <div className="klp-plan-flag">Most chosen</div>}
@@ -252,8 +276,8 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
                 <div className="klp-plan-name">{p.name}</div>
                 <p className="klp-plan-desc">{p.desc}</p>
                 <div className="klp-plan-price">
-                  <div className="row"><span className="cur">KES</span><span className="amt">{p.amt}</span></div>
-                  <div className="per">{p.per}</div>
+                  <div className="build-row"><span className="cur">KES</span><span className="amt">{p.build}</span><span className="once">one-time<br />build</span></div>
+                  <div className="care-row"><span className="k">then</span><strong>KES {p.care}</strong><span className="k">/ month care</span></div>
                 </div>
                 <ul className="klp-plan-feats">
                   {p.feats.map((f) => <li key={f}><span className="m" />{f}</li>)}
@@ -261,6 +285,20 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
                 <button type="button" className={`klp-btn ${p.featured ? 'primary' : 'ghost'}`} onClick={onSignIn}>{p.cta}</button>
               </div>
             ))}
+          </div>
+
+          {/* why managed beats a one-time build */}
+          <div className="klp-compare klp-reveal" style={cssVars({ marginTop: 64 })}>
+            <div className="klp-compare-col them">
+              <span className="eb">The one-time build</span>
+              <h3>What most agencies sell.</h3>
+              <ul>{COMPARE_THEM.map((t) => <li key={t}><span className="m" />{t}</li>)}</ul>
+            </div>
+            <div className="klp-compare-col us">
+              <span className="eb">The Kipkiren way</span>
+              <h3>Build, then run. We stay.</h3>
+              <ul>{COMPARE_US.map((t) => <li key={t}><span className="m" />{t}</li>)}</ul>
+            </div>
           </div>
 
           <div className="klp-band-grid klp-reveal" style={cssVars({ marginTop: 72, paddingTop: 56, borderTop: '1px solid var(--hairline)' })}>
