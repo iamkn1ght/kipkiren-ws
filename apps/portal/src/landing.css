@@ -214,7 +214,7 @@
 .klp-auth-list { margin-top: 40px; padding-top: 32px; border-top: 1px solid var(--hairline); }
 .klp-auth-list ul { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
 .klp-auth-list li { display: flex; gap: 12px; align-items: baseline; color: var(--slate); font-size: 14px; }
-.klp-auth-list li .m { width: 14px; height: 1.5px; background: var(--teal-deep); flex: none; align-self: center; }
+.klp-auth-list li .m { flex: none; width: 5px; height: 9px; margin: 4px 4px 0 0; align-self: flex-start; border: solid var(--teal-deep); border-width: 0 1.8px 1.8px 0; transform: rotate(45deg); background: none; }
 
 .klp-card { background: var(--card); border: 1px solid var(--hairline); border-radius: 18px; transition: transform .35s ease, box-shadow .35s ease, border-color .35s ease; }
 .klp-authcard { padding: 28px; }
@@ -360,7 +360,7 @@
 .klp-compare-col.them li .m::after { transform: rotate(-45deg); }
 .klp-plan-feats { margin-top: 28px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
 .klp-plan-feats li { display: flex; gap: 12px; align-items: baseline; font-size: 14px; color: var(--slate); }
-.klp-plan-feats li .m { width: 12px; height: 1.5px; background: var(--teal-deep); flex: none; align-self: center; }
+.klp-plan-feats li .m { flex: none; width: 5px; height: 9px; margin: 4px 3px 0 0; align-self: flex-start; border: solid var(--teal-deep); border-width: 0 1.8px 1.8px 0; transform: rotate(45deg); background: none; }
 .klp-plan .klp-btn { margin-top: 36px; justify-content: center; }
 
 .klp-faq { display: grid; gap: 36px; }
@@ -732,7 +732,7 @@
 .klp-legal-block p { color: var(--slate); font-size: 15.5px; line-height: 1.7; margin-bottom: 12px; text-wrap: pretty; }
 .klp-legal-block ul { display: flex; flex-direction: column; gap: 11px; margin-top: 6px; }
 .klp-legal-block li { display: flex; gap: 13px; align-items: baseline; font-size: 15px; color: var(--slate); line-height: 1.6; }
-.klp-legal-block li .m { flex: none; width: 12px; height: 1.5px; background: var(--teal-deep); align-self: center; }
+.klp-legal-block li .m { flex: none; width: 5px; height: 9px; margin: 5px 3px 0 0; align-self: flex-start; border: solid var(--teal-deep); border-width: 0 1.8px 1.8px 0; transform: rotate(45deg); background: none; }
 .klp-legal-foot { margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--hairline); }
 .klp-legal-foot .klp-mono { color: var(--mid); }
 .klp-legal-cross { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 12px 24px; }
@@ -766,7 +766,7 @@
 .klp-proc-promise .klp-mono { color: var(--teal-deep); margin-bottom: 16px; }
 .klp-proc-promise ul { display: flex; flex-direction: column; gap: 13px; }
 .klp-proc-promise li { display: flex; gap: 12px; align-items: baseline; font-size: 14.5px; color: var(--slate); line-height: 1.5; }
-.klp-proc-promise li .m { flex: none; width: 12px; height: 1.5px; background: var(--teal-deep); align-self: center; }
+.klp-proc-promise li .m { flex: none; width: 5px; height: 9px; margin: 4px 3px 0 0; align-self: flex-start; border: solid var(--teal-deep); border-width: 0 1.8px 1.8px 0; transform: rotate(45deg); background: none; }
 
 /* hero scroll cue - a quiet nudge into the page for continuity */
 .klp-scrollcue { display: inline-flex; align-items: center; gap: 12px; margin-top: 44px; background: none; border: none; cursor: pointer; padding: 0; font-family: var(--font-mono); font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--mid); transition: color .18s ease; }
