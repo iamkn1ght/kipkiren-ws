@@ -1,5 +1,5 @@
 /**
- * Admin console (delivery lead / admin) — warm editorial rebuild on the .klp
+ * Admin console (delivery lead / admin) - warm editorial rebuild on the .klp
  * portal shell. Preserves the useAdminData hook, the proforma approve/requeue
  * actions, and the "raise a ticket for a client" workflow. Eight tabs presented
  * as clean warm lists, cards and KPI rows.
@@ -9,6 +9,7 @@ import { useState, type CSSProperties } from 'react';
 import { useAuth, useApi } from './auth.tsx';
 import { KlpToggle } from './klpTheme.tsx';
 import { useAdminData, slaLabel, type QueueRow, type RailHealth } from './useAdminData.ts';
+import { SkelList, Search, SegBar, EmptyState, ToolbarMeta } from './portalUi.tsx';
 import './landing.css';
 
 type Tab = 'dashboard' | 'queue' | 'review' | 'clients' | 'capacity' | 'services' | 'rails' | 'health';
@@ -51,12 +52,44 @@ export function AdminPortal() {
   const [showRaise, setShowRaise] = useState(false);
   const [newTicket, setNewTicket] = useState({ client_id: '', category: 'web', urgency: 'standard', description: '' });
   const [raiseResult, setRaiseResult] = useState<string | null>(null);
+  const [qSearch, setQSearch] = useState('');
+  const [qFilter, setQFilter] = useState<'all' | 'on' | 'warn' | 'breached'>('all');
+  const [cSearch, setCSearch] = useState('');
 
   const name = session?.email?.split('@')[0] ?? 'there';
   const roleLabel = session?.claims.role === 'admin' ? 'Admin' : 'Delivery lead';
   const queueRows = queue ?? [];
   const reviewItems = reviewQueue ?? [];
   const anomalies = (siteHealth ?? []).filter((s) => s.anomaly).length;
+
+  // Ticket-queue search + SLA filter (the Linear/Jira-style triage surface).
+  const slaCounts = {
+    all: queueRows.length,
+    on: queueRows.filter((r) => r.sla_state !== 'breached' && r.sla_state !== 'warn').length,
+    warn: queueRows.filter((r) => r.sla_state === 'warn').length,
+    breached: queueRows.filter((r) => r.sla_state === 'breached').length,
+  };
+  const filteredQueue = queueRows.filter((r) => {
+    if (qFilter === 'breached' && r.sla_state !== 'breached') return false;
+    if (qFilter === 'warn' && r.sla_state !== 'warn') return false;
+    if (qFilter === 'on' && (r.sla_state === 'breached' || r.sla_state === 'warn')) return false;
+    const q = qSearch.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      r.ref.toLowerCase().includes(q) ||
+      r.description.toLowerCase().includes(q) ||
+      r.client.business_name.toLowerCase().includes(q)
+    );
+  });
+  const clientRows = (clients ?? []).filter((c) => {
+    const q = cSearch.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      c.business_name.toLowerCase().includes(q) ||
+      (c.contact_name ?? '').toLowerCase().includes(q) ||
+      c.plan.toLowerCase().includes(q)
+    );
+  });
 
   const handleApprove = async (id: string) => { if (busy) return; setBusy(true); try { await call(`/v1/proformas/${id}/review`, { method: 'PUT', body: { dispatch: true } }); reload(); } catch { /* surfaced by ApiError */ } finally { setBusy(false); } };
   const handleRequeue = async (id: string) => { if (busy) return; setBusy(true); try { await call(`/v1/proformas/${id}/reject`, { method: 'PUT', body: { reason: 'Requeued by delivery lead - scope needs client clarification' } }); reload(); } catch { /* noop */ } finally { setBusy(false); } };
@@ -125,13 +158,15 @@ export function AdminPortal() {
                 </div>
                 <section className="klp-portal-sec">
                   <div className="sechd"><h2>Active queue</h2><button type="button" onClick={() => setTab('queue')}>View all →</button></div>
-                  <QueueList rows={queueRows.slice(0, 6)} loading={loading} />
+                  {loading ? <SkelList rows={4} />
+                    : queueRows.length === 0 ? <div className="klp-list"><div className="klp-list-empty">The queue is clear.</div></div>
+                    : <QueueList rows={queueRows.slice(0, 6)} />}
                 </section>
                 <section className="klp-portal-sec">
                   <div className="sechd"><h2>Recent approvals</h2></div>
                   <div className="klp-list">
                     {loading ? <div className="klp-list-empty">Loading...</div>
-                      : !(recentDispatches ?? []).length ? <div className="klp-list-empty">No recent dispatches.</div>
+                      : !(recentDispatches ?? []).length ? <div className="klp-list-empty">No recent dispatches yet.</div>
                       : (recentDispatches ?? []).map((r) => (
                         <div key={r.ref} className="klp-list-row" style={cssVars({ gridTemplateColumns: 'minmax(110px,auto) 1fr auto' })}>
                           <span className="ref">{r.ref}</span><span className="title">{r.client_name}</span><span className="amt">KES {r.subtotal_kes.toLocaleString()}</span>
@@ -142,12 +177,34 @@ export function AdminPortal() {
               </>
             )}
 
-            {tab === 'queue' && <QueueList rows={queueRows} loading={loading} full />}
+            {tab === 'queue' && (
+              loading ? <SkelList rows={6} />
+                : (
+                  <>
+                    <div className="klp-toolbar">
+                      <Search value={qSearch} onChange={setQSearch} placeholder="Search ref, client or description" />
+                      <SegBar value={qFilter} onChange={setQFilter} ariaLabel="Filter by SLA state"
+                        options={[
+                          { id: 'all', label: 'All', count: slaCounts.all },
+                          { id: 'on', label: 'On track', count: slaCounts.on },
+                          { id: 'warn', label: 'At risk', count: slaCounts.warn },
+                          { id: 'breached', label: 'Breached', count: slaCounts.breached },
+                        ]} />
+                      <ToolbarMeta>{filteredQueue.length} shown</ToolbarMeta>
+                    </div>
+                    {filteredQueue.length === 0
+                      ? <EmptyState
+                          title={queueRows.length === 0 ? 'No open tickets' : 'No tickets match'}
+                          sub={queueRows.length === 0 ? 'Every ticket is closed or unassigned.' : 'Try a different search term or filter.'} />
+                      : <QueueList rows={filteredQueue} full />}
+                  </>
+                )
+            )}
 
             {/* ── review ── */}
             {tab === 'review' && (
-              loading ? <div className="klp-list-empty" style={cssVars({ border: '1px solid var(--hairline)', borderRadius: 18 })}>Loading...</div>
-                : reviewItems.length === 0 ? <div className="klp-list-empty" style={cssVars({ border: '1px solid var(--hairline)', borderRadius: 18 })}>No proformas awaiting review.</div>
+              loading ? <SkelList rows={3} />
+                : reviewItems.length === 0 ? <EmptyState title="Nothing to review" sub="Every AI-drafted proforma has been dispatched. New drafts land here for approval." />
                 : (
                   <div className="klp-tasks">
                     {reviewItems.map((item) => (
@@ -178,58 +235,75 @@ export function AdminPortal() {
 
             {/* ── clients ── */}
             {tab === 'clients' && (
-              <div className="klp-list">
-                {loading ? <div className="klp-list-empty">Loading...</div>
-                  : !(clients ?? []).length ? <div className="klp-list-empty">No client accounts.</div>
-                  : (clients ?? []).map((c) => (
-                    <div key={c.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: '1fr auto auto auto' })}>
-                      <span className="title">{c.business_name}<span style={cssVars({ display: 'block', fontSize: 11, color: 'var(--mid)', fontFamily: 'var(--font-mono)' })}>{c.plan} · {c.contact_name}</span></span>
-                      <span className="date">{c.open_tickets} open</span>
-                      <span className="amt">KES {(c.month_to_date_charges_kes ?? 0).toLocaleString()}</span>
-                      <span className={`klp-pill ${c.breached_tickets > 0 ? 'warn' : 'active'}`}>{c.status}</span>
+              loading ? <SkelList rows={5} />
+                : (
+                  <>
+                    <div className="klp-toolbar">
+                      <Search value={cSearch} onChange={setCSearch} placeholder="Search by business, contact or plan" />
+                      <ToolbarMeta>{clientRows.length} client{clientRows.length === 1 ? '' : 's'}</ToolbarMeta>
                     </div>
-                  ))}
-              </div>
+                    {clientRows.length === 0
+                      ? <EmptyState
+                          title={(clients ?? []).length === 0 ? 'No client accounts' : 'No clients match'}
+                          sub={(clients ?? []).length === 0 ? 'Onboarded clients appear here.' : 'Try a different search term.'} />
+                      : (
+                        <div className="klp-list">
+                          {clientRows.map((c) => (
+                          <div key={c.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: '1fr auto auto auto' })}>
+                            <span className="title">{c.business_name}<span style={cssVars({ display: 'block', fontSize: 11, color: 'var(--mid)', fontFamily: 'var(--font-mono)' })}>{c.plan} · {c.contact_name}</span></span>
+                            <span className="date">{c.open_tickets} open</span>
+                            <span className="amt">KES {(c.month_to_date_charges_kes ?? 0).toLocaleString()}</span>
+                            <span className={`klp-pill ${c.breached_tickets > 0 ? 'warn' : 'active'}`}>{c.status}</span>
+                          </div>
+                        ))}
+                        </div>
+                      )}
+                    </>
+                  )
             )}
 
             {/* ── capacity ── */}
             {tab === 'capacity' && (
-              <div className="klp-list">
-                {loading ? <div className="klp-list-empty">Loading...</div>
-                  : !(capacityDetail?.staff ?? []).length ? <div className="klp-list-empty">No delivery staff with active tasks.</div>
-                  : (capacityDetail?.staff ?? []).map((s) => {
-                    const over = s.allocated_hours > s.capacity_hours;
-                    return (
-                      <div key={s.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: '1fr auto auto' })}>
-                        <span className="title" style={cssVars({ fontSize: 17 })}>{s.full_name}<span style={cssVars({ display: 'block', fontSize: 11, color: 'var(--mid)', fontFamily: 'var(--font-mono)' })}>{s.role.replace(/_/g, ' ')}</span></span>
-                        <span className="date">{s.active_tasks} active</span>
-                        <span className={`klp-pill ${over ? 'warn' : 'active'}`}>{s.allocated_hours}/{s.capacity_hours}h</span>
-                      </div>
-                    );
-                  })}
-              </div>
+              loading ? <SkelList rows={4} />
+                : !(capacityDetail?.staff ?? []).length ? <EmptyState title="No active allocation" sub="Delivery staff appear here once they have tasks in flight." />
+                : (
+                  <div className="klp-list">
+                    {(capacityDetail?.staff ?? []).map((s) => {
+                      const over = s.allocated_hours > s.capacity_hours;
+                      return (
+                        <div key={s.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: '1fr auto auto' })}>
+                          <span className="title" style={cssVars({ fontSize: 17 })}>{s.full_name}<span style={cssVars({ display: 'block', fontSize: 11, color: 'var(--mid)', fontFamily: 'var(--font-mono)' })}>{s.role.replace(/_/g, ' ')}</span></span>
+                          <span className="date">{s.active_tasks} active</span>
+                          <span className={`klp-pill ${over ? 'warn' : 'active'}`}>{s.allocated_hours}/{s.capacity_hours}h</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )
             )}
 
             {/* ── services ── */}
             {tab === 'services' && (
-              <div className="klp-list">
-                {loading ? <div className="klp-list-empty">Loading...</div>
-                  : !(services ?? []).length ? <div className="klp-list-empty">No services provisioned.</div>
-                  : (services ?? []).map((s) => (
-                    <div key={s.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: '1fr 1fr auto auto' })}>
-                      <span className="title" style={cssVars({ fontSize: 17 })}>{s.client_name}</span>
-                      <span className="date">{s.service_type.replace(/_/g, ' ')}</span>
-                      <span className="amt">KES {s.monthly_cost_kes.toLocaleString()}/mo</span>
-                      <span className={`klp-pill ${s.status === 'active' ? 'active' : 'warn'}`}>{s.status}</span>
-                    </div>
-                  ))}
-              </div>
+              loading ? <SkelList rows={5} />
+                : !(services ?? []).length ? <EmptyState title="No services provisioned" sub="Hosting, domains, SEO and cloud services appear here once set up for a client." />
+                : (
+                  <div className="klp-list">
+                    {(services ?? []).map((s) => (
+                      <div key={s.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: '1fr 1fr auto auto' })}>
+                        <span className="title" style={cssVars({ fontSize: 17 })}>{s.client_name}</span>
+                        <span className="date">{s.service_type.replace(/_/g, ' ')}</span>
+                        <span className="amt">KES {s.monthly_cost_kes.toLocaleString()}/mo</span>
+                        <span className={`klp-pill ${s.status === 'active' ? 'active' : 'warn'}`}>{s.status}</span>
+                      </div>
+                    ))}
+                  </div>
+                )
             )}
 
             {/* ── rails ── */}
             {tab === 'rails' && (
-              loading ? <div className="klp-list-empty" style={cssVars({ border: '1px solid var(--hairline)', borderRadius: 18 })}>Loading...</div>
-                : !(rails ?? []).length ? <div className="klp-list-empty" style={cssVars({ border: '1px solid var(--hairline)', borderRadius: 18 })}>No rail data.</div>
+              loading ? <SkelList rows={4} />
+                : !(rails ?? []).length ? <EmptyState title="No rail data" sub="Platform-rail health appears here once the API is reachable." />
                 : (
                   <div className="klp-cards-grid">
                     {(rails ?? []).map((r) => {
@@ -342,12 +416,10 @@ export function AdminPortal() {
   );
 }
 
-function QueueList({ rows, loading, full }: { rows: QueueRow[]; loading: boolean; full?: boolean }) {
+function QueueList({ rows, full }: { rows: QueueRow[]; full?: boolean }) {
   return (
     <div className="klp-list">
-      {loading ? <div className="klp-list-empty">Loading...</div>
-        : rows.length === 0 ? <div className="klp-list-empty">No open tickets.</div>
-        : rows.map((r) => {
+      {rows.map((r) => {
           const sp = statusPill(r.status);
           const sla = slaPill(r);
           return (

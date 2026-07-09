@@ -1,14 +1,15 @@
 /**
- * Task view — Kamau (technical_delivery). Warm editorial rebuild on the .klp
+ * Task view - Kamau (technical_delivery). Warm editorial rebuild on the .klp
  * portal shell. Binds ONLY the safe fields the API exposes (ref, category,
  * urgency, status, description, SLA deadline, created/updated). No client or
- * billing data — ADR-KWS-003 / KWS-SEC-007.
+ * billing data - ADR-KWS-003 / KWS-SEC-007.
  */
 
 import { useEffect, useState, type CSSProperties } from 'react';
 import { useAuth } from './auth.tsx';
 import { KlpToggle } from './klpTheme.tsx';
 import { useTaskData, type Task } from './useTaskData.ts';
+import { SkelList, Search, SegBar, EmptyState, ToolbarMeta } from './portalUi.tsx';
 import './landing.css';
 
 type Tab = 'active' | 'completed';
@@ -50,6 +51,9 @@ export function TaskView() {
   const [tab, setTab] = useState<Tab>('active');
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'todo' | 'in_progress'>('all');
+  const [cSearch, setCSearch] = useState('');
 
   useEffect(() => {
     if (!toast) return;
@@ -62,6 +66,17 @@ export function TaskView() {
   const inProgress = active.filter((t) => t.status === 'in_progress').length;
   const dueThisWeek = active.filter((t) => dueWithin7Days(t.sla_deadline_at)).length;
   const elevatedCount = active.filter((t) => isElevated(t.urgency)).length;
+
+  const statusCounts = { all: active.length, todo: active.length - inProgress, in_progress: inProgress };
+  const matches = (t: Task, q: string) =>
+    !q || t.ref.toLowerCase().includes(q) || t.description.toLowerCase().includes(q) ||
+    (CATEGORY_LABEL[t.category] ?? t.category).toLowerCase().includes(q);
+  const filteredActive = active.filter((t) => {
+    if (statusFilter === 'in_progress' && t.status !== 'in_progress') return false;
+    if (statusFilter === 'todo' && t.status === 'in_progress') return false;
+    return matches(t, search.trim().toLowerCase());
+  });
+  const filteredCompleted = completed.filter((t) => matches(t, cSearch.trim().toLowerCase()));
 
   const runAction = async (id: string, fn: (id: string) => Promise<void>, label: string) => {
     setPendingId(id);
@@ -114,11 +129,24 @@ export function TaskView() {
                   <div className="klp-card klp-kpi"><div className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>Completed</div><div className="n">{loading ? '-' : completed.length}</div><div className="klp-mono" style={cssVars({ color: 'var(--mid)', marginTop: 10, fontSize: 10 })}>all time</div></div>
                 </div>
 
-                {!loading && active.length === 0
-                  ? <div className="klp-list-empty" style={cssVars({ border: '1px solid var(--hairline)', borderRadius: 18 })}>No active tasks assigned to you right now.</div>
+                {loading ? <SkelList rows={4} />
                   : (
+                    <>
+                      <div className="klp-toolbar">
+                        <Search value={search} onChange={setSearch} placeholder="Search ref, category or description" />
+                        <SegBar value={statusFilter} onChange={setStatusFilter} ariaLabel="Filter tasks"
+                          options={[
+                            { id: 'all', label: 'All', count: statusCounts.all },
+                            { id: 'todo', label: 'Not started', count: statusCounts.todo },
+                            { id: 'in_progress', label: 'In progress', count: statusCounts.in_progress },
+                          ]} />
+                        <ToolbarMeta>{filteredActive.length} shown</ToolbarMeta>
+                      </div>
+                      {filteredActive.length === 0
+                        ? <EmptyState title={active.length === 0 ? 'No active tasks' : 'No tasks match'} sub={active.length === 0 ? 'Work assigned to you appears here, in SLA order.' : 'Try a different search term or filter.'} />
+                        : (
                     <div className="klp-tasks">
-                      {active.map((t) => {
+                      {filteredActive.map((t) => {
                         const pill = statusPill(t.status);
                         const elev = isElevated(t.urgency);
                         const busy = pendingId === t.id;
@@ -153,23 +181,35 @@ export function TaskView() {
                         );
                       })}
                     </div>
+                        )}
+                    </>
                   )}
               </>
             )}
 
             {tab === 'completed' && (
               completed.length === 0
-                ? <div className="klp-list-empty" style={cssVars({ border: '1px solid var(--hairline)', borderRadius: 18 })}>Nothing completed yet.</div>
+                ? <EmptyState title="Nothing completed yet" sub="Tasks you finish move here for your records." />
                 : (
-                  <div className="klp-list">
-                    {completed.map((t) => (
-                      <div key={t.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: 'minmax(120px,auto) 1fr auto' })}>
-                        <span className="ref">{t.ref}</span>
-                        <span className="title">{categoryLabel(t.category)}</span>
-                        <span className="date">{fmtDateTime(t.updated_at)}</span>
-                      </div>
-                    ))}
-                  </div>
+                  <>
+                    <div className="klp-toolbar">
+                      <Search value={cSearch} onChange={setCSearch} placeholder="Search completed tasks" />
+                      <ToolbarMeta>{filteredCompleted.length} of {completed.length}</ToolbarMeta>
+                    </div>
+                    {filteredCompleted.length === 0
+                      ? <EmptyState title="No tasks match" sub="Try a different search term." />
+                      : (
+                        <div className="klp-list">
+                          {filteredCompleted.map((t) => (
+                            <div key={t.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: 'minmax(120px,auto) 1fr auto' })}>
+                              <span className="ref">{t.ref}</span>
+                              <span className="title">{categoryLabel(t.category)}</span>
+                              <span className="date">{fmtDateTime(t.updated_at)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                  </>
                 )
             )}
           </div>

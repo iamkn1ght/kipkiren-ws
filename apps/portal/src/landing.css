@@ -1,5 +1,5 @@
 /* ============================================================================
- * Kipkiren — public landing. Warm editorial system, ported faithfully from the
+ * Kipkiren - public landing. Warm editorial system, ported faithfully from the
  * design reference (design_reference/styles.css + index.html). Fully scoped
  * under .klp so its tokens never leak into the portal's theme. Single warm
  * "paper" theme (the reference has no dark mode); hairline dividers, no heavy
@@ -392,7 +392,7 @@
 .klp-healthdot.down { background: #b42318; }
 
 /* ============================================================================
- * ELEVATION PASS — warm dark mode + premium toggle, confident nav, hero depth,
+ * ELEVATION PASS - warm dark mode + premium toggle, confident nav, hero depth,
  * focus rings, refined motion. Awwwards-grade polish over the editorial base.
  * ========================================================================== */
 
@@ -480,7 +480,7 @@
 .klp-stat .n { font-size: clamp(44px, 5.6vw, 74px); }
 
 /* ============================================================================
- * TYPOGRAPHY + RHYTHM — clearer hierarchy, editorial rag, refined detail.
+ * TYPOGRAPHY + RHYTHM - clearer hierarchy, editorial rag, refined detail.
  * One dominant element per section; supporting text recedes.
  * ========================================================================== */
 .klp h1, .klp h2, .klp h3, .klp-display-xl, .klp-display-lg, .klp-display-md, .klp-quote blockquote { text-wrap: balance; }
@@ -561,7 +561,7 @@
 @media (prefers-reduced-motion: reduce) { .klp-skeleton::after { animation: none; } }
 
 /* ============================================================================
- * CONFIDENCE PASS — commanding brand lockup, prominent CTAs, bolder hero,
+ * CONFIDENCE PASS - commanding brand lockup, prominent CTAs, bolder hero,
  * fewer dead zones. Bolder than the reference while holding the brand.
  * ========================================================================== */
 
@@ -599,7 +599,63 @@
 .klp-display-lg { font-size: clamp(42px, 6.2vw, 92px); }
 .klp-sec-head { margin-bottom: 52px; }
 
-/* stats as a warm full-bleed band — visual rhythm + tactile depth */
+/* stats as a warm full-bleed band - visual rhythm + tactile depth */
 .klp-statband { background: color-mix(in oklab, var(--paper) 52%, var(--muted)); border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); }
 .klp-statband .klp-sec-head { margin-bottom: 44px; }
 .klp-statband .klp-stat .n { color: var(--teal-deep); }
+
+/* ============================================================================
+   PORTAL TOOLBAR + STATES - search, segmented filters, skeletons, empty states.
+   Shared across admin console, task view and client portal (portalUi.tsx).
+   ============================================================================ */
+.klp-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 24px; }
+
+/* search input - CSS-drawn magnifier, no external asset */
+.klp-search { position: relative; flex: 1 1 260px; min-width: 200px; }
+.klp-search input {
+  width: 100%; font-family: var(--font-sans); font-size: 14px; color: var(--ink);
+  background: var(--card); border: 1px solid var(--hairline); border-radius: 12px;
+  padding: 11px 14px 11px 40px; outline: none; -webkit-appearance: none; appearance: none;
+  transition: border-color .16s ease, box-shadow .16s ease;
+}
+.klp-search input::placeholder { color: var(--mid); }
+.klp-search input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.klp-search input:focus {
+  border-color: color-mix(in oklab, var(--teal-deep) 55%, var(--hairline));
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--teal-deep) 14%, transparent);
+}
+.klp-search .ic {
+  position: absolute; left: 15px; top: 50%; margin-top: -7px; width: 11px; height: 11px;
+  border: 1.5px solid var(--mid); border-radius: 50%; pointer-events: none;
+}
+.klp-search .ic::after {
+  content: ""; position: absolute; right: -4px; bottom: -3px; width: 6px; height: 1.5px;
+  border-radius: 2px; background: var(--mid); transform: rotate(45deg);
+}
+
+/* segmented filter - one active at a time, ink pill when on */
+.klp-segbar { display: inline-flex; gap: 4px; padding: 4px; background: var(--card); border: 1px solid var(--hairline); border-radius: 12px; }
+.klp-seg {
+  display: inline-flex; align-items: center; gap: 7px; cursor: pointer; border: none; background: none;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--mid);
+  padding: 8px 13px; border-radius: 8px; transition: color .16s ease, background .16s ease;
+}
+.klp-seg:hover { color: var(--ink); }
+.klp-seg.on { color: var(--paper); background: var(--ink); }
+.klp-seg .ct { font-size: 10px; opacity: .6; }
+.klp-seg.on .ct { opacity: .75; }
+
+.klp-toolbar-meta {
+  margin-left: auto; font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--mid); white-space: nowrap;
+}
+
+/* richer empty state - editorial title + supporting line */
+.klp-empty { border: 1px solid var(--hairline); border-radius: 18px; padding: 52px 24px; text-align: center; }
+.klp-empty .t { font-family: var(--font-serif); font-size: 21px; color: var(--ink); margin-bottom: 6px; }
+.klp-empty .s { font-size: 13.5px; color: var(--mid); max-width: 380px; margin: 0 auto; line-height: 1.5; }
+
+@media (max-width: 640px) {
+  .klp-toolbar-meta { display: none; }
+  .klp-segbar { overflow-x: auto; max-width: 100%; }
+}
