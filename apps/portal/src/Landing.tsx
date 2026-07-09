@@ -156,7 +156,7 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
               <div className="klp-msheet-label" style={cssVars({ '--i': 0 })}>Explore</div>
               {NAV.map((n, i) => (
                 <button key={n.id} type="button" className="klp-msheet-link" style={cssVars({ '--i': i + 1 })} onClick={goClose(n.id)}>
-                  <span className="t">{n.label}</span>
+                  <span className="lft"><span className="n">{String(i + 1).padStart(2, '0')}</span><span className="t">{n.label}</span></span>
                   <span className="x">→</span>
                 </button>
               ))}

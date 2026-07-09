@@ -42,6 +42,9 @@
 }
 .klp > * { position: relative; z-index: 1; }
 .klp ::selection { background: var(--amber); color: var(--ink); }
+/* no default list markers/indent anywhere - every list uses custom markers or flex */
+.klp ul, .klp ol { list-style: none; margin: 0; padding: 0; }
+.klp li { list-style: none; }
 
 .klp h1, .klp h2, .klp h3, .klp h4 {
   font-family: var(--font-serif); font-weight: 500; letter-spacing: -0.01em; color: var(--ink); margin: 0;
@@ -183,6 +186,8 @@
 
 /* ---------- footer ---------- */
 .klp-footer { margin-top: 0; border-top: 1px solid var(--hairline); background: color-mix(in oklab, var(--paper) 55%, var(--muted)); padding-top: 64px; padding-bottom: 72px; }
+.klp-footer ul { list-style: none; margin: 0; padding: 0; }
+.klp-footer li { list-style: none; }
 .klp-footer-grid { display: grid; gap: 48px; }
 @media (min-width: 1024px) { .klp-footer-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); } .klp-footer .col-brand { grid-column: span 5 / span 5; } .klp-footer .col-nav { grid-column: span 2 / span 2; } .klp-footer .col-contact { grid-column: span 3 / span 3; } }
 .klp-footer .brandmark { display: flex; align-items: center; gap: 12px; }
@@ -468,13 +473,14 @@
 @media (hover: hover) { .klp-header .auth .klp-btn.ghost:hover { border-color: var(--ink); } }
 
 /* ---- hero brand haze (soft, slow) ----
-   Gradients fade naturally to transparent (no hard clip edge - that was what
-   made the old version look boxed/murky). Horizontal bleed is safe now because
-   the body has overflow-x: clip. Dark mode swaps to the BRIGHT mint teal so the
-   glow reads as clean luminance instead of a muddy olive wash. */
-.klp-hero { position: relative; }
+   overflow: hidden clips the haze to the hero so its negative insets cannot
+   widen the document and cause sideways scroll. This is the reliable fix (works
+   on iOS Safari, unlike the body's overflow-x: clip). The gradients fade to
+   transparent well inside the hero, so the clip is invisible. Dark mode swaps to
+   the BRIGHT mint teal so the glow reads as clean luminance, not muddy olive. */
+.klp-hero { position: relative; overflow: hidden; }
 .klp-hero::before {
-  content: ""; position: absolute; inset: -22% -12% auto -12%; height: 640px; z-index: 0; pointer-events: none;
+  content: ""; position: absolute; inset: -12% -8% auto -8%; height: 640px; z-index: 0; pointer-events: none;
   background:
     radial-gradient(56% 68% at 22% 34%, color-mix(in oklab, var(--teal) 34%, transparent), transparent 70%),
     radial-gradient(50% 60% at 84% 10%, color-mix(in oklab, var(--amber) 27%, transparent), transparent 70%);
@@ -612,12 +618,15 @@
 .klp-msheet-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .26em; text-transform: uppercase; color: var(--teal-deep); margin-bottom: 6px; }
 .klp-msheet-link {
   width: 100%; display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
-  background: none; border: none; border-bottom: 1px solid var(--hairline); cursor: pointer; text-align: left; padding: 17px 2px; color: var(--ink);
+  background: none; border: none; border-bottom: 1px solid var(--hairline); cursor: pointer; text-align: left; padding: 18px 2px; color: var(--ink);
 }
-.klp-msheet-link .t { font-family: var(--font-serif); font-size: 30px; letter-spacing: -.02em; line-height: 1.05; }
-.klp-msheet-link .x { font-family: var(--font-mono); font-size: 16px; color: var(--mid); transition: transform .22s ease, color .22s ease; }
+.klp-msheet-link .lft { display: flex; align-items: baseline; gap: 16px; min-width: 0; }
+.klp-msheet-link .n { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; color: var(--mid); flex: none; transition: color .22s ease; }
+.klp-msheet-link .t { font-family: var(--font-serif); font-size: 31px; letter-spacing: -.02em; line-height: 1.02; }
+.klp-msheet-link .x { font-family: var(--font-mono); font-size: 16px; color: var(--mid); flex: none; transition: transform .22s ease, color .22s ease; }
 .klp-msheet-link:active { color: var(--teal-deep); }
-.klp-msheet-link:active .x { color: var(--teal-deep); transform: translateX(4px); }
+.klp-msheet-link:active .n, .klp-msheet-link:active .x { color: var(--teal-deep); }
+.klp-msheet-link:active .x { transform: translateX(4px); }
 
 /* legal group as chips (distinct, lighter hierarchy) */
 .klp-msheet-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
