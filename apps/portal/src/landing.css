@@ -823,3 +823,16 @@
 /* guarantee ticks draw in on reveal */
 .klp-guarantee .tick { transition: transform .3s ease; }
 @media (hover: hover) { .klp-guarantee:hover .tick { transform: scale(1.12); } }
+
+/* ============================================================================
+   WHY-CHOOSE TRUST GRID - authentic reasons in a hairline-divided editorial
+   grid (replaces the fabricated testimonial/logos).
+   ============================================================================ */
+.klp-why { display: grid; gap: 1px; background: var(--hairline); border: 1px solid var(--hairline); border-radius: 20px; overflow: hidden; }
+@media (min-width: 620px) { .klp-why { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 960px) { .klp-why { grid-template-columns: repeat(3, 1fr); } }
+.klp-why-card { background: var(--paper); padding: 32px 28px; transition: background .22s ease; }
+@media (hover: hover) { .klp-why-card:hover { background: var(--card); } }
+.klp-why-card .num { color: var(--teal-deep); }
+.klp-why-card h3 { font-family: var(--font-serif); font-size: 22px; letter-spacing: -.01em; line-height: 1.15; margin-top: 14px; }
+.klp-why-card p { margin-top: 12px; color: var(--slate); font-size: 14.5px; line-height: 1.62; text-wrap: pretty; }

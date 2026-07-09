@@ -54,7 +54,18 @@ const FAQ = [
   { q: 'What if we want to leave?', a: 'We hand over the codebase, database, DNS and every account. No lock-in, ever. The site is yours.' },
 ];
 
-const CLIENTS = ['Riverside Capital', 'Mara Coffee', 'Nyali Ceramics', 'Kilifi Cargo', 'Sable & Sons', 'Two Rivers Legal', 'Ubuntu Health', 'Amber Threads'];
+// Authentic competence signal (real stack) in place of fabricated client logos.
+const STACK = ['React', 'TypeScript', 'Supabase', 'PostgreSQL', 'Cloudflare', 'M-Pesa', 'Paystack', 'Vite', 'Row-level security', 'Daily backups'];
+
+// Genuine reasons a business chooses Kipkiren. Every one is true to how we work.
+const WHY = [
+  { n: '01', t: 'Transparent pricing', d: 'You approve a fixed-price proforma before any work starts. No surprise invoices, no padded hours, no "it depends".' },
+  { n: '02', t: 'We run what we build', d: 'Care is a first-class part of the work, not an upsell. Most agencies hand over and vanish. We stay on the line.' },
+  { n: '03', t: 'Response you can count on', d: 'A 12 to 48 hour SLA by plan, in business hours, with a named person who knows your site. Not a shared inbox.' },
+  { n: '04', t: 'You own everything', d: 'Code, database, DNS and every account are yours. We hand them over on request. There is no lock-in, ever.' },
+  { n: '05', t: 'Serious, secure engineering', d: 'React and Supabase with row-level isolation, SSL, daily backups and continuous monitoring on every site we host.' },
+  { n: '06', t: 'Local, senior, reachable', d: 'A small Nairobi team on Kenyan time, fluent in M-Pesa and the market you sell to. Senior hands only, no juniors learning on your budget.' },
+];
 
 const SERVICES = [
   { n: '01', title: 'Design', body: "Editorial, deliberate, and grounded in your brand. No moodboard-of-the-week." },
@@ -169,13 +180,13 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
           </div>
         </section>
 
-        {/* ── trusted-by marquee ── */}
+        {/* ── built-with marquee (real stack, not fabricated logos) ── */}
         <section className="klp-marquee-band">
           <div className="klp-container inner">
-            <span className="klp-mono" style={cssVars({ flexShrink: 0 })}>Trusted by</span>
+            <span className="klp-mono" style={cssVars({ flexShrink: 0 })}>Built with</span>
             <div className="klp-marquee">
               <div className="klp-marquee-track">
-                {[...CLIENTS, ...CLIENTS].map((c, i) => <span key={i}>{c}</span>)}
+                {[...STACK, ...STACK].map((c, i) => <span key={i}>{c}</span>)}
               </div>
             </div>
           </div>
@@ -354,13 +365,24 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
           </div>
         </section>
 
-        {/* ── testimonial ── */}
+        {/* ── why choose (authentic trust builders, no borrowed logos) ── */}
         <section className="klp-container klp-section">
-          <figure className="klp-quote klp-reveal">
-            <span className="klp-eyebrow teal">In their words</span>
-            <blockquote className="klp-display-md">We interviewed six studios. Kipkiren was the only one that asked about our support process before showing us design mockups. Two years in, they still answer within the hour.</blockquote>
-            <figcaption className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>Wanjiku Njoroge · Head of Marketing, Riverside Capital</figcaption>
-          </figure>
+          <div className="klp-sec-head klp-reveal">
+            <div className="h">
+              <span className="klp-eyebrow teal">Why Kipkiren</span>
+              <h2 className="klp-display-lg">Reasons to trust us<br /><em>with your website.</em></h2>
+            </div>
+            <p className="klp-lead p" style={cssVars({ alignSelf: 'end' })}>No borrowed logos, no invented awards. Just the things that actually matter when you hand a business over to a studio.</p>
+          </div>
+          <div className="klp-why klp-reveal">
+            {WHY.map((w) => (
+              <article key={w.n} className="klp-why-card">
+                <div className="klp-mono num">{w.n}</div>
+                <h3>{w.t}</h3>
+                <p>{w.d}</p>
+              </article>
+            ))}
+          </div>
         </section>
 
         {/* ── CTA ── */}
