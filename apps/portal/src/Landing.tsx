@@ -81,6 +81,7 @@ const PROCESS = [
 
 export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: (id: LegalDocId) => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
   const go = (id: string) => () => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   const goClose = (id: string) => () => { setMenuOpen(false); document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
 
@@ -110,7 +111,7 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
             <KlpToggle />
             <button type="button" className="klp-btn ghost" onClick={onSignIn}>Sign in</button>
             <button type="button" className="klp-btn primary" onClick={onSignIn}>Start a project</button>
-            <button type="button" className={`klp-burger ${menuOpen ? 'open' : ''}`} aria-label="Menu" aria-expanded={menuOpen ? 'true' : 'false'} onClick={() => setMenuOpen((o) => !o)}><span className="bl" /></button>
+            <button type="button" className={`klp-burger ${menuOpen ? 'open' : ''}`} aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen} onClick={() => setMenuOpen((o) => !o)}><span className="bl" /></button>
           </div>
         </div>
       </header>
@@ -327,16 +328,22 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
           </div>
 
           <div className="klp-reveal" style={cssVars({ marginTop: 72, paddingTop: 56, borderTop: '1px solid var(--hairline)' })}>
-            <h2 className="klp-display-md" style={cssVars({ marginBottom: 40 })}>Questions people ask, plainly answered.</h2>
+            <h2 className="klp-display-md" style={cssVars({ marginBottom: 32 })}>Questions people ask, plainly answered.</h2>
             <div className="klp-faq">
-              {FAQ.map((f) => (
-                <div key={f.q}>
-                  <div className="qk">Question</div>
-                  <div className="q">{f.q}</div>
-                  <p className="a">{f.a}</p>
-                </div>
-              ))}
+              {FAQ.map((f, i) => {
+                const open = openFaq === i;
+                return (
+                  <div key={f.q} className={`klp-faq-item ${open ? 'open' : ''}`}>
+                    <button type="button" className="q" aria-expanded={open} onClick={() => setOpenFaq(open ? null : i)}>
+                      <span>{f.q}</span>
+                      <span className="ic" aria-hidden="true" />
+                    </button>
+                    <div className="a-wrap"><p className="a">{f.a}</p></div>
+                  </div>
+                );
+              })}
             </div>
+            <p className="klp-faq-more klp-mono">More in our <button type="button" onClick={() => onLegal('faq')}>full FAQ</button> and <button type="button" onClick={() => onLegal('terms')}>terms</button>.</p>
           </div>
         </section>
 
