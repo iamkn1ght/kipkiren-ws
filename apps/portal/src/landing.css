@@ -32,8 +32,8 @@
 .klp::before {
   content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background-image:
-    radial-gradient(circle at 25% 12%, color-mix(in oklab, var(--amber) 7%, transparent), transparent 55%),
-    radial-gradient(circle at 82% 88%, color-mix(in oklab, var(--teal) 6%, transparent), transparent 55%);
+    radial-gradient(circle at 25% 12%, color-mix(in oklab, var(--amber) 4%, transparent), transparent 55%),
+    radial-gradient(circle at 82% 88%, color-mix(in oklab, var(--teal) 4%, transparent), transparent 55%);
 }
 [data-mode="dark"] .klp::before {
   background-image:
@@ -476,9 +476,10 @@
 .klp-hero::before {
   content: ""; position: absolute; inset: -22% -12% auto -12%; height: 640px; z-index: 0; pointer-events: none;
   background:
-    radial-gradient(48% 60% at 22% 34%, color-mix(in oklab, var(--teal) 13%, transparent), transparent 66%),
-    radial-gradient(42% 52% at 84% 10%, color-mix(in oklab, var(--amber) 10%, transparent), transparent 66%);
+    radial-gradient(48% 60% at 22% 34%, color-mix(in oklab, var(--teal) 11%, transparent), transparent 66%),
+    radial-gradient(42% 52% at 84% 10%, color-mix(in oklab, var(--amber) 8%, transparent), transparent 66%);
   filter: blur(22px);
+  opacity: .5;
   animation: klp-haze 22s ease-in-out infinite alternate;
 }
 .klp-hero > * { position: relative; z-index: 1; }
