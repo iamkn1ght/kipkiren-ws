@@ -112,8 +112,6 @@
 .klp-hero h1 { margin-top: 24px; }
 .klp-hero .klp-lead { margin-top: 24px; max-width: 34rem; }
 .klp-hero-ctas { margin-top: 36px; display: flex; flex-wrap: wrap; gap: 12px; }
-.klp-hero-aside .quote { font-family: var(--font-serif); font-size: 22px; line-height: 1.4; color: var(--slate); font-style: italic; margin-top: 24px; }
-.klp-hero-aside .by { margin-top: 28px; }
 
 /* ---------- marquee ---------- */
 .klp-marquee-band { border-top: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline); background: color-mix(in oklab, var(--paper) 50%, var(--muted)); overflow: hidden; }
@@ -166,10 +164,6 @@
 .klp-proc-item .t { font-family: var(--font-serif); font-size: 22px; }
 .klp-proc-item .d { margin-top: 4px; color: var(--slate); font-size: 15px; }
 
-/* ---------- quote ---------- */
-.klp-quote { max-width: 56rem; margin-inline: auto; text-align: center; }
-.klp-quote blockquote { margin: 32px 0 0; font-family: var(--font-serif); font-style: italic; }
-.klp-quote figcaption { margin-top: 32px; }
 
 /* ---------- CTA card ---------- */
 .klp-cta { border: 1px solid var(--hairline); background: var(--card); border-radius: 24px; padding: 40px; display: grid; gap: 32px; align-items: center; }
@@ -511,8 +505,8 @@
  * TYPOGRAPHY + RHYTHM - clearer hierarchy, editorial rag, refined detail.
  * One dominant element per section; supporting text recedes.
  * ========================================================================== */
-.klp h1, .klp h2, .klp h3, .klp-display-xl, .klp-display-lg, .klp-display-md, .klp-quote blockquote { text-wrap: balance; }
-.klp-lead, .klp-cell p, .klp-plan-desc, .klp-faq .a, .klp-proc-item .d, .klp-band .r p, .klp-hero-aside .quote { text-wrap: pretty; }
+.klp h1, .klp h2, .klp h3, .klp-display-xl, .klp-display-lg, .klp-display-md { text-wrap: balance; }
+.klp-lead, .klp-cell p, .klp-plan-desc, .klp-faq .a, .klp-proc-item .d, .klp-band .r p, .klp-herocard .quote { text-wrap: pretty; }
 
 /* eyebrows: more presence + consistent rhythm into the heading */
 .klp-eyebrow { letter-spacing: .26em; }
@@ -538,11 +532,6 @@
 .klp-btn span { display: inline-block; transition: transform .25s cubic-bezier(.2,.7,.2,1); }
 @media (hover: hover) { .klp-btn:hover span { transform: translateX(3px); } }
 
-/* ---- testimonial: an editorial pull-quote mark ---- */
-.klp-quote { position: relative; }
-.klp-quote::before { content: "\201C"; position: absolute; top: -0.42em; left: 50%; transform: translateX(-50%); font-family: var(--font-serif); font-size: clamp(140px, 20vw, 240px); line-height: 1; color: var(--teal-deep); opacity: .09; pointer-events: none; z-index: 0; }
-.klp-quote blockquote, .klp-quote figcaption, .klp-quote .klp-eyebrow { position: relative; z-index: 1; }
-
 /* ---- CTA card + plan depth ---- */
 .klp-cta { background: linear-gradient(180deg, var(--card), color-mix(in oklab, var(--card) 86%, var(--muted))); }
 [data-mode="dark"] .klp-cta { background: linear-gradient(180deg, var(--card), color-mix(in oklab, var(--card) 78%, #000)); }
@@ -563,7 +552,7 @@
 .klp-burger.open .bl::before { transform: translateY(5px) rotate(45deg); }
 .klp-burger.open .bl::after { transform: translateY(-5px) rotate(-45deg); }
 
-.klp-mobilemenu { position: fixed; left: 0; right: 0; top: 77px; z-index: 40; background: color-mix(in oklab, var(--paper) 95%, transparent); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); border-bottom: 1px solid var(--hairline); box-shadow: 0 24px 50px -30px color-mix(in oklab, var(--ink) 40%, transparent); transform: translateY(-10px); opacity: 0; pointer-events: none; transition: transform .32s cubic-bezier(.2,.7,.2,1), opacity .28s ease; }
+.klp-mobilemenu { position: fixed; left: 0; right: 0; top: 89px; z-index: 40; background: color-mix(in oklab, var(--paper) 95%, transparent); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); border-bottom: 1px solid var(--hairline); box-shadow: 0 24px 50px -30px color-mix(in oklab, var(--ink) 40%, transparent); transform: translateY(-10px); opacity: 0; pointer-events: none; transition: transform .32s cubic-bezier(.2,.7,.2,1), opacity .28s ease; }
 .klp-mobilemenu.open { transform: translateY(0); opacity: 1; pointer-events: auto; }
 .klp-mobilemenu .klp-container { padding-top: 8px; padding-bottom: 24px; }
 .klp-mobilemenu nav { display: flex; flex-direction: column; }
@@ -836,3 +825,48 @@
 .klp-why-card .num { color: var(--teal-deep); }
 .klp-why-card h3 { font-family: var(--font-serif); font-size: 22px; letter-spacing: -.01em; line-height: 1.15; margin-top: 14px; }
 .klp-why-card p { margin-top: 12px; color: var(--slate); font-size: 14.5px; line-height: 1.62; text-wrap: pretty; }
+
+/* ============================================================================
+   MOBILE PASS - phones composed intentionally, not scaled down. Tighter rhythm,
+   full-width tap targets, comfortable card padding, a leaner header.
+   ============================================================================ */
+@media (max-width: 640px) {
+  /* leaner header + aligned mobile menu */
+  .klp-header .row { min-height: 66px; }
+  .klp-brand { padding: 12px 0; }
+  .klp-brand .mark { height: 38px; width: 38px; font-size: 18px; }
+  .klp-mobilemenu { top: 66px; }
+  .klp-topbrand { padding-top: 20px; padding-bottom: 20px; }
+
+  /* tighter vertical rhythm (the page felt over-spaced on phones too) */
+  .klp-section { padding-block: 52px; }
+  .klp-hero { padding-top: 32px; padding-bottom: 44px; }
+  .klp-sec-head { margin-bottom: 28px; }
+  .klp-hero-grid { gap: 32px; }
+
+  /* hero: stacked full-width CTAs = bigger, cleaner tap targets */
+  .klp-hero-ctas { flex-direction: column; align-items: stretch; gap: 10px; }
+  .klp-hero-ctas .klp-btn { width: 100%; justify-content: center; }
+  .klp-hero .klp-lead { max-width: none; }
+  .klp-hero-assure { gap: 8px 16px; margin-top: 24px; }
+
+  /* comfortable card padding on small screens */
+  .klp-plan { padding: 26px; }
+  .klp-why-card { padding: 24px 22px; }
+  .klp-compare-col { padding: 26px; }
+  .klp-herocard { padding: 24px; }
+  .klp-cell { padding: 26px 0; }
+
+  /* section headings scale down without losing presence */
+  .klp-display-lg { font-size: clamp(32px, 9vw, 44px); }
+  .klp-display-md { font-size: clamp(25px, 7.6vw, 34px); }
+
+  /* generous tap targets everywhere (>= ~46px) */
+  .klp-btn { padding: 15px 22px; }
+  .klp-burger { height: 44px; width: 44px; }
+  .klp-toggle { height: 44px; width: 44px; }
+
+  /* contact CTA + custom row stack full-width */
+  .klp-cta .r { flex-direction: column; align-items: stretch; width: 100%; }
+  .klp-cta .r .klp-btn { width: 100%; justify-content: center; }
+}
