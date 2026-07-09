@@ -106,6 +106,16 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
     return () => io.disconnect();
   }, []);
 
+  // While the mobile menu is open: lock body scroll and close on Escape.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = prevOverflow; window.removeEventListener('keydown', onKey); };
+  }, [menuOpen]);
+
   return (
     <div className="klp">
       {/* header */}
@@ -122,20 +132,52 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
             <KlpToggle />
             <button type="button" className="klp-btn ghost" onClick={onSignIn}>Sign in</button>
             <button type="button" className="klp-btn primary" onClick={onSignIn}>Start a project</button>
-            <button type="button" className={`klp-burger ${menuOpen ? 'open' : ''}`} aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen} onClick={() => setMenuOpen((o) => !o)}><span className="bl" /></button>
+            <button type="button" className="klp-burger" aria-label="Open menu" aria-expanded={menuOpen} aria-controls="klp-mobile-nav" onClick={() => setMenuOpen(true)}><span className="bl" /></button>
           </div>
         </div>
       </header>
 
-      {/* mobile menu */}
-      <div className={`klp-mobilemenu ${menuOpen ? 'open' : ''}`}>
-        <div className="klp-container">
-          <nav>
-            {NAV.map((n) => <button key={n.id} type="button" onClick={goClose(n.id)}>{n.label}</button>)}
+      {/* mobile full-screen navigation */}
+      <div className={`klp-msheet ${menuOpen ? 'open' : ''}`} id="klp-mobile-nav" role="dialog" aria-modal="true" aria-label="Site menu">
+        <div className="klp-msheet-inner klp-container">
+          <div className="klp-msheet-head">
+            <span className="klp-msheet-brand">
+              <span className="mark">K</span>
+              <span className="name">Kipkiren<small>WEB SERVICES</small></span>
+            </span>
+            <div className="klp-msheet-head-r">
+              <KlpToggle />
+              <button type="button" className="klp-msheet-close" onClick={() => setMenuOpen(false)} aria-label="Close menu"><span /><span /></button>
+            </div>
+          </div>
+
+          <nav className="klp-msheet-nav">
+            <div className="klp-msheet-group">
+              <div className="klp-msheet-label" style={cssVars({ '--i': 0 })}>Explore</div>
+              {NAV.map((n, i) => (
+                <button key={n.id} type="button" className="klp-msheet-link" style={cssVars({ '--i': i + 1 })} onClick={goClose(n.id)}>
+                  <span className="t">{n.label}</span>
+                  <span className="x">→</span>
+                </button>
+              ))}
+            </div>
+            <div className="klp-msheet-group">
+              <div className="klp-msheet-label" style={cssVars({ '--i': 6 })}>Legal &amp; trust</div>
+              <div className="klp-msheet-chips" style={cssVars({ '--i': 7 })}>
+                {LEGAL_NAV.map((n) => (
+                  <button key={n.id} type="button" className="klp-msheet-chip" onClick={() => { setMenuOpen(false); onLegal(n.id); }}>{n.label}</button>
+                ))}
+              </div>
+            </div>
           </nav>
-          <div className="mm-cta">
-            <button type="button" className="klp-btn ghost" onClick={() => { setMenuOpen(false); onSignIn(); }}>Sign in</button>
-            <button type="button" className="klp-btn primary" onClick={() => { setMenuOpen(false); onSignIn(); }}>Start a project</button>
+
+          <div className="klp-msheet-foot" style={cssVars({ '--i': 8 })}>
+            <div className="klp-msheet-label">Get started</div>
+            <div className="klp-msheet-cta">
+              <button type="button" className="klp-btn primary" onClick={() => { setMenuOpen(false); onSignIn(); }}>Start a project</button>
+              <button type="button" className="klp-btn ghost" onClick={() => { setMenuOpen(false); onSignIn(); }}>Sign in</button>
+            </div>
+            <a className="klp-msheet-contact" href="mailto:studio@kipkiren.co.ke">studio@kipkiren.co.ke · Nairobi</a>
           </div>
         </div>
       </div>
