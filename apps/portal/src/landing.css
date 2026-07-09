@@ -35,7 +35,11 @@
     radial-gradient(circle at 25% 12%, color-mix(in oklab, var(--amber) 7%, transparent), transparent 55%),
     radial-gradient(circle at 82% 88%, color-mix(in oklab, var(--teal) 6%, transparent), transparent 55%);
 }
-[data-mode="dark"] .klp::before { background-image: none; }
+[data-mode="dark"] .klp::before {
+  background-image:
+    radial-gradient(circle at 25% 12%, color-mix(in oklab, var(--amber-deep) 5%, transparent), transparent 55%),
+    radial-gradient(circle at 82% 88%, color-mix(in oklab, var(--teal-deep) 6%, transparent), transparent 55%);
+}
 .klp > * { position: relative; z-index: 1; }
 .klp ::selection { background: var(--amber); color: var(--ink); }
 
@@ -463,10 +467,29 @@
 .klp-header .auth .klp-btn.ghost { border-color: var(--hairline); }
 @media (hover: hover) { .klp-header .auth .klp-btn.ghost:hover { border-color: var(--ink); } }
 
-/* Hero kept clean and flat - the coloured aurora glow was removed (it read as a
-   murky green/olive wash in dark mode). Horizontal-scroll containment now lives
-   on the body via overflow-x: clip. */
+/* ---- hero brand haze (soft, slow) ----
+   Gradients fade naturally to transparent (no hard clip edge - that was what
+   made the old version look boxed/murky). Horizontal bleed is safe now because
+   the body has overflow-x: clip. Dark mode swaps to the BRIGHT mint teal so the
+   glow reads as clean luminance instead of a muddy olive wash. */
 .klp-hero { position: relative; }
+.klp-hero::before {
+  content: ""; position: absolute; inset: -22% -12% auto -12%; height: 640px; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(48% 60% at 22% 34%, color-mix(in oklab, var(--teal) 13%, transparent), transparent 66%),
+    radial-gradient(42% 52% at 84% 10%, color-mix(in oklab, var(--amber) 10%, transparent), transparent 66%);
+  filter: blur(22px);
+  animation: klp-haze 22s ease-in-out infinite alternate;
+}
+.klp-hero > * { position: relative; z-index: 1; }
+@keyframes klp-haze { from { transform: translate3d(0,0,0) scale(1); } to { transform: translate3d(1.5%, -1%, 0) scale(1.05); } }
+@media (prefers-reduced-motion: reduce) { .klp-hero::before { animation: none; } }
+[data-mode="dark"] .klp-hero::before {
+  background:
+    radial-gradient(48% 60% at 22% 34%, color-mix(in oklab, var(--teal-deep) 20%, transparent), transparent 64%),
+    radial-gradient(42% 52% at 86% 8%, color-mix(in oklab, var(--amber-deep) 11%, transparent), transparent 64%);
+  opacity: .52;
+}
 
 /* ---- focus rings + tactile press (micro-details) ---- */
 .klp button:focus-visible, .klp a:focus-visible, .klp input:focus-visible, .klp select:focus-visible, .klp textarea:focus-visible, .klp .klp-rp-card:focus-visible { outline: 2px solid var(--teal-deep); outline-offset: 3px; border-radius: 6px; }
