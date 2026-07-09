@@ -19,6 +19,9 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  /* Match native UI (scrollbars, form controls) to the theme so the right-edge
+     scrollbar is not a jarring light bar in dark mode. */
+  color-scheme: light;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -27,11 +30,17 @@ html {
 body {
   margin: 0;
   min-height: 100vh;
+  /* Global guard against horizontal scroll. `clip` (not `hidden`) does not
+     create a scroll container, so position: sticky in the header still works. */
+  overflow-x: clip;
   background: #f7f4ee;
   color: #111008;
   font-family: 'Syne', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
+[data-mode='dark'] {
+  color-scheme: dark;
+}
 [data-mode='dark'] body {
   background: #15120c;
   color: #f3efe5;

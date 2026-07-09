@@ -462,7 +462,10 @@
 @media (hover: hover) { .klp-header .auth .klp-btn.ghost:hover { border-color: var(--ink); } }
 
 /* ---- hero depth (soft, slow aurora) ---- */
-.klp-hero { position: relative; }
+/* overflow: hidden contains the aurora so its negative insets + drift animation
+   cannot push past the viewport and cause a horizontal scrollbar (the hero is
+   not a sticky ancestor, so clipping it is safe and universally supported). */
+.klp-hero { position: relative; overflow: hidden; }
 .klp-hero::before {
   content: ""; position: absolute; inset: -12% -18% auto -18%; height: 560px; z-index: 0; pointer-events: none;
   background:
