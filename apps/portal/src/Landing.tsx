@@ -23,7 +23,7 @@ const NAV = [
 ];
 
 // Build + Care pricing. A one-time build (priced below the one-time-only shops)
-// plus a monthly care plan - the differentiator: we build it, then we run it.
+// plus a monthly care plan. The differentiator: we build it, then we run it.
 const PLANS = [
   { kick: '01 · starter', name: 'Starter', desc: 'A polished presence for a small business getting online properly.',
     build: '45,000', care: '3,500',
@@ -39,7 +39,7 @@ const PLANS = [
     cta: 'Choose Business', featured: false },
 ];
 
-// The competitive contrast - answers "why you, not a cheaper one-time build?"
+// The competitive contrast. Answers "why you, not a cheaper one-time build?"
 const COMPARE_THEM = ['Pay once, then you are on your own', 'Maintenance billed separately, if at all', 'Slow to reach when something breaks', 'The site quietly rots within a year', 'You chase them for every small fix'];
 const COMPARE_US = ['Built once, then run for years', 'Care included from the first day', 'A named team and a phone that answers', 'Monitored, patched and updated for you', 'We watch it so you never have to'];
 
@@ -409,7 +409,7 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
               <ul>
                 <li><a href="mailto:studio@kipkiren.co.ke">studio@kipkiren.co.ke</a></li>
                 <li>Riverside Drive, Nairobi</li>
-                <li>Mon - Fri · 09:00 - 18:00 EAT</li>
+                <li>Monday to Friday, 09:00 to 18:00 EAT</li>
                 <li><button type="button" onClick={onSignIn}>Client portal · Sign in</button></li>
               </ul>
             </div>

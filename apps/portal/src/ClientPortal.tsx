@@ -1,5 +1,5 @@
 /**
- * Client Portal — warm editorial rebuild (design_reference/dashboard.html +
+ * Client Portal, warm editorial rebuild (design_reference/dashboard.html +
  * portal shell). Self-contained under .klp, reusing the landing design system:
  * 12-col shell (sidebar nav + content), serif KPI cards, hairline divide-y list
  * sections, status pills. Real data via useClientData; the proforma path ends
@@ -281,7 +281,7 @@ function ProformaView({ awaiting }: { awaiting: ClientTicket[] }) {
             <div><div className="k">Pay by card</div><div className="v">Visa / Mastercard via Paystack</div></div>
           </div>
           {attempted
-            ? <div className="klp-note amber" style={cssVars({ marginTop: 16 })}>Kipkiren Pay is completing activation, so the live charge can't be taken just yet. Everything up to this point is saved — we'll email you the moment payment opens, or you can pay by invoice today.</div>
+            ? <div className="klp-note amber" style={cssVars({ marginTop: 16 })}>Kipkiren Pay is completing activation, so the live charge cannot be taken just yet. Everything up to this point is saved. We will email you the moment payment opens, or you can pay by invoice today.</div>
             : <div className="klp-note" style={cssVars({ marginTop: 16 })}>Scope locks the moment payment confirms. Work begins within 2 business days.</div>}
           <div className="klp-portal-actions">
             <button type="button" className="klp-btn primary" onClick={() => setAttempted(true)}>Send STK push</button>
