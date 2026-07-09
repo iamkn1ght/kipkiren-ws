@@ -687,3 +687,48 @@
   .klp-toolbar-meta { display: none; }
   .klp-segbar { overflow-x: auto; max-width: 100%; }
 }
+
+/* ============================================================================
+   LEGAL + TRUST PAGES - editorial document layout with a sticky contents rail.
+   ============================================================================ */
+.klp-topbrand-home { display: inline-flex; align-items: center; gap: 12px; background: none; border: none; cursor: pointer; padding: 0; }
+
+.klp-legal { display: grid; gap: 40px; padding-block: 32px 96px; }
+@media (min-width: 900px) { .klp-legal { grid-template-columns: 236px 1fr; gap: 64px; align-items: start; } }
+
+.klp-legal-toc .lbl { color: var(--mid); margin-bottom: 16px; }
+.klp-legal-toc nav { display: flex; flex-direction: column; gap: 2px; }
+@media (min-width: 900px) { .klp-legal-toc { position: sticky; top: 88px; } }
+.klp-legal-toc nav button {
+  text-align: left; background: none; border: none; cursor: pointer; font-family: var(--font-sans); font-size: 14px;
+  color: var(--slate); padding: 9px 13px; border-radius: 10px; border-left: 2px solid transparent;
+  transition: color .16s ease, background .16s ease, border-color .16s ease;
+}
+.klp-legal-toc nav button:hover { color: var(--ink); background: color-mix(in oklab, var(--paper) 55%, var(--muted)); }
+.klp-legal-toc nav button.active { color: var(--teal-deep); font-weight: 600; border-left-color: var(--teal-deep); background: color-mix(in oklab, var(--teal-light) 55%, transparent); }
+.klp-legal-help { margin-top: 26px; padding-top: 24px; border-top: 1px solid var(--hairline); display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.klp-legal-help a { font-size: 13px; color: var(--teal-deep); }
+.klp-legal-help .klp-btn { margin-top: 4px; padding: 10px 16px; font-size: 10px; }
+
+.klp-legal-doc { max-width: 720px; }
+.klp-legal-doc h1 { margin-top: 14px; }
+.klp-legal-meta { color: var(--mid); margin-top: 18px; letter-spacing: .08em; text-transform: none; font-size: 11px; }
+.klp-legal-review { margin-top: 22px; }
+.klp-legal-intro { margin-top: 24px; }
+.klp-legal-block { margin-top: 40px; }
+.klp-legal-block h2 { font-family: var(--font-serif); font-size: 24px; letter-spacing: -.01em; margin-bottom: 14px; }
+.klp-legal-block p { color: var(--slate); font-size: 15.5px; line-height: 1.7; margin-bottom: 12px; text-wrap: pretty; }
+.klp-legal-block ul { display: flex; flex-direction: column; gap: 11px; margin-top: 6px; }
+.klp-legal-block li { display: flex; gap: 13px; align-items: baseline; font-size: 15px; color: var(--slate); line-height: 1.6; }
+.klp-legal-block li .m { flex: none; width: 12px; height: 1.5px; background: var(--teal-deep); align-self: center; }
+.klp-legal-foot { margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--hairline); }
+.klp-legal-foot .klp-mono { color: var(--mid); }
+.klp-legal-cross { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 12px 24px; }
+.klp-legal-cross button { background: none; border: none; cursor: pointer; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--teal-deep); }
+.klp-legal-cross button span { display: inline-block; transition: transform .2s ease; }
+.klp-legal-cross button:hover span { transform: translateX(3px); }
+
+/* footer legal-links row */
+.klp-footlegal { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+.klp-footlegal button { background: none; border: none; cursor: pointer; font-family: var(--font-mono); font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--mid); transition: color .16s ease; }
+.klp-footlegal button:hover { color: var(--ink); }

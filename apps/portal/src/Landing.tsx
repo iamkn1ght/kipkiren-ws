@@ -1,5 +1,6 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { KlpToggle } from './klpTheme.tsx';
+import { LEGAL_NAV, type LegalDocId } from './Legal.tsx';
 import './landing.css';
 
 /**
@@ -78,7 +79,7 @@ const PROCESS = [
   { n: '06', t: 'Operation', d: 'The part most studios skip. We stay.' },
 ];
 
-export function Landing({ onSignIn }: { onSignIn: () => void }) {
+export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: (id: LegalDocId) => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const go = (id: string) => () => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   const goClose = (id: string) => () => { setMenuOpen(false); document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
@@ -379,26 +380,28 @@ export function Landing({ onSignIn }: { onSignIn: () => void }) {
               </ul>
             </div>
             <div className="col-nav">
-              <div className="klp-mono">Portal</div>
+              <div className="klp-mono">Legal &amp; trust</div>
               <ul>
-                <li><button type="button" onClick={onSignIn}>Sign in</button></li>
-                <li><button type="button" onClick={onSignIn}>Dashboard</button></li>
-                <li><button type="button" onClick={onSignIn}>Open ticket</button></li>
+                {LEGAL_NAV.map((n) => (
+                  <li key={n.id}><button type="button" onClick={() => onLegal(n.id)}>{n.label}</button></li>
+                ))}
               </ul>
             </div>
             <div className="col-contact">
               <div className="klp-mono">Get in touch</div>
               <ul>
-                <li>studio@kipkiren.co.ke</li>
-                <li>+254 700 000 000</li>
+                <li><a href="mailto:studio@kipkiren.co.ke">studio@kipkiren.co.ke</a></li>
                 <li>Riverside Drive, Nairobi</li>
                 <li>Mon - Fri · 09:00 - 18:00 EAT</li>
+                <li><button type="button" onClick={onSignIn}>Client portal · Sign in</button></li>
               </ul>
             </div>
           </div>
           <div className="klp-footbar">
             <div className="klp-mono">© 2026 Kipkiren Web Services Ltd.</div>
-            <div className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>Version 1.0 · Nairobi · Built with care</div>
+            <nav className="klp-footlegal">
+              {LEGAL_NAV.map((n) => <button key={n.id} type="button" onClick={() => onLegal(n.id)}>{n.label}</button>)}
+            </nav>
           </div>
         </div>
       </footer>
