@@ -137,28 +137,35 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
               <span className="klp-eyebrow teal klp-reveal"><span className="dot" />A managed web services studio · Nairobi</span>
               <h1 className="klp-display-xl klp-reveal" style={cssVars({ '--d': '80ms' })}>Precision websites,<br /><em style={cssVars({ color: 'var(--teal-deep)' })}>quietly operated.</em></h1>
               <p className="klp-lead klp-reveal" style={cssVars({ '--d': '160ms' })}>
-                Kipkiren designs, ships and runs the digital presence for founders and teams across East Africa.
-                No packages that look like everyone else's. No dashboards you never open. Just a senior team, a
-                considered site, and a phone number that answers.
+                Kipkiren designs, builds and runs the websites Kenyan businesses depend on. One senior team,
+                one transparent price, and a phone that still answers long after launch.
               </p>
               <div className="klp-hero-ctas klp-reveal" style={cssVars({ '--d': '240ms' })}>
                 <button type="button" className="klp-btn primary" onClick={go('pricing')}>See pricing <span>→</span></button>
                 <button type="button" className="klp-btn ghost" onClick={go('contact')}>Book a conversation</button>
               </div>
-              <button type="button" className="klp-scrollcue klp-reveal" style={cssVars({ '--d': '480ms' })} onClick={go('services')}><span className="line" />What we do</button>
+              <div className="klp-hero-assure klp-reveal" style={cssVars({ '--d': '320ms' })}>
+                <span><span className="tk" />Fixed price before any work</span>
+                <span><span className="tk" />You own everything</span>
+                <span><span className="tk" />No lock-in</span>
+              </div>
             </div>
-            <aside className="klp-hero-aside klp-reveal" style={cssVars({ '--d': '320ms' })}>
-              <div className="klp-mono">Studio note · 004</div>
-              <p className="quote">"The web is quieter than it looks. Almost every site we're asked to rescue was shipped in a rush by someone who wasn't going to answer the phone six months later."</p>
-              <div className="klp-mono by" style={cssVars({ color: 'var(--mid)' })}>Kipkiren Studio<br />on why we do managed work</div>
+            <aside className="klp-hero-aside klp-reveal" style={cssVars({ '--d': '360ms' })}>
+              <div className="klp-herocard">
+                <div className="klp-mono">Studio note · 004</div>
+                <p className="quote">"The web is quieter than it looks. Almost every site we are asked to rescue was shipped in a rush by someone who was never going to answer the phone six months later."</p>
+                <div className="klp-mono by">Kipkiren Studio, on why we run what we build</div>
+                <div className="klp-herocard-facts">
+                  <div><span className="n">2019</span><span className="l">Founded</span></div>
+                  <div><span className="n">68</span><span className="l">Sites run</span></div>
+                  <div><span className="n">99.98%</span><span className="l">Uptime</span></div>
+                </div>
+                <button type="button" className="klp-herocard-price" onClick={go('pricing')}>
+                  <span className="p"><span className="k">Build from</span> <strong>KES 45,000</strong> <span className="k">plus care from 3,500/mo</span></span>
+                  <span className="go">See pricing <span>&rarr;</span></span>
+                </button>
+              </div>
             </aside>
-          </div>
-          <div className="klp-hero-meta klp-reveal" style={cssVars({ '--d': '400ms' })}>
-            <span>A managed studio, Nairobi</span>
-            <span>Est. 2019</span>
-            <span>68 sites in operation</span>
-            <span>99.98% uptime</span>
-            <span>Senior team only</span>
           </div>
         </section>
 

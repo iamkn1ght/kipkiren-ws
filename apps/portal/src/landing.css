@@ -105,12 +105,12 @@
 .klp-header .auth .klp-btn.ghost:hover { border-color: var(--hairline); }
 
 /* ---------- hero ---------- */
-.klp-hero { padding-top: 72px; padding-bottom: 88px; }
-@media (min-width: 768px) { .klp-hero { padding-top: 104px; padding-bottom: 128px; } }
-.klp-hero-grid { display: grid; gap: 48px; }
-@media (min-width: 1024px) { .klp-hero-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 56px; } .klp-hero-main { grid-column: span 8 / span 8; } .klp-hero-aside { grid-column: span 4 / span 4; padding-left: 40px; border-left: 1px solid var(--hairline); } }
-.klp-hero h1 { margin-top: 28px; }
-.klp-hero .klp-lead { margin-top: 28px; max-width: 42rem; }
+.klp-hero { padding-top: 56px; padding-bottom: 64px; }
+@media (min-width: 768px) { .klp-hero { padding-top: 72px; padding-bottom: 88px; } }
+.klp-hero-grid { display: grid; gap: 40px; }
+@media (min-width: 1024px) { .klp-hero-grid { grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 64px; align-items: center; } .klp-hero-main { grid-column: span 7 / span 7; } .klp-hero-aside { grid-column: span 5 / span 5; } }
+.klp-hero h1 { margin-top: 24px; }
+.klp-hero .klp-lead { margin-top: 24px; max-width: 34rem; }
 .klp-hero-ctas { margin-top: 36px; display: flex; flex-wrap: wrap; gap: 12px; }
 .klp-hero-aside .quote { font-family: var(--font-serif); font-size: 22px; line-height: 1.4; color: var(--slate); font-style: italic; margin-top: 24px; }
 .klp-hero-aside .by { margin-top: 28px; }
@@ -615,11 +615,34 @@
 .klp-footer .brandmark .mark { height: 48px; width: 48px; font-size: 22px; }
 
 /* ---- hero: bolder headline + a credentials bar that closes the dead space ---- */
-.klp-display-xl { font-size: clamp(52px, 9vw, 138px); letter-spacing: -0.04em; }
-.klp-hero-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 30px; margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--hairline); }
-.klp-hero-meta span { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--mid); display: inline-flex; align-items: center; gap: 14px; }
-.klp-hero-meta span::before { content: ""; width: 5px; height: 5px; border-radius: 999px; background: var(--teal-deep); flex: none; }
-.klp-hero-meta span:first-child::before { display: none; }
+/* hero headline: commanding but controlled (was billboard-sized 138px, which
+   ballooned the section into empty space). A composed editorial scale. */
+.klp-display-xl { font-size: clamp(42px, 6.4vw, 94px); line-height: 0.98; letter-spacing: -0.035em; }
+
+/* hero right-column studio card: quote + live facts + a transparent price entry,
+   so the column is composed top to bottom instead of a floating quote. */
+.klp-herocard { border: 1px solid var(--hairline); border-radius: 22px; padding: 28px; background: color-mix(in oklab, var(--card) 55%, var(--paper)); }
+@media (min-width: 768px) { .klp-herocard { padding: 32px; } }
+.klp-herocard .quote { font-family: var(--font-serif); font-size: 18.5px; line-height: 1.46; color: var(--slate); font-style: italic; margin-top: 16px; text-wrap: pretty; }
+.klp-herocard .by { margin-top: 16px; color: var(--mid); font-size: 10px; line-height: 1.5; }
+.klp-herocard-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 26px; padding-top: 24px; border-top: 1px solid var(--hairline); }
+.klp-herocard-facts .n { display: block; font-family: var(--font-serif); font-size: 25px; line-height: 1; letter-spacing: -.02em; color: var(--teal-deep); font-variant-numeric: tabular-nums; }
+.klp-herocard-facts .l { display: block; font-family: var(--font-mono); font-size: 8px; letter-spacing: .16em; text-transform: uppercase; color: var(--mid); margin-top: 7px; }
+.klp-herocard-price { width: 100%; margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--hairline); display: flex; flex-direction: column; align-items: flex-start; gap: 12px; background: none; border-left: none; border-right: none; border-bottom: none; cursor: pointer; text-align: left; transition: opacity .16s ease; }
+.klp-herocard-price:hover { opacity: .78; }
+.klp-herocard-price .p { font-size: 13px; color: var(--slate); line-height: 1.5; }
+.klp-herocard-price strong { color: var(--ink); font-weight: 600; }
+.klp-herocard-price .k { color: var(--mid); }
+.klp-herocard-price .go { font-family: var(--font-mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--teal-deep); display: inline-flex; align-items: center; gap: 8px; }
+.klp-herocard-price .go span { transition: transform .2s ease; }
+.klp-herocard-price:hover .go span { transform: translateX(3px); }
+
+/* hero assurances: three quiet trust ticks under the CTAs (fills the left
+   column, answers the buyer's first worries immediately) */
+.klp-hero-assure { margin-top: 28px; display: flex; flex-wrap: wrap; gap: 10px 24px; }
+.klp-hero-assure span { display: inline-flex; align-items: center; gap: 9px; font-family: var(--font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--slate); }
+.klp-hero-assure .tk { width: 14px; height: 14px; flex: none; border-radius: 999px; border: 1.5px solid var(--teal-deep); position: relative; }
+.klp-hero-assure .tk::after { content: ""; position: absolute; left: 4px; top: 1.5px; width: 3.5px; height: 6.5px; border: solid var(--teal-deep); border-width: 0 1.5px 1.5px 0; transform: rotate(45deg); }
 
 /* ---- bolder rhythm: tighter, more intentional spacing + section drama ---- */
 .klp-section { padding-block: 78px; }
