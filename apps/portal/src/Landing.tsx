@@ -108,7 +108,7 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
 
   return (
     <div className="klp">
-      {/* ── header ── */}
+      {/* header */}
       <header className="klp-header">
         <div className="klp-container row">
           <a className="klp-brand" href="#top" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
@@ -127,7 +127,7 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
         </div>
       </header>
 
-      {/* ── mobile menu ── */}
+      {/* mobile menu */}
       <div className={`klp-mobilemenu ${menuOpen ? 'open' : ''}`}>
         <div className="klp-container">
           <nav>
@@ -141,7 +141,7 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
       </div>
 
       <main id="top">
-        {/* ── hero ── */}
+        {/* hero */}
         <section className="klp-container klp-hero">
           <div className="klp-hero-grid">
             <div className="klp-hero-main">
@@ -180,7 +180,7 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
           </div>
         </section>
 
-        {/* ── built-with marquee (real stack, not fabricated logos) ── */}
+        {/* built-with marquee (real stack, not fabricated logos) */}
         <section className="klp-marquee-band">
           <div className="klp-container inner">
             <span className="klp-mono" style={cssVars({ flexShrink: 0 })}>Built with</span>
@@ -192,7 +192,7 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
           </div>
         </section>
 
-        {/* ── services ── */}
+        {/* services */}
         <section className="klp-container klp-section" id="services">
           <div className="klp-sec-head klp-reveal">
             <div className="h">
@@ -216,7 +216,7 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
           </div>
         </section>
 
-        {/* ── philosophy band ── */}
+        {/* philosophy band */}
         <section className="klp-band" id="about">
           <div className="klp-container klp-section">
             <div className="klp-band-grid">
@@ -233,7 +233,7 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
           </div>
         </section>
 
-        {/* ── stats band ── */}
+        {/* stats band */}
         <section className="klp-statband">
           <div className="klp-container klp-section">
             <div className="klp-sec-head">
@@ -255,7 +255,7 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
           </div>
         </section>
 
-        {/* ── process ── */}
+        {/* process */}
         <section className="klp-container klp-section" id="process">
           <div className="klp-proc-grid">
             <div className="l klp-reveal">
@@ -284,7 +284,7 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
           </div>
         </section>
 
-        {/* ── pricing ── */}
+        {/* pricing */}
         <section className="klp-container klp-section klp-hairline-t" id="pricing">
           <div className="klp-sec-head klp-reveal">
             <div className="h">
@@ -365,7 +365,7 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
           </div>
         </section>
 
-        {/* ── why choose (authentic trust builders, no borrowed logos) ── */}
+        {/* why choose (authentic trust builders, no borrowed logos) */}
         <section className="klp-container klp-section">
           <div className="klp-sec-head klp-reveal">
             <div className="h">
@@ -385,7 +385,7 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
           </div>
         </section>
 
-        {/* ── CTA ── */}
+        {/* CTA */}
         <section className="klp-container klp-section" id="contact" style={cssVars({ paddingTop: 0 })}>
           <div className="klp-cta klp-reveal">
             <div className="l">
@@ -401,7 +401,7 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
         </section>
       </main>
 
-      {/* ── footer ── */}
+      {/* footer */}
       <footer className="klp-footer">
         <div className="klp-container">
           <div className="klp-footer-grid">

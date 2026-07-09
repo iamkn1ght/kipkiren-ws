@@ -38,7 +38,7 @@ export interface ClientService {
   created_at: string;
 }
 
-// ── Dashboard "operating system" composites ─────────────────────────
+//  Dashboard "operating system" composites 
 export type ProjectKind = 'active' | 'review' | 'done' | 'queued';
 export interface ProjectCard {
   id: string;

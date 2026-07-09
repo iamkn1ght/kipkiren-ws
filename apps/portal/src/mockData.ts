@@ -18,7 +18,7 @@ import type { Task } from './useTaskData.ts';
 const hrs = (h: number) => new Date(Date.now() + h * 3_600_000).toISOString();
 const days = (d: number) => new Date(Date.now() + d * 86_400_000).toISOString();
 
-// ── Admin ──
+//  Admin 
 const queue: QueueRow[] = [
   { id: 't1', ref: 'KWS-T-0042', description: 'Migrate dashboards to Supabase + add CSV export', category: 'web', urgency: 'elevated', status: 'in_progress', sla_deadline_at: hrs(6), sla_state: 'warn', ms_until_breach: 6 * 3_600_000, client: { id: 'c1', business_name: 'Maridadi Press', plan: 'Growth' }, assigned_to: 'Kamau W.', created_at: days(-2) },
   { id: 't2', ref: 'KWS-T-0044', description: 'Add online booking + payment to WordPress site', category: 'web', urgency: 'standard', status: 'assigned', sla_deadline_at: days(2), sla_state: 'clear', ms_until_breach: 2 * 86_400_000, client: { id: 'c2', business_name: 'Acacia Capital', plan: 'Business' }, assigned_to: null, created_at: days(-1) },
@@ -99,7 +99,7 @@ const slaAudit: SlaAuditReport = {
 
 export const mockAdmin = { queue, capacity, clients, reviewQueue, recentDispatches, capacityDetail, services: adminServices, rails, siteHealth, agents, slaAudit };
 
-// ── Client ──
+//  Client 
 const clientTickets: ClientTicket[] = [
   { id: 't1', ref: 'KWS-T-0042', description: 'Migrate dashboards to Supabase + add CSV export', category: 'web', urgency: 'elevated', status: 'in_progress', sla_deadline_at: hrs(6), created_at: days(-2) },
   { id: 't5', ref: 'KWS-T-0039', description: 'Add newsletter signup + Mailchimp sync', category: 'web', urgency: 'standard', status: 'complete', sla_deadline_at: days(-3), created_at: days(-6) },
@@ -149,7 +149,7 @@ const clientDashboard: ClientDashboard = {
 
 export const mockClient = { tickets: clientTickets, invoices: clientInvoices, services: clientServices, dashboard: clientDashboard };
 
-// ── Task view ──
+//  Task view 
 const activeTasks: Task[] = [
   { id: 't1', ref: 'KWS-T-0042', category: 'web', urgency: 'elevated', status: 'in_progress', description: 'Migrate three internal dashboards onto Supabase (eu-west-1) and add server-side CSV export to each.', sla_deadline_at: hrs(6), created_at: days(-2), updated_at: hrs(-3) },
   { id: 't2', ref: 'KWS-T-0044', category: 'web', urgency: 'standard', status: 'paid', description: 'Integrate a booking calendar, wire Paystack for the payment leg, send confirmation email + admin dashboard entry.', sla_deadline_at: days(2), created_at: days(-1), updated_at: days(-1) },

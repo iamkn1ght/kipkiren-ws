@@ -109,7 +109,7 @@ export function ClientPortal() {
   );
 }
 
-// ── overview ──
+//  overview 
 function OverviewSkeleton() {
   return (
     <>
@@ -178,7 +178,7 @@ function Overview({ name, tickets, invoices, openCount, activeCount, awaitingCou
   );
 }
 
-// ── tickets list ──
+//  tickets list 
 function TicketList({ tickets, loading, onNew }: { tickets: ClientTicket[] | null; loading: boolean; onNew: () => void }) {
   const rows = tickets ?? [];
   return (
@@ -200,7 +200,7 @@ function TicketList({ tickets, loading, onNew }: { tickets: ClientTicket[] | nul
   );
 }
 
-// ── invoices / orders list ──
+//  invoices / orders list 
 function InvoiceList({ invoices, loading }: { invoices: ClientInvoice[] | null; loading: boolean }) {
   const rows = invoices ?? [];
   return (
@@ -220,7 +220,7 @@ function InvoiceList({ invoices, loading }: { invoices: ClientInvoice[] | null; 
   );
 }
 
-// ── services list ──
+//  services list 
 function ServiceList({ services, loading }: { services: import('./useClientData.ts').ClientService[] | null; loading: boolean }) {
   const rows = services ?? [];
   return (
@@ -243,7 +243,7 @@ function ServiceList({ services, loading }: { services: import('./useClientData.
   );
 }
 
-// ── proformas ──
+//  proformas 
 function ProformaView({ awaiting }: { awaiting: ClientTicket[] }) {
   const [checkout, setCheckout] = useState(false);
   const [attempted, setAttempted] = useState(false);
@@ -261,7 +261,7 @@ function ProformaView({ awaiting }: { awaiting: ClientTicket[] }) {
       </div>
       <div style={cssVars({ marginTop: 20 })}>
         <div className="klp-totrow"><span className="l">Subtotal</span><span className="r">KES 13,125</span></div>
-        <div className="klp-totrow"><span className="l">Growth discount (10%)</span><span className="r" style={cssVars({ color: 'var(--teal-deep)' })}>− KES 1,313</span></div>
+        <div className="klp-totrow"><span className="l">Growth discount (10%)</span><span className="r" style={cssVars({ color: 'var(--teal-deep)' })}>less KES 1,313</span></div>
         <div className="klp-totrow"><span className="l">VAT 16%</span><span className="r">KES 1,893</span></div>
         <div className="klp-totrow total"><span className="l">Total due</span><span className="r">KES 13,705</span></div>
       </div>
@@ -297,7 +297,7 @@ function ProformaView({ awaiting }: { awaiting: ClientTicket[] }) {
   );
 }
 
-// ── new ticket ──
+//  new ticket 
 const CATEGORY_MAP: Record<string, string> = { 'Web Development': 'web', 'Cloud Services': 'cloud', 'SEO': 'seo', 'Social Media': 'social', 'Domain / DNS': 'dns', 'Not sure': 'web' };
 const URGENCY_MAP: Record<string, string> = { 'Standard': 'standard', 'Elevated · within 48h': 'elevated', 'Urgent · within 24h': 'urgent' };
 

@@ -92,7 +92,7 @@ export function AdminPortal() {
   });
 
   const handleApprove = async (id: string) => { if (busy) return; setBusy(true); try { await call(`/v1/proformas/${id}/review`, { method: 'PUT', body: { dispatch: true } }); reload(); } catch { /* surfaced by ApiError */ } finally { setBusy(false); } };
-  const handleRequeue = async (id: string) => { if (busy) return; setBusy(true); try { await call(`/v1/proformas/${id}/reject`, { method: 'PUT', body: { reason: 'Requeued by delivery lead - scope needs client clarification' } }); reload(); } catch { /* noop */ } finally { setBusy(false); } };
+  const handleRequeue = async (id: string) => { if (busy) return; setBusy(true); try { await call(`/v1/proformas/${id}/reject`, { method: 'PUT', body: { reason: 'Requeued by delivery lead. Scope needs client clarification.' } }); reload(); } catch { /* noop */ } finally { setBusy(false); } };
 
   const raiseValid = !!newTicket.client_id && newTicket.description.trim().length >= 10;
   const handleRaise = async () => {
@@ -147,7 +147,7 @@ export function AdminPortal() {
               </div>
             </header>
 
-            {/* ── overview ── */}
+            {/* overview */}
             {tab === 'dashboard' && (
               <>
                 <div className="klp-kpis" style={cssVars({ gridTemplateColumns: 'repeat(2,1fr)' })}>
@@ -201,7 +201,7 @@ export function AdminPortal() {
                 )
             )}
 
-            {/* ── review ── */}
+            {/* review */}
             {tab === 'review' && (
               loading ? <SkelList rows={3} />
                 : reviewItems.length === 0 ? <EmptyState title="Nothing to review" sub="Every AI-drafted proforma has been dispatched. New drafts land here for approval." />
@@ -233,7 +233,7 @@ export function AdminPortal() {
                 )
             )}
 
-            {/* ── clients ── */}
+            {/* clients */}
             {tab === 'clients' && (
               loading ? <SkelList rows={5} />
                 : (
@@ -262,7 +262,7 @@ export function AdminPortal() {
                   )
             )}
 
-            {/* ── capacity ── */}
+            {/* capacity */}
             {tab === 'capacity' && (
               loading ? <SkelList rows={4} />
                 : !(capacityDetail?.staff ?? []).length ? <EmptyState title="No active allocation" sub="Delivery staff appear here once they have tasks in flight." />
@@ -282,7 +282,7 @@ export function AdminPortal() {
                 )
             )}
 
-            {/* ── services ── */}
+            {/* services */}
             {tab === 'services' && (
               loading ? <SkelList rows={5} />
                 : !(services ?? []).length ? <EmptyState title="No services provisioned" sub="Hosting, domains, SEO and cloud services appear here once set up for a client." />
@@ -300,7 +300,7 @@ export function AdminPortal() {
                 )
             )}
 
-            {/* ── rails ── */}
+            {/* rails */}
             {tab === 'rails' && (
               loading ? <SkelList rows={4} />
                 : !(rails ?? []).length ? <EmptyState title="No rail data" sub="Platform-rail health appears here once the API is reachable." />
@@ -327,7 +327,7 @@ export function AdminPortal() {
                 )
             )}
 
-            {/* ── health ── */}
+            {/* health */}
             {tab === 'health' && (
               <>
                 <section className="klp-portal-sec">
@@ -375,7 +375,7 @@ export function AdminPortal() {
         </div>
       </div>
 
-      {/* ── raise ticket modal ── */}
+      {/* raise ticket modal */}
       <div className={`klp-overlay ${showRaise ? 'open' : ''}`} onClick={(e) => { if (e.target === e.currentTarget) setShowRaise(false); }}>
         {showRaise && (
           <div className="klp-modal">
