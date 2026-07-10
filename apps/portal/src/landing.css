@@ -27,18 +27,23 @@
   text-rendering: optimizeLegibility;
 }
 .klp * { box-sizing: border-box; }
-/* subtle warm wash behind everything (light mode only - it reads as a murky
-   tint on the dark theme, so dark mode stays cleanly flat) */
+/* Brand haze: a page-wide wash. position: fixed means it can never widen the
+   document (no sideways scroll) and has no clip edges (no boxed-in vertical
+   lines). Teal top-left + amber top-right give the hero its colour behind the
+   headline and studio card; a faint teal sits bottom-right for depth. Same
+   palette, just delivered cleanly. */
 .klp::before {
   content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background-image:
-    radial-gradient(circle at 25% 12%, color-mix(in oklab, var(--amber) 16%, transparent), transparent 60%),
-    radial-gradient(circle at 82% 88%, color-mix(in oklab, var(--teal) 15%, transparent), transparent 60%);
+    radial-gradient(50% 48% at 15% 12%, color-mix(in oklab, var(--teal) 22%, transparent), transparent 62%),
+    radial-gradient(46% 44% at 92% 4%, color-mix(in oklab, var(--amber) 18%, transparent), transparent 62%),
+    radial-gradient(54% 48% at 86% 94%, color-mix(in oklab, var(--teal) 8%, transparent), transparent 58%);
 }
 [data-mode="dark"] .klp::before {
   background-image:
-    radial-gradient(circle at 25% 12%, color-mix(in oklab, var(--amber-deep) 8%, transparent), transparent 58%),
-    radial-gradient(circle at 82% 88%, color-mix(in oklab, var(--teal-deep) 9%, transparent), transparent 58%);
+    radial-gradient(50% 48% at 15% 12%, color-mix(in oklab, var(--teal-deep) 22%, transparent), transparent 60%),
+    radial-gradient(46% 44% at 92% 4%, color-mix(in oklab, var(--amber-deep) 13%, transparent), transparent 60%),
+    radial-gradient(54% 48% at 86% 94%, color-mix(in oklab, var(--teal-deep) 8%, transparent), transparent 58%);
 }
 .klp > * { position: relative; z-index: 1; }
 .klp ::selection { background: var(--amber); color: var(--ink); }
@@ -139,10 +144,10 @@
 .klp-cell { background: var(--card); border: 1px solid var(--hairline); border-radius: 20px; padding: 28px; transition: border-color .25s ease, box-shadow .25s ease, transform .25s ease; }
 @media (min-width: 768px) { .klp-cell { padding: 34px; } }
 @media (hover: hover) { .klp-cell:hover { border-color: color-mix(in oklab, var(--teal) 40%, var(--hairline)); box-shadow: 0 26px 60px -44px color-mix(in oklab, var(--teal-deep) 42%, transparent); transform: translateY(-2px); } }
-.klp-cell:hover { background: color-mix(in oklab, var(--paper) 78%, var(--card)); }
-.klp-cell h3 { margin-top: 16px; font-family: var(--font-serif); font-size: 24px; }
-.klp-cell p { margin-top: 16px; color: var(--slate); max-width: 28rem; }
-.klp-readmore { margin-top: 30px; display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--teal-deep); }
+.klp-cell .num { display: block; font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; color: var(--teal-deep); }
+.klp-cell h3 { margin-top: 12px; font-family: var(--font-serif); font-size: 24px; line-height: 1.08; letter-spacing: -.01em; }
+.klp-cell p { margin-top: 11px; color: var(--slate); font-size: 14.5px; line-height: 1.6; max-width: none; }
+.klp-readmore { margin-top: 22px; display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--teal-deep); }
 .klp-readmore span { transition: transform .25s ease; }
 .klp-readmore:hover span { transform: translateX(3px); }
 
@@ -494,30 +499,10 @@
 .klp-header .auth .klp-btn.ghost { border-color: var(--hairline); }
 @media (hover: hover) { .klp-header .auth .klp-btn.ghost:hover { border-color: var(--ink); } }
 
-/* ---- hero brand haze (soft, slow) ----
-   overflow: hidden clips the haze to the hero so its negative insets cannot
-   widen the document and cause sideways scroll. This is the reliable fix (works
-   on iOS Safari, unlike the body's overflow-x: clip). The gradients fade to
-   transparent well inside the hero, so the clip is invisible. Dark mode swaps to
-   the BRIGHT mint teal so the glow reads as clean luminance, not muddy olive. */
-.klp-hero { position: relative; overflow: hidden; }
-.klp-hero::before {
-  content: ""; position: absolute; inset: -12% -8% auto -8%; height: 640px; z-index: 0; pointer-events: none;
-  background:
-    radial-gradient(56% 68% at 22% 34%, color-mix(in oklab, var(--teal) 34%, transparent), transparent 70%),
-    radial-gradient(50% 60% at 84% 10%, color-mix(in oklab, var(--amber) 27%, transparent), transparent 70%);
-  filter: blur(22px);
-  animation: klp-haze 22s ease-in-out infinite alternate;
-}
-.klp-hero > * { position: relative; z-index: 1; }
-@keyframes klp-haze { from { transform: translate3d(0,0,0) scale(1); } to { transform: translate3d(1.5%, -1%, 0) scale(1.05); } }
-@media (prefers-reduced-motion: reduce) { .klp-hero::before { animation: none; } }
-[data-mode="dark"] .klp-hero::before {
-  background:
-    radial-gradient(52% 64% at 22% 34%, color-mix(in oklab, var(--teal-deep) 26%, transparent), transparent 66%),
-    radial-gradient(46% 56% at 86% 8%, color-mix(in oklab, var(--amber-deep) 14%, transparent), transparent 66%);
-  opacity: .62;
-}
+/* Hero is open and fluid - no clipping, no boxed edges. The brand glow lives in
+   the fixed page-wash (.klp::before) above, which cannot cause scroll or clip
+   lines. */
+.klp-hero { position: relative; }
 
 /* ---- focus rings + tactile press (micro-details) ---- */
 .klp button:focus-visible, .klp a:focus-visible, .klp input:focus-visible, .klp select:focus-visible, .klp textarea:focus-visible, .klp .klp-rp-card:focus-visible { outline: 2px solid var(--teal-deep); outline-offset: 3px; border-radius: 6px; }
@@ -969,7 +954,7 @@
   .klp-why-card { padding: 24px 22px; }
   .klp-compare-col { padding: 26px; }
   .klp-herocard { padding: 24px; }
-  .klp-cell { padding: 26px 0; }
+  .klp-cell { padding: 24px; }
 
   /* section headings scale down without losing presence */
   .klp-display-lg { font-size: clamp(32px, 9vw, 44px); }

@@ -13,10 +13,11 @@ import './landing.css';
 
 const cssVars = (v: Record<string, string | number>) => v as CSSProperties;
 
-// Ordered to match the page's story: Services 01 -> About 02 -> Process 03 -> Pricing 04 -> Contact 05.
+// Page narrative order (founder-directed): About 01 -> Services 02 -> Process 03
+// -> Pricing 04 -> Contact 05.
 const NAV = [
-  { id: 'services', label: 'Services' },
   { id: 'about', label: 'About' },
+  { id: 'services', label: 'Services' },
   { id: 'process', label: 'Process' },
   { id: 'pricing', label: 'Pricing' },
   { id: 'contact', label: 'Contact' },
@@ -245,36 +246,12 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
           </div>
         </section>
 
-        {/* services */}
-        <section className="klp-container klp-section" id="services">
-          <div className="klp-sec-head klp-reveal">
-            <div className="h">
-              <span className="klp-eyebrow teal">Services · 01</span>
-              <h2 className="klp-display-lg">Four disciplines,<br /><em>one team.</em></h2>
-            </div>
-            <p className="klp-lead p" style={cssVars({ alignSelf: 'end' })}>
-              We deliberately kept the studio small. Every client works with the same designer, engineer and
-              account lead from first call through year three of hosting.
-            </p>
-          </div>
-          <div className="klp-grid-cells klp-reveal">
-            {SERVICES.map((s) => (
-              <article key={s.n} className="klp-cell">
-                <div className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>{s.n}</div>
-                <h3>{s.title}</h3>
-                <p>{s.body}</p>
-                <a className="klp-readmore" onClick={onSignIn} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSignIn(); } }}>Read more <span>→</span></a>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {/* philosophy band */}
+        {/* about / philosophy band */}
         <section className="klp-band" id="about">
           <div className="klp-container klp-section">
             <div className="klp-band-grid">
               <div className="l">
-                <span className="klp-mono eb">Philosophy · 02</span>
+                <span className="klp-mono eb">Philosophy · 01</span>
                 <h2 className="klp-display-lg">We treat your site<br /><em style={cssVars({ color: 'var(--amber)' })}>like infrastructure.</em></h2>
               </div>
               <div className="r klp-reveal">
@@ -305,6 +282,30 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* services */}
+        <section className="klp-container klp-section" id="services">
+          <div className="klp-sec-head klp-reveal">
+            <div className="h">
+              <span className="klp-eyebrow teal">Services · 02</span>
+              <h2 className="klp-display-lg">Four disciplines,<br /><em>one team.</em></h2>
+            </div>
+            <p className="klp-lead p" style={cssVars({ alignSelf: 'end' })}>
+              We deliberately kept the studio small. Every client works with the same designer, engineer and
+              account lead from first call through year three of hosting.
+            </p>
+          </div>
+          <div className="klp-grid-cells klp-reveal">
+            {SERVICES.map((s) => (
+              <article key={s.n} className="klp-cell">
+                <span className="num">{s.n}</span>
+                <h3>{s.title}</h3>
+                <p>{s.body}</p>
+                <a className="klp-readmore" onClick={onSignIn} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSignIn(); } }}>Read more <span>→</span></a>
+              </article>
+            ))}
           </div>
         </section>
 
