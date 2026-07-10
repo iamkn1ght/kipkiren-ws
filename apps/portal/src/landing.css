@@ -219,10 +219,9 @@
 @media (hover: hover) { .klp-foot-social a:hover { border-color: var(--teal-deep); color: var(--teal-deep); transform: translateY(-2px); } }
 
 /* three columns */
-/* mobile-first: Studio + Legal side by side, Contact full-width below them */
-.klp-foot-cols { margin-top: 36px; display: grid; grid-template-columns: 1fr 1fr; gap: 32px 20px; }
-.klp-foot-contact { grid-column: 1 / -1; }
-@media (min-width: 768px) { .klp-foot-cols { grid-template-columns: 1fr 1fr 1.5fr; gap: 44px; } .klp-foot-contact { grid-column: auto; } }
+/* three columns at every width: Studio | Legal | Contact */
+.klp-foot-cols { margin-top: 36px; display: grid; grid-template-columns: 0.85fr 0.8fr 1.15fr; gap: 26px 12px; }
+@media (min-width: 768px) { .klp-foot-cols { grid-template-columns: 1fr 1fr 1.5fr; gap: 44px; } }
 .klp-foot-col .h { color: var(--mid); margin-bottom: 16px; }
 .klp-foot-col ul { display: flex; flex-direction: column; gap: 12px; }
 .klp-foot-col button, .klp-foot-col a { background: none; border: none; padding: 0; margin: 0; cursor: pointer; font: inherit; font-size: 14px; text-align: left; color: var(--slate); transition: color .18s; }
@@ -984,7 +983,14 @@
   .klp-stats { grid-template-columns: 1fr 1fr; gap: 30px 20px; }
   .klp-statband .klp-stat .n, .klp-stat .n { font-size: clamp(38px, 12vw, 52px); }
 
-  /* footer: lighter on a phone (columns handled mobile-first above) */
+  /* footer: three tight columns fit cleanly on a phone */
   .klp-footer { padding-top: 44px; padding-bottom: 40px; }
   .klp-footbar { flex-direction: row; align-items: center; gap: 12px; }
+  .klp-foot-cols { gap: 22px 10px; }
+  .klp-foot-col .h { font-size: 9px; letter-spacing: .16em; margin-bottom: 12px; }
+  .klp-foot-col ul { gap: 10px; }
+  .klp-foot-col button, .klp-foot-col a { font-size: 13px; }
+  .klp-foot-contact ul { gap: 12px; }
+  .klp-foot-contact li { font-size: 12px; gap: 8px; line-height: 1.35; }
+  .klp-foot-contact .fi { width: 15px; height: 15px; }
 }
