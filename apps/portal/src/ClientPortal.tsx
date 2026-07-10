@@ -6,7 +6,7 @@
  * honestly at the Kipkiren Pay activation point (the single known failure).
  */
 
-import { useState, type FormEvent, type CSSProperties } from 'react';
+import { useState, type FormEvent, type CSSProperties, type ReactNode } from 'react';
 import { useAuth, useApi } from './auth.tsx';
 import { KlpToggle } from './klpTheme.tsx';
 import {
@@ -30,6 +30,47 @@ const VIEW_TITLE: Record<View, string> = {
 const cssVars = (v: Record<string, string | number>) => v as CSSProperties;
 const fmtDate = (iso: string | null) => iso ? new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
 
+function greeting(): string {
+  const h = new Date().getHours();
+  return h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
+}
+
+// Minimal line icons for the empty states (stroke = currentColor).
+const ICONS: Record<'ticket' | 'order' | 'proforma' | 'service', ReactNode> = {
+  ticket: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v1.4a2 2 0 0 0 0 5.2V16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1.4a2 2 0 0 0 0-5.2V8Z" />
+      <path d="M14 6.5v11" strokeDasharray="1.5 2.6" />
+    </svg>
+  ),
+  order: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z" /><path d="M9 8.5h6M9 12.5h4" />
+    </svg>
+  ),
+  proforma: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 3h7l4 4v14H7V3Z" /><path d="M14 3v4h4M9.5 13l1.8 1.8L15 11" />
+    </svg>
+  ),
+  service: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3 4 7v10l8 4 8-4V7l-8-4Z" /><path d="M4 7l8 4 8-4M12 21V11" />
+    </svg>
+  ),
+};
+
+function EmptyState({ icon, title, body, cta, onCta }: { icon: ReactNode; title: string; body: string; cta?: string; onCta?: () => void }) {
+  return (
+    <div className="klp-empty">
+      <div className="klp-empty-ic" aria-hidden="true">{icon}</div>
+      <div className="klp-empty-t">{title}</div>
+      <p className="klp-empty-b">{body}</p>
+      {cta && onCta && <button type="button" className="klp-btn primary" onClick={onCta}>{cta}</button>}
+    </div>
+  );
+}
+
 function ticketPill(status: string): { cls: string; label: string } {
   if (status === 'complete' || status === 'closed') return { cls: 'closed', label: status };
   if (status === 'in_progress') return { cls: 'progress', label: 'In progress' };
@@ -51,7 +92,7 @@ export function ClientPortal() {
 
   return (
     <div className="klp">
-      <div className="klp-topbrand klp-container">
+      <div className="klp-topbrand klp-portal-top klp-container">
         <span className="mark">K</span>
         <span className="name">Kipkiren<small>WEB SERVICES</small></span>
         <div className="klp-topbrand-r">
@@ -87,11 +128,10 @@ export function ClientPortal() {
           {/* content */}
           <div className="klp-portal-content">
             <header className="klp-portal-head">
-              <div style={cssVars({ minWidth: 0 })}>
+              <div className="klp-portal-greet">
                 <div className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>{VIEW_TITLE[view]}</div>
-                <h1 className="klp-display-md">
-                  {view === 'overview' ? <>Good day, {name}.</> : VIEW_TITLE[view]}
-                </h1>
+                <h1 className="klp-display-md">{view === 'overview' ? greeting() : VIEW_TITLE[view]}</h1>
+                {view === 'overview' && <p className="klp-portal-sub">Welcome back. Everything across your projects and services, in one place.</p>}
               </div>
               <div className="actions">
                 {view !== 'new' && <button type="button" className="klp-btn primary" onClick={() => setView('new')}>New ticket</button>}
@@ -135,47 +175,59 @@ function Overview({ name, tickets, invoices, openCount, activeCount, awaitingCou
 }) {
   void name;
   if (loading) return <OverviewSkeleton />;
+  const recentTickets = tickets ?? [];
+  const recentOrders = invoices ?? [];
   return (
     <>
       <div className="klp-kpis">
-        <div className="klp-card klp-kpi"><div className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>Open tickets</div><div className="n">{loading ? '-' : openCount}</div></div>
-        <div className="klp-card klp-kpi"><div className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>Active services</div><div className="n">{loading ? '-' : activeCount}</div></div>
-        <div className="klp-card klp-kpi"><div className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>Awaiting approval</div><div className={`n ${awaitingCount ? 'amber' : ''}`}>{loading ? '-' : awaitingCount}</div></div>
+        <button type="button" className="klp-card klp-kpi" onClick={() => onNav('tickets')}>
+          <span className="klp-mono lbl">Open tickets</span><span className="n">{openCount}</span>
+        </button>
+        <button type="button" className="klp-card klp-kpi" onClick={() => onNav('services')}>
+          <span className="klp-mono lbl">Active services</span><span className="n">{activeCount}</span>
+        </button>
+        <button type="button" className="klp-card klp-kpi" onClick={() => onNav('proformas')}>
+          <span className="klp-mono lbl">Awaiting approval</span><span className={`n ${awaitingCount ? 'amber' : ''}`}>{awaitingCount}</span>
+        </button>
       </div>
 
       <section className="klp-portal-sec">
-        <div className="sechd"><h2>Recent tickets</h2><button type="button" onClick={() => onNav('tickets')}>View all →</button></div>
-        <div className="klp-list">
-          {loading ? <div className="klp-list-empty">Loading...</div>
-            : !(tickets ?? []).length ? <div className="klp-list-empty">No tickets yet.</div>
-            : (tickets ?? []).slice(0, 4).map((t) => {
-              const p = ticketPill(t.status);
-              return (
-                <div key={t.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: 'minmax(120px,auto) 1fr auto auto' })}>
-                  <span className="ref">{t.ref}</span>
-                  <span className="title">{t.description}</span>
-                  <span className={`klp-pill ${p.cls}`}>{p.label}</span>
-                  <span className="date">{fmtDate(t.created_at)}</span>
-                </div>
-              );
-            })}
-        </div>
+        <div className="sechd"><h2>Recent tickets</h2>{recentTickets.length > 0 && <button type="button" onClick={() => onNav('tickets')}>View all →</button>}</div>
+        {recentTickets.length === 0
+          ? <EmptyState icon={ICONS.ticket} title="No tickets yet" body="Create your first request and we'll turn it into a fixed-scope proforma before any work begins." cta="New ticket" onCta={() => onNav('new')} />
+          : (
+            <div className="klp-list">
+              {recentTickets.slice(0, 4).map((t) => {
+                const p = ticketPill(t.status);
+                return (
+                  <div key={t.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: 'minmax(120px,auto) 1fr auto auto' })}>
+                    <span className="ref">{t.ref}</span>
+                    <span className="title">{t.description}</span>
+                    <span className={`klp-pill ${p.cls}`}>{p.label}</span>
+                    <span className="date">{fmtDate(t.created_at)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
       </section>
 
       <section className="klp-portal-sec">
-        <div className="sechd"><h2>Recent orders</h2><button type="button" onClick={() => onNav('invoices')}>View all →</button></div>
-        <div className="klp-list">
-          {loading ? <div className="klp-list-empty">Loading...</div>
-            : !(invoices ?? []).length ? <div className="klp-list-empty">No orders yet.</div>
-            : (invoices ?? []).slice(0, 4).map((i) => (
-              <div key={i.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: 'minmax(120px,auto) 1fr auto auto' })}>
-                <span className="ref">{i.ref}</span>
-                <span className="title">{i.kind === 'retainer' ? 'Monthly retainer' : i.kind === 'onboarding' ? 'Onboarding' : 'Task charge'}</span>
-                <span className="amt">KES {formatKes(i.total_kes)}</span>
-                <span className={`klp-pill ${i.paid_at ? 'paid' : 'pending'}`}>{i.paid_at ? 'Paid' : 'Due'}</span>
-              </div>
-            ))}
-        </div>
+        <div className="sechd"><h2>Recent orders</h2>{recentOrders.length > 0 && <button type="button" onClick={() => onNav('invoices')}>View all →</button>}</div>
+        {recentOrders.length === 0
+          ? <EmptyState icon={ICONS.order} title="No orders yet" body="Approved proformas and paid invoices will show up here as your work gets underway." />
+          : (
+            <div className="klp-list">
+              {recentOrders.slice(0, 4).map((i) => (
+                <div key={i.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: 'minmax(120px,auto) 1fr auto auto' })}>
+                  <span className="ref">{i.ref}</span>
+                  <span className="title">{i.kind === 'retainer' ? 'Monthly retainer' : i.kind === 'onboarding' ? 'Onboarding' : 'Task charge'}</span>
+                  <span className="amt">KES {formatKes(i.total_kes)}</span>
+                  <span className={`klp-pill ${i.paid_at ? 'paid' : 'pending'}`}>{i.paid_at ? 'Paid' : 'Due'}</span>
+                </div>
+              ))}
+            </div>
+          )}
       </section>
     </>
   );
@@ -184,21 +236,21 @@ function Overview({ name, tickets, invoices, openCount, activeCount, awaitingCou
 //  tickets list 
 function TicketList({ tickets, loading, onNew }: { tickets: ClientTicket[] | null; loading: boolean; onNew: () => void }) {
   const rows = tickets ?? [];
+  if (loading) return <div className="klp-list"><div className="klp-list-empty">Loading...</div></div>;
+  if (rows.length === 0) return <EmptyState icon={ICONS.ticket} title="No tickets yet" body="Create your first request and we'll turn it into a fixed-scope proforma before any work begins." cta="New ticket" onCta={onNew} />;
   return (
     <div className="klp-list">
-      {loading ? <div className="klp-list-empty">Loading...</div>
-        : rows.length === 0 ? <div className="klp-list-empty">No tickets yet. <button type="button" className="klp-back" onClick={onNew}>Open one →</button></div>
-        : rows.map((t) => {
-          const p = ticketPill(t.status);
-          return (
-            <div key={t.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: 'minmax(120px,auto) 1fr auto auto' })}>
-              <span className="ref">{t.ref}</span>
-              <span className="title">{t.description}</span>
-              <span className={`klp-pill ${p.cls}`}>{p.label}</span>
-              <span className="date">{fmtDate(t.created_at)}</span>
-            </div>
-          );
-        })}
+      {rows.map((t) => {
+        const p = ticketPill(t.status);
+        return (
+          <div key={t.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: 'minmax(120px,auto) 1fr auto auto' })}>
+            <span className="ref">{t.ref}</span>
+            <span className="title">{t.description}</span>
+            <span className={`klp-pill ${p.cls}`}>{p.label}</span>
+            <span className="date">{fmtDate(t.created_at)}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -206,19 +258,19 @@ function TicketList({ tickets, loading, onNew }: { tickets: ClientTicket[] | nul
 //  invoices / orders list 
 function InvoiceList({ invoices, loading }: { invoices: ClientInvoice[] | null; loading: boolean }) {
   const rows = invoices ?? [];
+  if (loading) return <div className="klp-list"><div className="klp-list-empty">Loading...</div></div>;
+  if (rows.length === 0) return <EmptyState icon={ICONS.order} title="No orders yet" body="Approved proformas and paid invoices will show up here as your work gets underway." />;
   return (
     <div className="klp-list">
-      {loading ? <div className="klp-list-empty">Loading...</div>
-        : rows.length === 0 ? <div className="klp-list-empty">No orders yet.</div>
-        : rows.map((i) => (
-          <div key={i.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: 'minmax(120px,auto) 1fr auto auto auto' })}>
-            <span className="ref">{i.ref}</span>
-            <span className="title">{i.kind === 'retainer' ? 'Monthly retainer' : i.kind === 'onboarding' ? 'Onboarding' : 'Task charge'}</span>
-            <span className="date">{fmtDate(i.issued_at)}</span>
-            <span className="amt">KES {formatKes(i.total_kes)}</span>
-            <span className={`klp-pill ${i.paid_at ? 'paid' : 'pending'}`}>{i.paid_at ? 'Paid' : 'Due'}</span>
-          </div>
-        ))}
+      {rows.map((i) => (
+        <div key={i.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: 'minmax(120px,auto) 1fr auto auto auto' })}>
+          <span className="ref">{i.ref}</span>
+          <span className="title">{i.kind === 'retainer' ? 'Monthly retainer' : i.kind === 'onboarding' ? 'Onboarding' : 'Task charge'}</span>
+          <span className="date">{fmtDate(i.issued_at)}</span>
+          <span className="amt">KES {formatKes(i.total_kes)}</span>
+          <span className={`klp-pill ${i.paid_at ? 'paid' : 'pending'}`}>{i.paid_at ? 'Paid' : 'Due'}</span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -226,22 +278,22 @@ function InvoiceList({ invoices, loading }: { invoices: ClientInvoice[] | null; 
 //  services list 
 function ServiceList({ services, loading }: { services: import('./useClientData.ts').ClientService[] | null; loading: boolean }) {
   const rows = services ?? [];
+  if (loading) return <div className="klp-list"><div className="klp-list-empty">Loading...</div></div>;
+  if (rows.length === 0) return <EmptyState icon={ICONS.service} title="No services yet" body="Websites, hosting and domains we manage for you will be listed here once they're live." />;
   return (
     <div className="klp-list">
-      {loading ? <div className="klp-list-empty">Loading...</div>
-        : rows.length === 0 ? <div className="klp-list-empty">No services provisioned yet.</div>
-        : rows.map((s) => {
-          const domain = (s.metadata as { domain?: string }).domain;
-          const expiring = s.status === 'expiring' || s.status === 'expired';
-          return (
-            <div key={s.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: 'minmax(160px,auto) 1fr auto auto' })}>
-              <span className="title" style={cssVars({ fontSize: 17 })}>{serviceTypeLabel(s.service_type)}</span>
-              <span className="date" style={cssVars({ fontSize: 12 })}>{domain ?? '-'}</span>
-              <span className="amt">KES {formatKes(s.monthly_cost_kes)}/mo</span>
-              <span className={`klp-pill ${expiring ? 'warn' : 'active'}`}>{expiring ? 'Renew soon' : 'Active'}</span>
-            </div>
-          );
-        })}
+      {rows.map((s) => {
+        const domain = (s.metadata as { domain?: string }).domain;
+        const expiring = s.status === 'expiring' || s.status === 'expired';
+        return (
+          <div key={s.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: 'minmax(160px,auto) 1fr auto auto' })}>
+            <span className="title" style={cssVars({ fontSize: 17 })}>{serviceTypeLabel(s.service_type)}</span>
+            <span className="date" style={cssVars({ fontSize: 12 })}>{domain ?? '-'}</span>
+            <span className="amt">KES {formatKes(s.monthly_cost_kes)}/mo</span>
+            <span className={`klp-pill ${expiring ? 'warn' : 'active'}`}>{expiring ? 'Renew soon' : 'Active'}</span>
+          </div>
+        );
+      })}
     </div>
   );
 }

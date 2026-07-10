@@ -1051,50 +1051,108 @@
 .klp-field-help { margin-top: 6px; font-size: 11.5px; color: var(--mid); line-height: 1.45; }
 
 /* ============================================================================
-   CLIENT PORTAL - MOBILE (nav as a horizontal tab bar; reflowed list rows)
+   CLIENT PORTAL - MOBILE + TABLET  (< 1024px only; desktop composition untouched)
+   A native-app layout, not a squeezed desktop: compact toolbar, sticky scroll-snap
+   tab rail, full-width tappable stat cards, premium empty states, fluid type,
+   8-point rhythm, safe-area aware.
    ============================================================================ */
-.klp-portal-signout-top { display: none; }
 
+/* ---- shared (all widths): behaviours correct everywhere ---- */
+.klp-portal-signout-top { display: none; }
+.klp-portal-sub { display: none; }                 /* mobile-only; revealed < 1024 */
+
+/* KPI cards are buttons now: reset chrome + make them real tap targets */
+.klp-kpi { -webkit-appearance: none; appearance: none; width: 100%; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.klp-kpi .lbl { display: block; color: var(--mid); }
+.klp-kpi .n { display: block; }
+@media (hover: hover) { .klp-kpi:hover { border-color: color-mix(in oklab, var(--ink) 22%, var(--hairline)); } }
+
+/* Premium empty state (shared - reads well on desktop too) */
+.klp-empty { display: grid; justify-items: center; text-align: center; gap: 2px; padding: clamp(32px, 7vw, 56px) 24px; border: 1px solid var(--hairline); border-radius: 20px; background: color-mix(in oklab, var(--card) 94%, var(--paper)); }
+.klp-empty-ic { display: grid; place-items: center; height: 56px; width: 56px; margin-bottom: 14px; border-radius: 16px; background: var(--muted); color: var(--mid); }
+.klp-empty-ic svg { height: 26px; width: 26px; }
+.klp-empty-t { font-family: var(--font-serif); font-size: clamp(19px, 4.6vw, 22px); letter-spacing: -.01em; }
+.klp-empty-b { color: var(--mid); font-size: 14.5px; line-height: 1.55; max-width: 36ch; margin: 4px 0 18px; }
+
+/* ---------- < 1024px: tablet + phone ---------- */
 @media (max-width: 1023.98px) {
-  /* The sidebar becomes a compact, horizontally-scrollable tab bar at the top
-     instead of a tall vertical list dumped above the content. Sign out moves to
-     the brand bar; the redundant "Open a ticket" button + email are dropped
-     (the content header already carries "New ticket"). */
-  .klp-portal { padding-top: 18px; }
-  .klp-portal-layout { gap: 6px; }
-  .klp-portal-aside { position: sticky; top: 0; z-index: 20; background: var(--paper); padding-top: 6px; margin-bottom: 8px; border-bottom: 1px solid var(--hairline); }
+  /* Toolbar: compact, vertically centred, safe-area aware (~64px) */
+  .klp-portal-top.klp-topbrand { min-height: 64px; align-items: center; gap: 12px; padding-block: 8px; padding-top: max(8px, env(safe-area-inset-top)); margin-bottom: 0; }
+  .klp-portal-top .mark { height: 34px; width: 34px; font-size: 16px; box-shadow: none; }
+  .klp-portal-top .name { font-size: 12px; letter-spacing: .13em; font-weight: 600; }
+  .klp-portal-top .name small { font-size: 8px; letter-spacing: .26em; }
+
+  .klp-portal { padding-top: 0; padding-bottom: calc(48px + env(safe-area-inset-bottom)); }
+  .klp-portal-layout { display: block; gap: 0; }
+
+  /* Nav: sticky, scroll-snapping horizontal tab rail (hidden scrollbar) */
+  .klp-portal-aside { position: sticky; top: 0; z-index: 20; background: var(--paper); border-bottom: 1px solid var(--hairline); }
   .klp-portal-aside .lbl { display: none; }
-  .klp-portal-nav { display: flex; gap: 2px; overflow-x: auto; border-top: none; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .klp-portal-nav { display: flex; gap: 2px; overflow-x: auto; border-top: none; scrollbar-width: none; -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity; overscroll-behavior-x: contain; }
   .klp-portal-nav::-webkit-scrollbar { display: none; }
-  .klp-portal-nav button { width: auto; flex: 0 0 auto; justify-content: center; gap: 6px; padding: 12px 14px; border-bottom: 2px solid transparent; white-space: nowrap; letter-spacing: .14em; }
+  .klp-portal-nav button { scroll-snap-align: start; flex: 0 0 auto; width: auto; justify-content: center; gap: 6px; min-height: 48px; padding: 12px 15px; border-bottom: 2px solid transparent; white-space: nowrap; font-size: 11px; letter-spacing: .12em; }
   .klp-portal-nav button.active { border-bottom-color: var(--teal-deep); }
-  /* hide the overview arrow in the tab (keep numeric badges) */
   .klp-portal-nav button span:not(:first-child):not(.badge) { display: none; }
   .klp-portal-foot { display: none; }
-  .klp-portal-signout-top { display: inline-block; background: none; border: none; cursor: pointer; font-family: var(--font-mono); font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--mid); padding: 0; transition: color .2s; }
-  .klp-portal-signout-top:hover { color: var(--teal-deep); }
+  .klp-portal-signout-top { display: inline-flex; align-items: center; min-height: 40px; padding: 0; background: none; border: none; cursor: pointer; font-family: var(--font-mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--mid); }
+  .klp-portal-signout-top:active { color: var(--teal-deep); }
 
-  /* tighten the generous desktop spacing on small screens */
-  .klp-portal-head { padding-bottom: 20px; margin-bottom: 26px; }
-  .klp-portal-sec { margin-bottom: 34px; }
-  .klp-portal-sec .sechd h2 { font-size: 23px; }
-  .klp-kpis { margin-bottom: 30px; }
+  /* Greeting header: stack, drop the desktop divider, reveal the subtitle */
+  .klp-portal-content { padding-top: 24px; }
+  .klp-portal-head { display: block; padding-bottom: 0; margin-bottom: 24px; border-bottom: none; }
+  .klp-portal-head h1 { margin-top: 6px; }
+  .klp-portal-sub { display: block; margin-top: 8px; color: var(--mid); font-size: 15px; line-height: 1.5; max-width: 42ch; }
+  .klp-portal-head .actions { margin-top: 20px; }
+
+  /* Section + KPI rhythm */
+  .klp-portal-sec { margin-bottom: 32px; }
+  .klp-portal-sec .sechd { margin-bottom: 16px; }
+  .klp-portal-sec .sechd h2 { font-size: clamp(20px, 5.4vw, 24px); }
+  .klp-kpis { margin-bottom: 28px; gap: 12px; }
+
+  /* Touch-friendly buttons across the portal */
+  .klp-portal .klp-btn { min-height: 50px; padding-block: 15px; }
 }
 
-@media (max-width: 640px) {
-  /* KPIs as a compact 3-across stat strip rather than three tall stacked cards */
-  .klp-kpis { grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .klp-kpi { padding: 14px 12px; }
-  .klp-kpi .n { font-size: 30px; margin-top: 6px; }
+/* Tablet: 2-column stats (desktop keeps 3 columns at >= 1024) */
+@media (min-width: 768px) and (max-width: 1023.98px) {
+  .klp-kpis { grid-template-columns: repeat(2, 1fr); }
+}
 
-  /* List rows reflow from a fixed multi-column grid (set inline per row) into a
-     wrapped card: title on top, meta (ref / date / amount / status) beneath.
-     Switching display:grid -> flex makes the inline grid-template-columns inert,
-     so the reflow works without !important. */
+/* ---------- <= 640px: phone ---------- */
+@media (max-width: 640px) {
+  /* Tighter page gutter */
+  .klp-container.klp-portal, .klp-container.klp-portal-top { padding-inline: 20px; }
+
+  /* Stats: full-width, glanceable rows (label left, big number right) */
+  .klp-kpis { grid-template-columns: 1fr; gap: 12px; }
+  .klp-kpi { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 22px; }
+  .klp-kpi .lbl { font-size: 12px; }
+  .klp-kpi .n { margin-top: 0; font-size: clamp(30px, 9vw, 38px); }
+
+  /* Primary CTA becomes full-width */
+  .klp-portal-head .actions { display: flex; }
+  .klp-portal-head .actions .klp-btn.primary { flex: 1 1 auto; width: 100%; justify-content: center; }
+
+  /* List rows reflow from an inline multi-column grid into a stacked card:
+     title on top, meta (ref / date / amount / status) beneath. Switching
+     display grid -> flex makes the inline grid-template-columns inert. */
+  .klp-list { border-radius: 16px; }
   .klp-list-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 16px; }
   .klp-list-row .title { order: 1; flex: 1 1 100%; white-space: normal; overflow: visible; text-overflow: clip; font-size: 16px; line-height: 1.35; }
-  .klp-list-row .ref { order: 2; }
+  .klp-list-row .ref  { order: 2; }
   .klp-list-row .date { order: 3; }
-  .klp-list-row .amt { order: 4; }
+  .klp-list-row .amt  { order: 4; }
   .klp-list-row .klp-pill { order: 5; margin-left: auto; }
+}
+
+/* ---------- small phones ---------- */
+@media (max-width: 380px) {
+  .klp-container.klp-portal, .klp-container.klp-portal-top { padding-inline: 16px; }
+  .klp-portal-top .name small { display: none; }
+  .klp-kpi .n { font-size: 30px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .klp-portal-nav { scroll-behavior: auto; scroll-snap-type: none; }
 }
