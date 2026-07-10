@@ -364,15 +364,23 @@ function NewTicket({ onDone }: { onDone: () => void }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const trimmed = desc.trim();
+  const MIN = 10;
+  const remaining = MIN - trimmed.length;             // > 0 while still too short
+  const canSubmit = trimmed.length >= MIN && !submitting;
+
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!desc.trim() || submitting) return;
+    if (!canSubmit) return;
     setSubmitting(true); setError(null);
     try {
-      await call('/v1/tickets', { method: 'POST', body: { description: desc.trim(), category: CATEGORY_MAP[category] ?? 'web', urgency: URGENCY_MAP[urgency] ?? 'standard' } });
+      await call('/v1/tickets', { method: 'POST', body: { description: trimmed, category: CATEGORY_MAP[category] ?? 'web', urgency: URGENCY_MAP[urgency] ?? 'standard' } });
       onDone();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Submission failed');
+      const e2 = err as { code?: string; status?: number };
+      if (e2?.code === 'invalid_input') setError('Please add a little more detail so we can scope it properly (at least 10 characters).');
+      else if (e2?.code === 'rate_limited') setError('You have sent a few requests in a short time. Please try again in a little while.');
+      else setError('We could not submit that just now. Check your connection and try again.');
     } finally { setSubmitting(false); }
   };
 
@@ -383,7 +391,8 @@ function NewTicket({ onDone }: { onDone: () => void }) {
           <label className="klp-field-label" htmlFor="nt-desc">Describe your request</label>
           <textarea id="nt-desc" className="klp-field-input" style={cssVars({ minHeight: 140, resize: 'vertical' })}
             placeholder="e.g. Add a services page with an intro, what we offer, a pricing table, and a contact form."
-            value={desc} onChange={(e) => setDesc(e.target.value)} disabled={submitting} />
+            value={desc} onChange={(e) => setDesc(e.target.value)} disabled={submitting} aria-describedby="nt-desc-hint" />
+          <p id="nt-desc-hint" className="klp-field-help">{remaining > 0 && trimmed.length > 0 ? `A little more detail helps us scope it. ${remaining} more character${remaining === 1 ? '' : 's'}.` : 'The more detail you give, the more accurate your proforma.'}</p>
         </div>
         <div className="klp-dl" style={cssVars({ background: 'transparent', border: 'none', borderRadius: 0, gap: 16 })}>
           <div style={cssVars({ background: 'transparent', padding: 0 })}>
@@ -400,7 +409,7 @@ function NewTicket({ onDone }: { onDone: () => void }) {
           </div>
         </div>
         {error && <div className="klp-auth-error">{error}</div>}
-        <button type="submit" className="klp-btn primary" style={cssVars({ alignSelf: 'flex-start' })} disabled={submitting || !desc.trim()}>
+        <button type="submit" className="klp-btn primary" style={cssVars({ alignSelf: 'flex-start' })} disabled={!canSubmit}>
           {submitting ? 'Submitting...' : 'Submit request →'}
         </button>
       </form>

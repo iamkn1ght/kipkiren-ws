@@ -99,10 +99,13 @@ export function AdminPortal() {
 
   return (
     <div className="klp">
-      <div className="klp-topbrand klp-container">
+      <div className="klp-topbrand klp-portal-top klp-container">
         <span className="mark">K</span>
         <span className="name">Kipkiren<small>WEB SERVICES</small></span>
-        <div className="klp-topbrand-r"><KlpToggle /></div>
+        <div className="klp-topbrand-r">
+          <KlpToggle />
+          <button type="button" className="klp-portal-signout-top" onClick={() => void signOut()}>Sign out</button>
+        </div>
       </div>
 
       <div className="klp-container klp-portal">
