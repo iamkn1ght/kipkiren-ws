@@ -106,7 +106,7 @@ const IconUser = () => (<svg className="fi" viewBox="0 0 24 24" fill="none" stro
 const IconLinkedIn = () => (<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9h4v12H3V9Zm6 0h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V21h-4v-5.4c0-1.3 0-2.95-1.8-2.95-1.8 0-2.08 1.4-2.08 2.85V21H9V9Z" /></svg>);
 const IconInstagram = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="3.5" y="3.5" width="17" height="17" rx="5" /><circle cx="12" cy="12" r="3.8" /><circle cx="17.3" cy="6.7" r="1.1" fill="currentColor" stroke="none" /></svg>);
 
-export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: (id: LegalDocId) => void }) {
+export function Landing({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; onSignUp: () => void; onLegal: (id: LegalDocId) => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [openService, setOpenService] = useState<number | null>(null);
@@ -148,7 +148,7 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
           <div className="auth">
             <KlpToggle />
             <button type="button" className="klp-btn ghost" onClick={onSignIn}>Sign in</button>
-            <button type="button" className="klp-btn primary" onClick={onSignIn}>Start a project</button>
+            <button type="button" className="klp-btn primary" onClick={onSignUp}>Start a project</button>
             <button type="button" className="klp-burger" aria-label="Open menu" aria-expanded={menuOpen} aria-controls="klp-mobile-nav" onClick={() => setMenuOpen(true)}><span className="bl" /></button>
           </div>
         </div>
@@ -191,7 +191,7 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
           <div className="klp-msheet-foot" style={cssVars({ '--i': 8 })}>
             <div className="klp-msheet-label">Get started</div>
             <div className="klp-msheet-cta">
-              <button type="button" className="klp-btn primary" onClick={() => { setMenuOpen(false); onSignIn(); }}>Start a project</button>
+              <button type="button" className="klp-btn primary" onClick={() => { setMenuOpen(false); onSignUp(); }}>Start a project</button>
               <button type="button" className="klp-btn ghost" onClick={() => { setMenuOpen(false); onSignIn(); }}>Sign in</button>
             </div>
             <a className="klp-msheet-contact" href="mailto:studio@kipkiren.co.ke">studio@kipkiren.co.ke · Nairobi</a>
@@ -381,7 +381,7 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
                 <ul className="klp-plan-feats">
                   {p.feats.map((f) => <li key={f}><span className="m" />{f}</li>)}
                 </ul>
-                <button type="button" className={`klp-btn ${p.featured ? 'primary' : 'ghost'}`} onClick={onSignIn}>{p.cta}</button>
+                <button type="button" className={`klp-btn ${p.featured ? 'primary' : 'ghost'}`} onClick={onSignUp}>{p.cta}</button>
               </div>
             ))}
           </div>

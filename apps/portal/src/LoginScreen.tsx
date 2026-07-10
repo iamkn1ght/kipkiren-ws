@@ -37,7 +37,7 @@ const INTRO: Record<PortalRole, { eyebrow: string; hint: string; list: string[] 
   },
 };
 
-export function LoginScreen({ role, onBack }: { role: PortalRole; onBack: () => void }) {
+export function LoginScreen({ role, onBack, onCreateAccount }: { role: PortalRole; onBack: () => void; onCreateAccount?: (() => void) | undefined }) {
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -112,7 +112,9 @@ export function LoginScreen({ role, onBack }: { role: PortalRole; onBack: () => 
                   {submitting ? 'Signing in...' : 'Sign in →'}
                 </button>
               </form>
-              <p className="klp-auth-terms">Accounts are provisioned during onboarding. Need access? <a href="mailto:studio@kipkiren.co.ke">Talk to the studio.</a></p>
+              {onCreateAccount
+                ? <p className="klp-auth-terms">New to Kipkiren? <button type="button" className="klp-auth-link" onClick={onCreateAccount}>Create an account</button></p>
+                : <p className="klp-auth-terms">Team accounts are provisioned by an admin. Need access? <a href="mailto:studio@kipkiren.co.ke">Talk to the studio.</a></p>}
             </div>
           </div>
         </div>

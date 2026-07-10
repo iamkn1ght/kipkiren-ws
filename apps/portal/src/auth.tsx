@@ -16,10 +16,12 @@ import {
   decodeAccessToken,
   login as apiLogin,
   logout as apiLogout,
+  signup as apiSignup,
   refreshSession,
   setAccessToken,
   setUnauthorizedHandler,
   type AccessTokenClaims,
+  type SignupPayload,
 } from './api.ts';
 
 const STORAGE_KEY = 'kws_portal_access_token';
@@ -42,6 +44,7 @@ interface AuthContextValue {
   bootstrapping: boolean;
   pickRole: (role: PortalRole) => void;
   signIn: (email: string, password: string) => Promise<void>;
+  signUp: (payload: SignupPayload) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -157,6 +160,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!applyRealSession(res.access_token, email)) throw new Error('invalid_session_token');
   }, [applyRealSession]);
 
+  // Self-service signup - the API creates the client + auth user + profile and
+  // returns a live session, so we apply it exactly like a login (straight in).
+  const signUp = useCallback(async (payload: SignupPayload) => {
+    if (DEV_AUTH_BYPASS) { signInAs('client'); return; }
+    const res = await apiSignup(payload);
+    if (!applyRealSession(res.access_token, payload.email)) throw new Error('invalid_session_token');
+  }, [applyRealSession, signInAs]);
+
   const signOut = useCallback(async () => {
     if (!DEV_AUTH_BYPASS) await apiLogout();
     clearSessionOnly();
@@ -165,8 +176,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [clearSessionOnly]);
 
   const value = useMemo<AuthContextValue>(() => ({
-    session, picked, bootstrapping, pickRole, signIn, signOut,
-  }), [session, picked, bootstrapping, pickRole, signIn, signOut]);
+    session, picked, bootstrapping, pickRole, signIn, signUp, signOut,
+  }), [session, picked, bootstrapping, pickRole, signIn, signUp, signOut]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

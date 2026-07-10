@@ -9,9 +9,16 @@ import {
   hashRefreshToken,
 } from '../lib/tokens.js';
 import { requireAuth } from '../middleware/auth.js';
-import { loginRateLimit } from '../middleware/rate-limit.js';
+import { loginRateLimit, signupRateLimit } from '../middleware/rate-limit.js';
 import { HttpError } from '../middleware/error.js';
 import { writeAuditEvent } from '../services/audit.js';
+import {
+  SelfSignupInput,
+  runSelfSignup,
+  supabaseStore,
+  listRetainerPlans,
+  OnboardError,
+} from '../services/client-onboarding.js';
 import { logger } from '../lib/logger.js';
 import type { UserRole } from '../middleware/auth.js';
 
@@ -143,6 +150,58 @@ authRouter.post('/login', loginRateLimit, async (req: Request, res: Response) =>
     const session = await issueSession(res, profile, meta);
   void writeAuditEvent({ actor_id: profile.id, actor_role: profile.role, event_type: 'auth_login_succeeded', entity_type: 'auth', entity_id: profile.id, payload_snapshot: { ip: req.ip ?? null } });
   res.json(publicSession(session));
+});
+
+// ----------------------------------------------------------------------------
+// GET /v1/auth/plans - public retainer plans for the signup form (read-only).
+// ----------------------------------------------------------------------------
+authRouter.get('/plans', async (_req: Request, res: Response) => {
+  try {
+    const plans = await listRetainerPlans();
+    res.json({ plans });
+  } catch (err) {
+    logger.error({ err }, 'public_plans_failed');
+    res.status(502).json({ error: 'plans_unavailable' });
+  }
+});
+
+// ----------------------------------------------------------------------------
+// POST /v1/auth/signup - public self-service client signup (KWS-S8-002).
+// Creates the client + auth user + profile transactionally, then issues our own
+// session so the new client lands straight in the portal. role/status are fixed
+// server-side (client/active); the request can never set them.
+// ----------------------------------------------------------------------------
+authRouter.post('/signup', signupRateLimit, async (req: Request, res: Response) => {
+  const parsed = SelfSignupInput.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'invalid_signup', message: parsed.error.issues[0]?.message ?? 'Invalid details' });
+    return;
+  }
+
+  let result;
+  try {
+    result = await runSelfSignup(parsed.data, supabaseStore());
+  } catch (err) {
+    if (err instanceof OnboardError) {
+      res.status(err.statusCode).json({ error: err.code, message: err.message });
+      return;
+    }
+    throw err;
+  }
+
+  // Auto-login: load the profile we just created and mint our own session.
+  const profile = await loadProfile(result.user_id);
+  const meta: { userAgent?: string; ip?: string } = {};
+  if (req.header('user-agent')) meta.userAgent = req.header('user-agent') as string;
+  if (req.ip) meta.ip = req.ip;
+  const session = await issueSession(res, profile, meta);
+  void writeAuditEvent({ actor_id: profile.id, actor_role: profile.role, event_type: 'auth_login_succeeded', entity_type: 'auth', entity_id: profile.id, payload_snapshot: { ip: req.ip ?? null, via: 'signup' } });
+
+  res.status(201).json({
+    ...publicSession(session),
+    client: { id: result.client.id, business_name: result.client.business_name },
+    plan_name: result.plan_name,
+  });
 });
 
 // ----------------------------------------------------------------------------

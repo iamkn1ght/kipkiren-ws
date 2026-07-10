@@ -114,6 +114,40 @@ export async function login(email: string, password: string): Promise<LoginRespo
   });
 }
 
+export interface SignupPayload {
+  business_name: string;
+  contact_name: string;
+  email: string;
+  password: string;
+  phone?: string;
+  retainer_plan_id: string;
+}
+
+export interface SignupResponse {
+  access_token: string;
+  expires_in: number;
+  client: { id: string; business_name: string };
+  plan_name: string;
+}
+
+/** Public self-service client signup. Returns a live session (auto-login). */
+export async function signup(payload: SignupPayload): Promise<SignupResponse> {
+  return apiRequest<SignupResponse>('/v1/auth/signup', { method: 'POST', body: payload });
+}
+
+export interface PublicPlan {
+  id: string;
+  name: string;
+  monthly_fee_kes: number;
+  included_hours: number;
+}
+
+/** Public retainer plans for the signup form (no auth required). */
+export async function getPublicPlans(): Promise<PublicPlan[]> {
+  const r = await apiRequest<{ plans: PublicPlan[] }>('/v1/auth/plans');
+  return r.plans;
+}
+
 export async function refreshSession(): Promise<string | null> {
   const token = await rawRefresh();
   if (token) accessToken = token;

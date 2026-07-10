@@ -60,6 +60,19 @@ export const UpdateClientInput = z.object({
 }).refine((v) => Object.keys(v).length > 0, { message: 'Nothing to update' });
 export type UpdateClientInputT = z.infer<typeof UpdateClientInput>;
 
+// Public self-service signup (KWS-S8-002). Same shape as onboarding but the
+// prospect sets their own password inline (max 72 - Supabase/bcrypt hard limit),
+// and role/status are NOT accepted from input (always client/active server-side).
+export const SelfSignupInput = z.object({
+  business_name: z.string().trim().min(2, 'Business name is too short').max(120),
+  contact_name: z.string().trim().min(2, 'Contact name is too short').max(80),
+  email: z.string().trim().toLowerCase().email('Enter a valid email').max(160),
+  password: z.string().min(8, 'Use at least 8 characters').max(72),
+  phone: z.preprocess(emptyToUndef, z.string().trim().min(7).max(32).optional()),
+  retainer_plan_id: z.string().uuid('Select a plan'),
+});
+export type SelfSignupInputT = z.infer<typeof SelfSignupInput>;
+
 // ---------------------------------------------------------------------------
 // Typed error the routes translate to an HTTP status + code
 // ---------------------------------------------------------------------------
@@ -99,6 +112,7 @@ export interface OnboardingStore {
   createClient(data: { business_name: string; contact_name: string; email: string; phone: string | null; retainer_plan_id: string; status: 'active' | 'suspended' }): Promise<CreatedClient>;
   deleteClient(id: string): Promise<void>;
   inviteUser(email: string, meta: { full_name: string; client_id: string; redirectTo: string }): Promise<{ userId: string; created: boolean }>;
+  createPasswordUser(email: string, password: string, meta: { full_name: string; client_id: string }): Promise<{ userId: string }>;
   deleteAuthUser(id: string): Promise<void>;
   upsertProfile(data: { id: string; email: string; full_name: string; client_id: string }): Promise<void>;
   audit(e: OnboardAuditEvent): Promise<void>;
@@ -178,6 +192,76 @@ export async function runOnboarding(
   return { client, plan_name: plan.name, invite_status: auth.created ? 'sent' : 'existing_account' };
 }
 
+export interface SignupResult {
+  client: CreatedClient;
+  plan_name: string;
+  user_id: string;
+}
+
+/**
+ * Public self-service signup (KWS-S8-002). Same saga+compensation as onboarding,
+ * but the prospect sets their own password inline, so the auth user is always
+ * freshly created (a duplicate email is rejected up front). role=client /
+ * status=active are enforced here, never taken from input. The caller
+ * (POST /v1/auth/signup) then issues our own session so they land in the portal.
+ */
+export async function runSelfSignup(
+  input: SelfSignupInputT,
+  store: OnboardingStore,
+): Promise<SignupResult> {
+  const email = input.email.trim().toLowerCase();
+
+  // Idempotency + anti-hijack: reject if a client already owns this email. The
+  // auth-side duplicate (email exists in auth.users) is caught in createPasswordUser.
+  if (await store.findClientByEmail(email)) {
+    throw new OnboardError(409, 'client_email_exists', 'An account with this email already exists. Please sign in.');
+  }
+
+  const plan = await store.findPlan(input.retainer_plan_id);
+  if (!plan) throw new OnboardError(400, 'invalid_plan', 'The selected plan does not exist.');
+
+  // STEP 1 - business record (always active; a self-signup client can use the portal).
+  const client = await store.createClient({
+    business_name: input.business_name.trim(),
+    contact_name: input.contact_name.trim(),
+    email,
+    phone: input.phone?.trim() || null,
+    retainer_plan_id: input.retainer_plan_id,
+    status: 'active',
+  });
+
+  // STEP 2 - auth user with the password they chose. Roll back the client on failure.
+  let auth: { userId: string };
+  try {
+    auth = await store.createPasswordUser(email, input.password, { full_name: input.contact_name.trim(), client_id: client.id });
+  } catch (err) {
+    await safeCompensate(() => store.deleteClient(client.id), 'client', client.id);
+    // A typed error (e.g. duplicate email 409) is intentional - surface it as-is.
+    if (err instanceof OnboardError) throw err;
+    logger.error({ err, clientId: client.id }, 'signup_auth_failed_rolled_back');
+    throw new OnboardError(502, 'signup_failed', 'Could not create your account. No records were kept; please try again.');
+  }
+
+  // STEP 3 - app profile. Roll back the client AND the auth user (we just made it).
+  try {
+    await store.upsertProfile({ id: auth.userId, email, full_name: input.contact_name.trim(), client_id: client.id });
+  } catch (err) {
+    await safeCompensate(() => store.deleteClient(client.id), 'client', client.id);
+    await safeCompensate(() => store.deleteAuthUser(auth.userId), 'auth_user', auth.userId);
+    logger.error({ err, clientId: client.id }, 'signup_profile_failed_rolled_back');
+    throw new OnboardError(500, 'profile_link_failed', 'Could not finish creating your account. No records were kept; please try again.');
+  }
+
+  await store.audit({
+    actor: { id: auth.userId, role: 'client' },
+    event_type: 'client_self_signup',
+    entity_id: client.id,
+    payload: { business_name: client.business_name, email, plan: plan.name, self_service: true },
+  });
+
+  return { client, plan_name: plan.name, user_id: auth.userId };
+}
+
 /** Run a compensation without letting its own failure mask the original error. */
 async function safeCompensate(fn: () => Promise<void>, kind: string, id: string): Promise<void> {
   try { await fn(); } catch (err) { logger.error({ err, kind, id }, 'onboard_compensation_failed'); }
@@ -220,6 +304,25 @@ export function supabaseStore(): OnboardingStore {
       const existing = await findAuthUserByEmail(email);
       if (existing) return { userId: existing.id, created: false };
       throw new Error(error?.message ?? 'invite_failed');
+    },
+    async createPasswordUser(email, password, meta) {
+      // email_confirm:true = the account is usable immediately (we mint our own
+      // JWT anyway and do not rely on Supabase's throttled confirmation email).
+      // TODO(KWS-S8-002): flip to a real email-verification step once custom SMTP
+      // / EMAIL_* is provisioned, to prove ownership of the address.
+      const { data, error } = await sb.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+        user_metadata: { full_name: meta.full_name, client_id: meta.client_id, role: 'client' },
+      });
+      if (error || !data?.user) {
+        const msg = (error?.message ?? '').toLowerCase();
+        const dupe = error?.status === 422 || msg.includes('already') || msg.includes('registered') || msg.includes('exists');
+        if (dupe) throw new OnboardError(409, 'email_exists', 'An account with this email already exists. Please sign in.');
+        throw new Error(error?.message ?? 'create_user_failed');
+      }
+      return { userId: data.user.id };
     },
     async deleteAuthUser(id) {
       const { error } = await sb.auth.admin.deleteUser(id);

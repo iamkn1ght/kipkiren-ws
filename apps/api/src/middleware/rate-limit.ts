@@ -15,6 +15,18 @@ export const loginRateLimit = rateLimit({
   message: { error: 'rate_limited', endpoint: 'auth_login' },
 });
 
+// Public self-service signup (KWS-S8-002). Unauthenticated + creates an auth
+// user AND a client row per call, so it is a prime abuse target. Firm per-IP cap
+// (kept above single-user reality so a shared office/NAT is not locked out).
+export const signupRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 10,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip ?? 'anon',
+  message: { error: 'rate_limited', endpoint: 'auth_signup' },
+});
+
 export const ticketRateLimit = rateLimit({
   windowMs: 60 * 60 * 1000,
   limit: 10,

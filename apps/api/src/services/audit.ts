@@ -67,6 +67,7 @@ export type AuditEventType =
   // S9-006 observability
   | 'site_health_anomaly_detected'
   | 'client_onboarded'
+  | 'client_self_signup'
   | 'client_updated'
   | 'client_status_changed'
   | 'client_invite_resent'

@@ -14,7 +14,9 @@ import { buildApp } from '../src/app.js';
 import { mintTestToken, auth } from './helpers.js';
 import {
   OnboardClientInput,
+  SelfSignupInput,
   runOnboarding,
+  runSelfSignup,
   OnboardError,
   type OnboardingStore,
   type Actor,
@@ -38,6 +40,7 @@ interface Overrides {
   inviteThrows?: boolean;
   inviteCreated?: boolean;
   profileThrows?: boolean;
+  createUserThrows?: 'generic' | 'duplicate';
 }
 function makeStore(o: Overrides = {}) {
   const calls: string[] = [];
@@ -50,6 +53,12 @@ function makeStore(o: Overrides = {}) {
     },
     async deleteClient() { calls.push('deleteClient'); },
     async inviteUser() { calls.push('inviteUser'); if (o.inviteThrows) throw new Error('invite_down'); return { userId: 'auth-1', created: o.inviteCreated ?? true }; },
+    async createPasswordUser() {
+      calls.push('createPasswordUser');
+      if (o.createUserThrows === 'duplicate') throw new OnboardError(409, 'email_exists', 'exists');
+      if (o.createUserThrows === 'generic') throw new Error('auth_down');
+      return { userId: 'auth-1' };
+    },
     async deleteAuthUser() { calls.push('deleteAuthUser'); },
     async upsertProfile() { calls.push('upsertProfile'); if (o.profileThrows) throw new Error('profile_down'); },
     async audit() { calls.push('audit'); },
@@ -126,6 +135,75 @@ describe('runOnboarding saga', () => {
   });
 });
 
+describe('SelfSignupInput validation', () => {
+  const OK = { business_name: 'Acme Ltd', contact_name: 'Mary Wanjiru', email: 'Mary@Acme.co.ke', password: 'sup3rsecret', retainer_plan_id: '11111111-1111-1111-1111-111111111111' };
+  it('accepts a well-formed signup and normalises the email', () => {
+    const r = SelfSignupInput.safeParse(OK);
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.email).toBe('mary@acme.co.ke');
+  });
+  it('rejects a short password', () => {
+    expect(SelfSignupInput.safeParse({ ...OK, password: 'short' }).success).toBe(false);
+  });
+  it('rejects a password over the 72-char bcrypt limit', () => {
+    expect(SelfSignupInput.safeParse({ ...OK, password: 'a'.repeat(73) }).success).toBe(false);
+  });
+  it('has no role/status field to escalate through', () => {
+    const r = SelfSignupInput.safeParse({ ...OK, role: 'admin', status: 'suspended' });
+    expect(r.success).toBe(true);
+    if (r.success) {
+      expect('role' in r.data).toBe(false);
+      expect('status' in r.data).toBe(false);
+    }
+  });
+});
+
+describe('runSelfSignup saga', () => {
+  const parsed = SelfSignupInput.parse({ business_name: 'Acme Ltd', contact_name: 'Mary Wanjiru', email: 'mary@acme.co.ke', password: 'sup3rsecret', retainer_plan_id: '11111111-1111-1111-1111-111111111111' });
+
+  it('happy path: creates client (active), auth user with password, profile, audits', async () => {
+    const { store, calls } = makeStore();
+    const res = await runSelfSignup(parsed, store);
+    expect(calls).toEqual(['findClientByEmail', 'findPlan', 'createClient', 'createPasswordUser', 'upsertProfile', 'audit']);
+    expect(res.client.status).toBe('active');
+    expect(res.user_id).toBe('auth-1');
+    expect(res.plan_name).toBe('Growth');
+  });
+
+  it('rejects an existing client email before any writes', async () => {
+    const { store, calls } = makeStore({ existingClient: { id: 'x' } });
+    await expect(runSelfSignup(parsed, store)).rejects.toMatchObject({ statusCode: 409, code: 'client_email_exists' });
+    expect(calls).toEqual(['findClientByEmail']);
+  });
+
+  it('rejects an unknown plan before creating anything', async () => {
+    const { store, calls } = makeStore({ plan: null });
+    await expect(runSelfSignup(parsed, store)).rejects.toMatchObject({ statusCode: 400, code: 'invalid_plan' });
+    expect(calls).toEqual(['findClientByEmail', 'findPlan']);
+  });
+
+  it('rolls back the client and surfaces 409 when the auth email is already taken', async () => {
+    const { store, calls } = makeStore({ createUserThrows: 'duplicate' });
+    await expect(runSelfSignup(parsed, store)).rejects.toMatchObject({ statusCode: 409, code: 'email_exists' });
+    expect(calls).toContain('deleteClient');
+    expect(calls).not.toContain('upsertProfile');
+  });
+
+  it('rolls back the client on a generic auth failure (502, no orphan)', async () => {
+    const { store, calls } = makeStore({ createUserThrows: 'generic' });
+    await expect(runSelfSignup(parsed, store)).rejects.toMatchObject({ statusCode: 502, code: 'signup_failed' });
+    expect(calls).toContain('deleteClient');
+    expect(calls).not.toContain('audit');
+  });
+
+  it('rolls back client AND the new auth user when the profile link fails', async () => {
+    const { store, calls } = makeStore({ profileThrows: true });
+    await expect(runSelfSignup(parsed, store)).rejects.toMatchObject({ statusCode: 500, code: 'profile_link_failed' });
+    expect(calls).toContain('deleteClient');
+    expect(calls).toContain('deleteAuthUser');
+  });
+});
+
 describe('onboarding routes - role perimeter', () => {
   let app: Express;
   beforeAll(() => { app = buildApp(); });
@@ -156,5 +234,13 @@ describe('onboarding routes - role perimeter', () => {
       }
       expect((await request(app).get(path)).status, `${path} no auth`).toBe(401);
     }
+  });
+
+  it('public signup is NOT auth-gated and validates its body (bad shape -> 400, not 401/403)', async () => {
+    // No Authorization header: a public endpoint must not 401. A malformed body
+    // is rejected at validation, before any provisioning/Supabase call.
+    const res = await request(app).post('/v1/auth/signup').send({ email: 'nope', password: 'x' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('invalid_signup');
   });
 });

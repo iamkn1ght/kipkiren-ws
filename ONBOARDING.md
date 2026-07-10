@@ -61,6 +61,36 @@ database. See `apps/api/test/client-onboarding.test.ts`.
 
 ---
 
+## 2b. Two ways a client account is created
+
+There are two front doors onto the exact same saga+compensation core:
+
+| Path | Who runs it | Auth step | Password | Route |
+|------|-------------|-----------|----------|-------|
+| **Admin onboarding** (S8-001) | an admin | Supabase `inviteUserByEmail` | client sets it later from the invite email | `POST /v1/admin/clients` (admin-only) |
+| **Self-service signup** (S8-002) | the client, publicly | Supabase `admin.createUser` with `email_confirm: true` | client sets it inline at signup | `POST /v1/auth/signup` (public) |
+
+Self-service exists so onboarding scales without an admin hand-provisioning every
+client. `runSelfSignup` shares `createClient` / `upsertProfile` / rollback with the
+admin saga; the only differences are the auth step (a password user instead of an
+invite) and that `role = client` / `status = active` are **fixed server-side and
+cannot be set from the request body**. On success the signup route issues our own
+session immediately, so the new client lands straight in the portal.
+
+Security specifics for the public path:
+- **Strict per-IP rate limit** (`signupRateLimit`, 10/hour) - it is unauthenticated
+  and creates an auth user + a client row per call.
+- **Anti-hijack**: an email already owned by a client (or already registered in
+  Supabase Auth) is rejected with 409, never linked.
+- **No privilege escalation**: `SelfSignupInput` has no `role`/`status` field; extra
+  keys are dropped by Zod.
+- **Known tradeoff**: `email_confirm: true` marks the address usable without proving
+  ownership (we mint our own JWT and do not depend on Supabase's throttled
+  confirmation email). Nothing is charged at signup - the proforma is still the real
+  gate - so the blast radius of a junk signup is one rate-limited client row. When
+  custom SMTP / `EMAIL_*` is provisioned, flip this to a real verification step
+  (`TODO(KWS-S8-002)` in `createPasswordUser`).
+
 ## 3. Authentication flow (how a client actually signs in)
 
 KWS does not use Supabase sessions. Supabase Auth is used only to store and
@@ -158,6 +188,8 @@ keyed by admin id, falling back to IP).
 
 | Method | Path | Role | What |
 |--------|------|------|------|
+| POST | `/v1/auth/signup` | **public** | self-service client signup (S8-002); rate-limited, auto-issues a session |
+| GET  | `/v1/auth/plans` | **public** | retainer plans for the signup form (read-only) |
 | GET  | `/clients` | delivery_lead, admin | list with invite status attached |
 | GET  | `/retainer-plans` | delivery_lead, admin | active plans for the form |
 | POST | `/clients` | admin | run the onboarding saga (201) |
@@ -208,9 +240,8 @@ The clients list is enriched with an auth-derived status per client
 The saga takes its input, its actor, and its store as arguments precisely so the
 same core backs future channels without a rewrite:
 
-- **Self-service signup.** A public route calls `runOnboarding` with a
-  system/self actor and a store whose `createClient` sets `status = active` (or
-  `pending` once that state exists). No new provisioning logic.
+- **Self-service signup.** DONE (S8-002): `runSelfSignup` + `POST /v1/auth/signup`
+  reuse the same core with a password-user auth step. See section 2b.
 - **Bulk / CSV import.** Loop `runOnboarding` over parsed rows; each row is an
   independent saga, so one bad row rolls itself back without touching the others.
 - **Partner / reseller provisioning.** Pass a different actor; audit already
@@ -247,3 +278,4 @@ same core backs future channels without a rewrite:
 | Audit events | `apps/api/src/services/audit.ts` |
 | Tests (validation, saga, rollback, role gates) | `apps/api/test/client-onboarding.test.ts` |
 | Clients CRM + onboarding modal (UI) | `apps/portal/src/AdminClients.tsx` |
+| Public client signup (UI) | `apps/portal/src/SignupScreen.tsx` |
