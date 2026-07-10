@@ -1085,8 +1085,11 @@
   .klp-portal { padding-top: 0; padding-bottom: calc(48px + env(safe-area-inset-bottom)); }
   .klp-portal-layout { display: block; gap: 0; }
 
-  /* Nav: sticky, scroll-snapping horizontal tab rail (hidden scrollbar) */
-  .klp-portal-aside { position: sticky; top: 0; z-index: 20; background: var(--paper); border-bottom: 1px solid var(--hairline); }
+  /* Nav: sticky, FULL-BLEED scroll-snapping tab rail. The background + divider
+     span edge-to-edge (negative gutter margins); tab labels re-inset by the same
+     gutter so they stay aligned with the content. The gutter matches the
+     container padding at each breakpoint (24 base / 40 tablet / 20 phone / 16 small). */
+  .klp-portal-aside { position: sticky; top: 0; z-index: 20; margin-inline: -24px; padding-inline: 24px; background: var(--paper); border-bottom: 1px solid var(--hairline); }
   .klp-portal-aside .lbl { display: none; }
   .klp-portal-nav { display: flex; gap: 2px; overflow-x: auto; border-top: none; scrollbar-width: none; -webkit-overflow-scrolling: touch; scroll-snap-type: x proximity; overscroll-behavior-x: contain; }
   .klp-portal-nav::-webkit-scrollbar { display: none; }
@@ -1117,12 +1120,14 @@
 /* Tablet: 2-column stats (desktop keeps 3 columns at >= 1024) */
 @media (min-width: 768px) and (max-width: 1023.98px) {
   .klp-kpis { grid-template-columns: repeat(2, 1fr); }
+  .klp-portal-aside { margin-inline: -40px; padding-inline: 40px; }   /* gutter is 40px here */
 }
 
 /* ---------- <= 640px: phone ---------- */
 @media (max-width: 640px) {
-  /* Tighter page gutter */
+  /* Tighter page gutter (nav rail bleeds to match) */
   .klp-container.klp-portal, .klp-container.klp-portal-top { padding-inline: 20px; }
+  .klp-portal-aside { margin-inline: -20px; padding-inline: 20px; }
 
   /* Stats: full-width, glanceable rows (label left, big number right) */
   .klp-kpis { grid-template-columns: 1fr; gap: 12px; }
@@ -1149,6 +1154,7 @@
 /* ---------- small phones ---------- */
 @media (max-width: 380px) {
   .klp-container.klp-portal, .klp-container.klp-portal-top { padding-inline: 16px; }
+  .klp-portal-aside { margin-inline: -16px; padding-inline: 16px; }
   .klp-portal-top .name small { display: none; }
   .klp-kpi .n { font-size: 30px; }
 }
