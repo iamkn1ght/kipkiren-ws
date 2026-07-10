@@ -2,7 +2,13 @@ import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { CreateTicketInput } from '@kws/shared';
 import { requireAuth, requireRole } from '../middleware/auth.js';
+import { provisioningRateLimit } from '../middleware/rate-limit.js';
 import { HttpError } from '../middleware/error.js';
+import {
+  OnboardClientInput, UpdateClientInput, runOnboarding, supabaseStore,
+  updateClient, setClientStatus, resendInvite, sendPasswordReset,
+  listRetainerPlans, attachInviteStatus, OnboardError, type Actor,
+} from '../services/client-onboarding.js';
 import { getServiceClient } from '../lib/supabase.js';
 import { writeAuditEvent } from '../services/audit.js';
 import { intakeTicket } from '../services/ticket-intake.js';
@@ -39,8 +45,102 @@ adminRouter.get(
   requireAuth,
   requireRole('delivery_lead', 'admin'),
   async (_req: Request, res: Response) => {
-    const clients = await loadClientAccounts();
+    const clients = await attachInviteStatus(await loadClientAccounts());
     res.json({ clients });
+  },
+);
+
+// ----------------------------------------------------------------------------
+// GET /v1/admin/retainer-plans - plan options for the onboarding form (KWS-S8-001)
+// ----------------------------------------------------------------------------
+adminRouter.get(
+  '/retainer-plans',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (_req: Request, res: Response) => {
+    res.json({ plans: await listRetainerPlans() });
+  },
+);
+
+// ----------------------------------------------------------------------------
+// Client provisioning + lifecycle (KWS-S8-001). Onboarding creates client +
+// auth invite + profile transactionally (services/client-onboarding.ts). All
+// write ops are admin-only, rate-limited, and audited.
+// ----------------------------------------------------------------------------
+const onboardActor = (req: Request): Actor => ({ id: req.auth!.sub, role: req.auth!.role });
+
+function sendOnboardError(res: Response, e: unknown): boolean {
+  if (e instanceof OnboardError) { res.status(e.statusCode).json({ error: e.code, message: e.message }); return true; }
+  return false;
+}
+
+adminRouter.post(
+  '/clients',
+  requireAuth,
+  requireRole('admin'),
+  provisioningRateLimit,
+  async (req: Request, res: Response) => {
+    const parsed = OnboardClientInput.safeParse(req.body);
+    if (!parsed.success) { res.status(400).json({ error: 'invalid_input', issues: parsed.error.flatten().fieldErrors }); return; }
+    try {
+      const result = await runOnboarding(parsed.data, onboardActor(req), supabaseStore());
+      res.status(201).json({ ...result, created_at: result.client.created_at });
+    } catch (e) { if (!sendOnboardError(res, e)) throw e; }
+  },
+);
+
+adminRouter.patch(
+  '/clients/:id',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (req: Request, res: Response) => {
+    const id = req.params.id;
+    if (typeof id !== 'string' || !id) throw new HttpError(400, 'missing_client_id');
+    const parsed = UpdateClientInput.safeParse(req.body);
+    if (!parsed.success) { res.status(400).json({ error: 'invalid_input', issues: parsed.error.flatten().fieldErrors }); return; }
+    try { await updateClient(id, parsed.data, onboardActor(req)); res.json({ ok: true }); }
+    catch (e) { if (!sendOnboardError(res, e)) throw e; }
+  },
+);
+
+adminRouter.post(
+  '/clients/:id/status',
+  requireAuth,
+  requireRole('admin'),
+  provisioningRateLimit,
+  async (req: Request, res: Response) => {
+    const id = req.params.id;
+    if (typeof id !== 'string' || !id) throw new HttpError(400, 'missing_client_id');
+    const status = (req.body?.status ?? '') as string;
+    if (status !== 'active' && status !== 'suspended') { res.status(400).json({ error: 'invalid_status' }); return; }
+    try { await setClientStatus(id, status, onboardActor(req)); res.json({ ok: true, status }); }
+    catch (e) { if (!sendOnboardError(res, e)) throw e; }
+  },
+);
+
+adminRouter.post(
+  '/clients/:id/resend-invite',
+  requireAuth,
+  requireRole('admin'),
+  provisioningRateLimit,
+  async (req: Request, res: Response) => {
+    const id = req.params.id;
+    if (typeof id !== 'string' || !id) throw new HttpError(400, 'missing_client_id');
+    try { await resendInvite(id, onboardActor(req)); res.json({ ok: true }); }
+    catch (e) { if (!sendOnboardError(res, e)) throw e; }
+  },
+);
+
+adminRouter.post(
+  '/clients/:id/reset-password',
+  requireAuth,
+  requireRole('admin'),
+  provisioningRateLimit,
+  async (req: Request, res: Response) => {
+    const id = req.params.id;
+    if (typeof id !== 'string' || !id) throw new HttpError(400, 'missing_client_id');
+    try { await sendPasswordReset(id, onboardActor(req)); res.json({ ok: true }); }
+    catch (e) { if (!sendOnboardError(res, e)) throw e; }
   },
 );
 

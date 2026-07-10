@@ -25,6 +25,18 @@ export const ticketRateLimit = rateLimit({
   message: { error: 'rate_limited', endpoint: 'tickets_create' },
 });
 
+// Client provisioning (onboard / invite / reset). Per-admin, generous enough
+// for real onboarding sessions but a firm cap against runaway loops or abuse of
+// the Auth admin API + outbound invite emails.
+export const provisioningRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  limit: 60,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator: (req) => req.auth?.sub ?? req.ip ?? 'anon',
+  message: { error: 'rate_limited', endpoint: 'client_provisioning' },
+});
+
 export const proformaApproveRateLimit = rateLimit({
   windowMs: 60 * 60 * 1000,
   limit: 3,

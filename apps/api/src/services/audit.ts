@@ -65,7 +65,14 @@ export type AuditEventType =
   | 'agent_execution_failed'
   | 'agent_execution_escalated'
   // S9-006 observability
-  | 'site_health_anomaly_detected';
+  | 'site_health_anomaly_detected'
+  | 'client_onboarded'
+  | 'client_updated'
+  | 'client_status_changed'
+  | 'client_invite_resent'
+  | 'client_password_reset_sent'
+  | 'auth_login_succeeded'
+  | 'auth_login_failed';
 
 export interface AuditEventInput {
   actor_id: string | null;

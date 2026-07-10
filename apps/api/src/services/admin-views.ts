@@ -168,7 +168,10 @@ export interface ClientSummaryRow {
   id: string;
   business_name: string;
   contact_name: string;
+  email: string;
+  phone: string | null;
   plan: string;
+  retainer_plan_id: string | null;
   monthly_fee_kes: number;
   included_hours: number;
   hours_used_mtd: number;
@@ -176,7 +179,10 @@ export interface ClientSummaryRow {
   breached_tickets: number;
   month_to_date_charges_kes: number;
   last_activity_at: string | null;
+  created_at: string | null;
   status: 'active' | 'suspended';
+  // Filled by the onboarding service (Supabase auth-derived). 'unknown' until enriched.
+  invite_status: 'invited' | 'accepted' | 'active' | 'unknown';
 }
 
 /**
@@ -190,13 +196,17 @@ export async function loadClientAccounts(now: Date = new Date()): Promise<Client
 
   const { data: clients, error: cErr } = await sb
     .from('clients')
-    .select('id, business_name, contact_name, status, retainer_plans ( name, monthly_fee_kes, included_hours )');
+    .select('id, business_name, contact_name, email, phone, retainer_plan_id, created_at, status, retainer_plans ( name, monthly_fee_kes, included_hours )');
   if (cErr) throw cErr;
 
   type ClientRow = {
     id: string;
     business_name: string;
     contact_name: string;
+    email: string;
+    phone: string | null;
+    retainer_plan_id: string | null;
+    created_at: string | null;
     status: string;
     retainer_plans:
       | { name: string; monthly_fee_kes: number; included_hours: number }
@@ -263,7 +273,10 @@ export async function loadClientAccounts(now: Date = new Date()): Promise<Client
       id: c.id,
       business_name: c.business_name,
       contact_name: c.contact_name ?? '',
+      email: c.email,
+      phone: c.phone ?? null,
       plan: plan?.name ?? 'Starter',
+      retainer_plan_id: c.retainer_plan_id ?? null,
       monthly_fee_kes: plan?.monthly_fee_kes ?? 0,
       included_hours: plan?.included_hours ?? 0,
       hours_used_mtd: Math.round(hoursUsed * 10) / 10,
@@ -271,7 +284,9 @@ export async function loadClientAccounts(now: Date = new Date()): Promise<Client
       breached_tickets: breached,
       month_to_date_charges_kes: mtd,
       last_activity_at: lastTicket?.[0]?.created_at ?? null,
+      created_at: c.created_at ?? null,
       status: c.status as 'active' | 'suspended',
+      invite_status: 'unknown',
     });
   }
 

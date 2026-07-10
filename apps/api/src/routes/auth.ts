@@ -11,6 +11,7 @@ import {
 import { requireAuth } from '../middleware/auth.js';
 import { loginRateLimit } from '../middleware/rate-limit.js';
 import { HttpError } from '../middleware/error.js';
+import { writeAuditEvent } from '../services/audit.js';
 import { logger } from '../lib/logger.js';
 import type { UserRole } from '../middleware/auth.js';
 
@@ -127,6 +128,9 @@ authRouter.post('/login', loginRateLimit, async (req: Request, res: Response) =>
   // We then discard its session and mint our own RS256 token.
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
   if (error || !data?.user) {
+    // Security trail: failed attempts are audited (rate-limited upstream) so
+    // brute force is visible. Fire-and-forget - never delay the response.
+    void writeAuditEvent({ actor_id: null, actor_role: null, event_type: 'auth_login_failed', entity_type: 'auth', entity_id: email, payload_snapshot: { email, ip: req.ip ?? null } });
     // Generic message - never reveal whether the email exists.
     res.status(401).json({ error: 'invalid_credentials' });
     return;
@@ -137,6 +141,7 @@ authRouter.post('/login', loginRateLimit, async (req: Request, res: Response) =>
     if (req.header('user-agent')) meta.userAgent = req.header('user-agent') as string;
     if (req.ip) meta.ip = req.ip;
     const session = await issueSession(res, profile, meta);
+  void writeAuditEvent({ actor_id: profile.id, actor_role: profile.role, event_type: 'auth_login_succeeded', entity_type: 'auth', entity_id: profile.id, payload_snapshot: { ip: req.ip ?? null } });
   res.json(publicSession(session));
 });
 
