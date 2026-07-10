@@ -378,9 +378,11 @@ function NewTicket({ onDone }: { onDone: () => void }) {
       onDone();
     } catch (err) {
       const e2 = err as { code?: string; status?: number };
-      if (e2?.code === 'invalid_input') setError('Please add a little more detail so we can scope it properly (at least 10 characters).');
-      else if (e2?.code === 'rate_limited') setError('You have sent a few requests in a short time. Please try again in a little while.');
-      else setError('We could not submit that just now. Check your connection and try again.');
+      const c = e2?.code;
+      if (c === 'invalid_input') setError('Please add a little more detail so we can scope it properly (at least 10 characters).');
+      else if (c === 'rate_limited') setError('You have sent a few requests in a short time. Please try again in a little while.');
+      else if (c === 'client_not_found' || c === 'retainer_plan_not_found') setError('Your account is not fully set up yet. Please contact the studio at studio@kipkiren.co.ke and we will sort it right away.');
+      else setError(`We could not submit that just now (${c ?? 'network error'}${e2?.status ? ` ${e2.status}` : ''}). Please try again; if it keeps happening, send us this code.`);
     } finally { setSubmitting(false); }
   };
 
