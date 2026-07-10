@@ -38,7 +38,10 @@ export interface ClientSummaryRow {
   id: string;
   business_name: string;
   contact_name: string;
+  email: string;
+  phone: string | null;
   plan: string;
+  retainer_plan_id: string | null;
   monthly_fee_kes: number;
   included_hours: number;
   hours_used_mtd: number;
@@ -46,7 +49,16 @@ export interface ClientSummaryRow {
   breached_tickets: number;
   month_to_date_charges_kes: number;
   last_activity_at: string | null;
+  created_at: string | null;
   status: 'active' | 'suspended';
+  invite_status: 'invited' | 'accepted' | 'active' | 'unknown';
+}
+
+export interface RetainerPlanOption {
+  id: string;
+  name: string;
+  monthly_fee_kes: number;
+  included_hours: number;
 }
 
 export interface RecentDispatch {

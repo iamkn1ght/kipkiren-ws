@@ -994,3 +994,50 @@
   .klp-foot-contact li { font-size: 12px; gap: 8px; line-height: 1.35; }
   .klp-foot-contact .fi { width: 15px; height: 15px; }
 }
+
+/* ============================================================================
+   ADMIN CLIENTS CRM + ONBOARDING MODAL (KWS-S8-001)
+   ============================================================================ */
+.klp-crm-add { margin-left: 8px; }
+.klp-crm { display: flex; flex-direction: column; gap: 12px; }
+.klp-crm-row { display: grid; grid-template-columns: 1fr auto auto; gap: 20px; align-items: center; padding: 20px 22px; transition: opacity .2s ease; }
+.klp-crm-row.busy { opacity: .5; pointer-events: none; }
+.klp-crm-name { font-family: var(--font-serif); font-size: 19px; letter-spacing: -.01em; }
+.klp-crm-sub { margin-top: 3px; font-size: 12.5px; color: var(--mid); }
+.klp-crm-badges { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+.klp-crm-row .meta { display: flex; gap: 22px; }
+.klp-crm-row .meta > div { display: flex; flex-direction: column; gap: 4px; }
+.klp-crm-row .meta .k { font-family: var(--font-mono); font-size: 9px; letter-spacing: .14em; text-transform: uppercase; color: var(--mid); }
+.klp-crm-row .meta .v { font-size: 14px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.klp-crm-actionwrap { position: relative; }
+.klp-crm-kebab { display: grid; gap: 3px; place-content: center; height: 38px; width: 38px; border-radius: 999px; border: 1px solid var(--hairline); background: var(--card); cursor: pointer; transition: border-color .18s ease; }
+.klp-crm-kebab span { width: 3.5px; height: 3.5px; border-radius: 999px; background: var(--ink); }
+@media (hover: hover) { .klp-crm-kebab:hover { border-color: var(--ink); } }
+.klp-crm-menu { position: absolute; right: 0; top: 44px; z-index: 20; min-width: 196px; background: var(--card); border: 1px solid var(--hairline); border-radius: 14px; box-shadow: 0 24px 50px -24px color-mix(in oklab, var(--ink) 40%, transparent); padding: 6px; display: flex; flex-direction: column; }
+.klp-crm-menu button { text-align: left; background: none; border: none; cursor: pointer; font: inherit; font-size: 13.5px; color: var(--slate); padding: 10px 12px; border-radius: 9px; transition: background .15s ease, color .15s ease; }
+.klp-crm-menu button:hover { background: color-mix(in oklab, var(--paper) 55%, var(--muted)); color: var(--ink); }
+.klp-crm-menu button.danger:hover { color: var(--amber-deep); }
+
+.klp-modal.klp-onboard { max-width: 620px; }
+.klp-onboard-lede { font-size: 13px; color: var(--slate); line-height: 1.5; }
+.klp-onboard-grid { display: grid; gap: 16px; margin-top: 6px; }
+@media (min-width: 560px) { .klp-onboard-grid { grid-template-columns: 1fr 1fr; } }
+.klp-onboard-field { display: flex; flex-direction: column; gap: 7px; }
+.klp-onboard-field .req { color: var(--amber-deep); }
+.klp-onboard-hint { font-size: 11px; color: var(--amber-deep); }
+.klp-onboard-success { text-align: center; }
+.klp-onboard-success .tick { height: 56px; width: 56px; margin: 4px auto 18px; border-radius: 999px; border: 2px solid var(--teal-deep); position: relative; }
+.klp-onboard-success .tick span { position: absolute; left: 18px; top: 13px; width: 13px; height: 24px; border: solid var(--teal-deep); border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); }
+.klp-onboard-success h3 { font-family: var(--font-serif); font-size: 24px; }
+.klp-onboard-success > p { margin-top: 8px; color: var(--slate); font-size: 14px; }
+.klp-onboard-summary { margin: 22px 0; border: 1px solid var(--hairline); border-radius: 14px; overflow: hidden; text-align: left; }
+.klp-onboard-summary > div { display: flex; justify-content: space-between; padding: 12px 16px; border-top: 1px solid var(--hairline); }
+.klp-onboard-summary > div:first-child { border-top: none; }
+.klp-onboard-summary .k { font-size: 13px; color: var(--mid); }
+.klp-onboard-summary .v { font-size: 13px; color: var(--ink); font-weight: 500; }
+
+@media (max-width: 640px) {
+  .klp-crm-row { grid-template-columns: 1fr auto; padding: 18px; }
+  .klp-crm-row .meta { display: none; }
+  .klp-crm-add { width: 100%; justify-content: center; margin-left: 0; }
+}

@@ -10,6 +10,7 @@ import { useAuth, useApi } from './auth.tsx';
 import { KlpToggle } from './klpTheme.tsx';
 import { useAdminData, slaLabel, type QueueRow, type RailHealth } from './useAdminData.ts';
 import { SkelList, Search, SegBar, EmptyState, ToolbarMeta } from './portalUi.tsx';
+import { AdminClients } from './AdminClients.tsx';
 import './landing.css';
 
 type Tab = 'dashboard' | 'queue' | 'review' | 'clients' | 'capacity' | 'services' | 'rails' | 'health';
@@ -54,7 +55,6 @@ export function AdminPortal() {
   const [raiseResult, setRaiseResult] = useState<string | null>(null);
   const [qSearch, setQSearch] = useState('');
   const [qFilter, setQFilter] = useState<'all' | 'on' | 'warn' | 'breached'>('all');
-  const [cSearch, setCSearch] = useState('');
 
   const name = session?.email?.split('@')[0] ?? 'there';
   const roleLabel = session?.claims.role === 'admin' ? 'Admin' : 'Delivery lead';
@@ -79,15 +79,6 @@ export function AdminPortal() {
       r.ref.toLowerCase().includes(q) ||
       r.description.toLowerCase().includes(q) ||
       r.client.business_name.toLowerCase().includes(q)
-    );
-  });
-  const clientRows = (clients ?? []).filter((c) => {
-    const q = cSearch.trim().toLowerCase();
-    if (!q) return true;
-    return (
-      c.business_name.toLowerCase().includes(q) ||
-      (c.contact_name ?? '').toLowerCase().includes(q) ||
-      c.plan.toLowerCase().includes(q)
     );
   });
 
@@ -233,34 +224,8 @@ export function AdminPortal() {
                 )
             )}
 
-            {/* clients */}
-            {tab === 'clients' && (
-              loading ? <SkelList rows={5} />
-                : (
-                  <>
-                    <div className="klp-toolbar">
-                      <Search value={cSearch} onChange={setCSearch} placeholder="Search by business, contact or plan" />
-                      <ToolbarMeta>{clientRows.length} client{clientRows.length === 1 ? '' : 's'}</ToolbarMeta>
-                    </div>
-                    {clientRows.length === 0
-                      ? <EmptyState
-                          title={(clients ?? []).length === 0 ? 'No client accounts' : 'No clients match'}
-                          sub={(clients ?? []).length === 0 ? 'Onboarded clients appear here.' : 'Try a different search term.'} />
-                      : (
-                        <div className="klp-list">
-                          {clientRows.map((c) => (
-                          <div key={c.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: '1fr auto auto auto' })}>
-                            <span className="title">{c.business_name}<span style={cssVars({ display: 'block', fontSize: 11, color: 'var(--mid)', fontFamily: 'var(--font-mono)' })}>{c.plan} · {c.contact_name}</span></span>
-                            <span className="date">{c.open_tickets} open</span>
-                            <span className="amt">KES {(c.month_to_date_charges_kes ?? 0).toLocaleString()}</span>
-                            <span className={`klp-pill ${c.breached_tickets > 0 ? 'warn' : 'active'}`}>{c.status}</span>
-                          </div>
-                        ))}
-                        </div>
-                      )}
-                    </>
-                  )
-            )}
+            {/* clients (CRM + onboarding) */}
+            {tab === 'clients' && <AdminClients clients={clients} loading={loading} reload={reload} />}
 
             {/* capacity */}
             {tab === 'capacity' && (
