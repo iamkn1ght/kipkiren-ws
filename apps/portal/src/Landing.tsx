@@ -69,10 +69,14 @@ const WHY = [
 ];
 
 const SERVICES = [
-  { n: '01', title: 'Design', body: "Editorial, deliberate, and grounded in your brand. No moodboard-of-the-week." },
-  { n: '02', title: 'Engineering', body: 'React, TanStack, Supabase. Ships fast, stays fast, scored honestly.' },
-  { n: '03', title: 'SEO & content', body: 'Structured for discovery. Written by humans who read what they publish.' },
-  { n: '04', title: 'Managed hosting', body: 'We own uptime, backups, updates and the 03:00 phone call. You own the site.' },
+  { n: '01', title: 'Design', body: "Editorial, deliberate, and grounded in your brand. No moodboard-of-the-week.",
+    more: ['A visual system, not a one-off mockup', 'Real content and structure from day one', 'Mobile-first and accessible by default', 'Design files and tokens you keep'] },
+  { n: '02', title: 'Engineering', body: 'React, TanStack, Supabase. Ships fast, stays fast, scored honestly.',
+    more: ['React and TypeScript, typed end to end', 'Supabase and Postgres with row-level security', 'Fast, measured and continuously monitored', 'Clean code and a full handover, always'] },
+  { n: '03', title: 'SEO & content', body: 'Structured for discovery. Written by humans who read what they publish.',
+    more: ['Technical SEO and structured data', 'Copy written by people, not templates', 'Analytics and Search Console wired in', 'Ongoing content support on care plans'] },
+  { n: '04', title: 'Managed hosting', body: 'We own uptime, backups, updates and the 03:00 phone call. You own the site.',
+    more: ['Continuous uptime monitoring and alerts', 'SSL, daily backups and tested restores', 'Security patches applied as they land', 'A named person who answers the phone'] },
 ];
 
 const STATS = [
@@ -105,6 +109,7 @@ const IconInstagram = () => (<svg viewBox="0 0 24 24" fill="none" stroke="curren
 export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: (id: LegalDocId) => void }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [openService, setOpenService] = useState<number | null>(null);
   const go = (id: string) => () => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   const goClose = (id: string) => () => { setMenuOpen(false); document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
 
@@ -298,14 +303,24 @@ export function Landing({ onSignIn, onLegal }: { onSignIn: () => void; onLegal: 
             </p>
           </div>
           <div className="klp-grid-cells klp-reveal">
-            {SERVICES.map((s) => (
-              <article key={s.n} className="klp-cell">
-                <span className="num">{s.n}</span>
-                <h3>{s.title}</h3>
-                <p>{s.body}</p>
-                <a className="klp-readmore" onClick={onSignIn} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSignIn(); } }}>Read more <span>→</span></a>
-              </article>
-            ))}
+            {SERVICES.map((s, i) => {
+              const open = openService === i;
+              return (
+                <article key={s.n} className={`klp-cell ${open ? 'open' : ''}`}>
+                  <span className="num">{s.n}</span>
+                  <h3>{s.title}</h3>
+                  <p>{s.body}</p>
+                  <div className="klp-cell-more">
+                    <ul>
+                      {s.more.map((m) => <li key={m}><span className="m" />{m}</li>)}
+                    </ul>
+                  </div>
+                  <button type="button" className="klp-readmore" aria-expanded={open} onClick={() => setOpenService(open ? null : i)}>
+                    {open ? 'Show less' : 'What this includes'} <span>→</span>
+                  </button>
+                </article>
+              );
+            })}
           </div>
         </section>
 

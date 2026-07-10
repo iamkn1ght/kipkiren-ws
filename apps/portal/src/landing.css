@@ -147,8 +147,17 @@
 .klp-cell .num { display: block; font-family: var(--font-mono); font-size: 11px; letter-spacing: .2em; color: var(--teal-deep); }
 .klp-cell h3 { margin-top: 12px; font-family: var(--font-serif); font-size: 24px; line-height: 1.08; letter-spacing: -.01em; }
 .klp-cell p { margin-top: 11px; color: var(--slate); font-size: 14.5px; line-height: 1.6; max-width: none; }
-.klp-readmore { margin-top: 22px; display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--teal-deep); }
+.klp-readmore { margin-top: 22px; display: inline-flex; align-items: center; gap: 8px; background: none; border: none; padding: 0; cursor: pointer; font-family: var(--font-mono); font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--teal-deep); }
 .klp-readmore span { transition: transform .25s ease; }
+/* service card: 'what this includes' expands in place - context, not a page jump */
+.klp-cell-more { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .34s cubic-bezier(.2,.7,.2,1); }
+.klp-cell.open .klp-cell-more { grid-template-rows: 1fr; }
+.klp-cell-more > ul { overflow: hidden; min-height: 0; display: flex; flex-direction: column; gap: 10px; }
+.klp-cell.open .klp-cell-more > ul { margin-top: 18px; }
+.klp-cell-more li { display: flex; gap: 11px; align-items: baseline; font-size: 14px; color: var(--slate); line-height: 1.45; }
+.klp-cell-more li .m { flex: none; width: 5px; height: 9px; margin-top: 3px; border: solid var(--teal-deep); border-width: 0 1.8px 1.8px 0; transform: rotate(45deg); }
+.klp-cell.open .klp-readmore span { transform: rotate(90deg); }
+@media (prefers-reduced-motion: reduce) { .klp-cell-more { transition: none; } }
 .klp-readmore:hover span { transform: translateX(3px); }
 
 /* ---------- philosophy band (teal-deep) ---------- */
