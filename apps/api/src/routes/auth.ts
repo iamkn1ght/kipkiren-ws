@@ -186,7 +186,11 @@ authRouter.post('/signup', signupRateLimit, async (req: Request, res: Response) 
       res.status(err.statusCode).json({ error: err.code, message: err.message });
       return;
     }
-    throw err;
+    // TEMP DIAGNOSTIC (KWS write-block): surface the underlying DB error so we
+    // can see why inserts are failing. Remove once resolved.
+    logger.error({ err }, 'signup_unhandled_error');
+    res.status(500).json({ error: 'signup_write_error', detail: (err as Error)?.message ?? String(err) });
+    return;
   }
 
   // Auto-login: load the profile we just created and mint our own session.
