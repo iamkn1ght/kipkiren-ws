@@ -2,7 +2,7 @@ import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
 import { randomUUID } from 'node:crypto';
 import { loadEnv } from '../config/env.js';
-import { getServiceClient } from '../lib/supabase.js';
+import { getServiceClient, createPasswordVerifyClient } from '../lib/supabase.js';
 import {
   signAccessToken,
   generateRefreshToken,
@@ -130,10 +130,11 @@ authRouter.post('/login', loginRateLimit, async (req: Request, res: Response) =>
   }
   const { email, password } = parsed.data;
 
-  const sb = getServiceClient();
   // Supabase Auth handles password hashing + verification (Argon2 by default).
-  // We then discard its session and mint our own RS256 token.
-  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  // Verify on a THROWAWAY client so signInWithPassword doesn't hijack the shared
+  // service-role client's auth context (which would make the refresh-token
+  // insert below run as the user under RLS and fail). We mint our own RS256 token.
+  const { data, error } = await createPasswordVerifyClient().auth.signInWithPassword({ email, password });
   if (error || !data?.user) {
     // Security trail: failed attempts are audited (rate-limited upstream) so
     // brute force is visible. Fire-and-forget - never delay the response.
@@ -186,11 +187,7 @@ authRouter.post('/signup', signupRateLimit, async (req: Request, res: Response) 
       res.status(err.statusCode).json({ error: err.code, message: err.message });
       return;
     }
-    // TEMP DIAGNOSTIC (KWS write-block): surface the underlying DB error so we
-    // can see why inserts are failing. Remove once resolved.
-    logger.error({ err }, 'signup_unhandled_error');
-    res.status(500).json({ error: 'signup_write_error', detail: (err as Error)?.message ?? String(err) });
-    return;
+    throw err;
   }
 
   // Auto-login: load the profile we just created and mint our own session.
