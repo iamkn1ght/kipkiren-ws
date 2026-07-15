@@ -53,6 +53,7 @@ export function AdminPortal() {
   const [showRaise, setShowRaise] = useState(false);
   const [newTicket, setNewTicket] = useState({ client_id: '', category: 'web', urgency: 'standard', description: '' });
   const [raiseResult, setRaiseResult] = useState<string | null>(null);
+  const [preview, setPreview] = useState<QueueRow | null>(null);
   const [qSearch, setQSearch] = useState('');
   const [qFilter, setQFilter] = useState<'all' | 'on' | 'warn' | 'breached'>('all');
 
@@ -154,7 +155,7 @@ export function AdminPortal() {
                   <div className="sechd"><h2>Active queue</h2><button type="button" onClick={() => setTab('queue')}>View all →</button></div>
                   {loading ? <SkelList rows={4} />
                     : queueRows.length === 0 ? <div className="klp-list"><div className="klp-list-empty">The queue is clear.</div></div>
-                    : <QueueList rows={queueRows.slice(0, 6)} />}
+                    : <QueueList rows={queueRows.slice(0, 6)} onSelect={setPreview} />}
                 </section>
                 <section className="klp-portal-sec">
                   <div className="sechd"><h2>Recent approvals</h2></div>
@@ -190,7 +191,7 @@ export function AdminPortal() {
                       ? <EmptyState
                           title={queueRows.length === 0 ? 'No open tickets' : 'No tickets match'}
                           sub={queueRows.length === 0 ? 'Every ticket is closed or unassigned.' : 'Try a different search term or filter.'} />
-                      : <QueueList rows={filteredQueue} full />}
+                      : <QueueList rows={filteredQueue} full onSelect={setPreview} />}
                   </>
                 )
             )}
@@ -380,24 +381,56 @@ export function AdminPortal() {
           </div>
         )}
       </div>
+
+      {/* ticket preview */}
+      <div className={`klp-overlay ${preview ? 'open' : ''}`} onClick={(e) => { if (e.target === e.currentTarget) setPreview(null); }}>
+        {preview && (() => {
+          const sp = statusPill(preview.status); const sla = slaPill(preview);
+          return (
+            <div className="klp-modal">
+              <div className="klp-modal-hd"><div className="t">{preview.ref}</div><button type="button" className="klp-modal-close" onClick={() => setPreview(null)}>Close</button></div>
+              <div className="klp-modal-body">
+                <div style={cssVars({ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 12 })}>
+                  <span className={`klp-pill ${sp.cls}`}>{sp.label}</span>
+                  <span className={`klp-pill ${sla.cls}`}>{sla.label}</span>
+                </div>
+                <p style={cssVars({ fontSize: 15, lineHeight: 1.6, whiteSpace: 'pre-wrap' })}>{preview.description}</p>
+                <div className="klp-dl" style={cssVars({ marginTop: 20 })}>
+                  <div><div className="k">Client</div><div className="v">{preview.client.business_name} · {preview.client.plan}</div></div>
+                  <div><div className="k">Category</div><div className="v" style={cssVars({ textTransform: 'capitalize' })}>{preview.category}</div></div>
+                  <div><div className="k">Urgency</div><div className="v" style={cssVars({ textTransform: 'capitalize' })}>{preview.urgency}</div></div>
+                  <div><div className="k">Assigned to</div><div className="v">{preview.assigned_to ?? 'Unassigned'}</div></div>
+                  <div><div className="k">Raised</div><div className="v">{fmtDate(preview.created_at)}</div></div>
+                  <div><div className="k">SLA</div><div className="v">{slaLabel(preview.sla_state, preview.ms_until_breach)}</div></div>
+                </div>
+                <div className="klp-portal-actions">
+                  <button type="button" className="klp-btn primary" onClick={() => { setPreview(null); setTab('review'); }}>Go to AI review →</button>
+                  <button type="button" className="klp-btn ghost" onClick={() => setPreview(null)}>Close</button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+      </div>
     </div>
   );
 }
 
-function QueueList({ rows, full }: { rows: QueueRow[]; full?: boolean }) {
+function QueueList({ rows, full, onSelect }: { rows: QueueRow[]; full?: boolean; onSelect?: (r: QueueRow) => void }) {
   return (
     <div className="klp-list">
       {rows.map((r) => {
           const sp = statusPill(r.status);
           const sla = slaPill(r);
           return (
-            <div key={r.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: full ? 'minmax(110px,auto) 1fr auto auto auto' : 'minmax(110px,auto) 1fr auto auto' })}>
+            <button key={r.id} type="button" className="klp-list-row klp-list-row-btn" onClick={() => onSelect?.(r)}
+              style={cssVars({ gridTemplateColumns: full ? 'minmax(110px,auto) 1fr auto auto auto' : 'minmax(110px,auto) 1fr auto auto' })}>
               <span className="ref">{r.ref}</span>
               <span className="title">{r.description}<span style={cssVars({ display: 'block', fontSize: 11, color: 'var(--mid)', fontFamily: 'var(--font-mono)' })}>{r.client.business_name} · {r.assigned_to ?? 'unassigned'}</span></span>
               {full && <span className="date">{fmtDate(r.created_at)}</span>}
               <span className={`klp-pill ${sp.cls}`}>{sp.label}</span>
               <span className={`klp-pill ${sla.cls}`}>{sla.label}</span>
-            </div>
+            </button>
           );
         })}
     </div>

@@ -1162,3 +1162,6 @@
 @media (prefers-reduced-motion: reduce) {
   .klp-portal-nav { scroll-behavior: auto; scroll-snap-type: none; }
 }
+
+/* clickable queue rows (ticket preview) */
+.klp-list-row-btn { -webkit-appearance: none; appearance: none; font: inherit; color: inherit; }
