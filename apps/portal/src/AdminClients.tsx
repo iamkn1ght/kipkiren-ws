@@ -208,10 +208,10 @@ function OnboardModal({ onClose, onDone }: { onClose: () => void; onDone: () => 
             <div className="klp-modal-body klp-onboard-success">
               <div className="tick"><span /></div>
               <h3>{done.client.business_name} is set up.</h3>
-              <p>An invitation was sent so they can set their own password and sign in. We never see or store it.</p>
+              <p>The client record is created. Their email invitation to set a password will be delivered once the email service is switched on. We never see or store their password.</p>
               <div className="klp-onboard-summary">
                 <div><span className="k">Client created</span><span className="v">Yes</span></div>
-                <div><span className="k">Invitation</span><span className="v">{done.invite_status === 'sent' ? 'Sent' : 'Existing account linked'}</span></div>
+                <div><span className="k">Invitation</span><span className="v">{done.invite_status === 'sent' ? 'Queued (email pending)' : 'Existing account linked'}</span></div>
                 <div><span className="k">Retainer plan</span><span className="v">{done.plan_name}</span></div>
                 <div><span className="k">Status</span><span className="v" style={cssVars({ textTransform: 'capitalize' })}>{done.client.status}</span></div>
                 <div><span className="k">Date created</span><span className="v">{fmtDate(done.client.created_at)}</span></div>
