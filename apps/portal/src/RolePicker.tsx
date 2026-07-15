@@ -8,7 +8,10 @@ const OPTIONS: { role: PortalRole; title: string; tag: string; blurb: string }[]
   { role: 'technical_delivery', title: 'Task view', tag: 'Technical delivery', blurb: 'The tasks assigned to you. No client or billing data.' },
 ];
 
-export function RolePicker({ onPick, onExit }: { onPick: (role: PortalRole) => void; onExit?: () => void }) {
+export function RolePicker({ onPick, onExit, audience = 'all' }: { onPick: (role: PortalRole) => void; onExit?: (() => void) | undefined; audience?: 'client' | 'staff' | 'all' }) {
+  const opts = OPTIONS.filter((o) =>
+    audience === 'all' ? true : audience === 'staff' ? o.role !== 'client' : o.role === 'client');
+  const staff = audience === 'staff';
   return (
     <div className="klp">
       <div className="klp-container klp-authwrap">
@@ -22,13 +25,13 @@ export function RolePicker({ onPick, onExit }: { onPick: (role: PortalRole) => v
         </div>
 
         <div className="klp-rp-head">
-          <span className="klp-eyebrow teal">Sign in</span>
+          <span className="klp-eyebrow teal">{staff ? 'Delivery console' : 'Sign in'}</span>
           <h1 className="klp-display-lg">Choose your <em>workspace.</em></h1>
-          <p className="klp-lead">Select how you're signing in. You can switch any time after.</p>
+          <p className="klp-lead">{staff ? 'Sign in to the admin console or your task view.' : "Select how you're signing in. You can switch any time after."}</p>
         </div>
 
         <div className="klp-rp-grid">
-          {OPTIONS.map((o, i) => (
+          {opts.map((o, i) => (
             <button key={o.role} type="button" className="klp-rp-card" onClick={() => onPick(o.role)}>
               <span className="klp-rp-num">{String(i + 1).padStart(2, '0')}</span>
               <span className="klp-rp-tag">{o.tag}</span>
