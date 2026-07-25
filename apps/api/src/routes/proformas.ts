@@ -33,6 +33,41 @@ function kp(): KipkirenPayClient { return kipkirenPayClient ?? getKipkirenPayCli
 function ps(): PaystackClient { return paystackClient ?? getPaystackClient(); }
 
 // ----------------------------------------------------------------------------
+// GET /v1/proformas - list proformas with their line items.
+// Client: own dispatched/decided proformas only (drafts stay internal).
+// Admin/delivery_lead: all proformas.
+// ----------------------------------------------------------------------------
+proformasRouter.get(
+  '/',
+  requireAuth,
+  requireRole('client', 'delivery_lead', 'admin'),
+  async (req: Request, res: Response) => {
+    const sb = getServiceClient();
+    let query = sb
+      .from('proformas')
+      .select(
+        `id, ref, status, subtotal_kes, discount_kes, vat_kes, total_kes,
+         content_hash, dispatched_at, expires_at, created_at,
+         tickets!inner ( id, ref, description, urgency, client_id,
+           clients ( id, business_name, contact_name, email ) ),
+         proforma_line_items ( id, task_name, task_description, estimated_hours, rate_kes_per_hour, amount_kes, position )`,
+      )
+      .order('created_at', { ascending: false })
+      .limit(100);
+
+    if (req.auth!.role === 'client') {
+      if (!req.auth!.clientId) throw new HttpError(403, 'client_context_missing');
+      // Clients see what has actually been sent to them, never internal drafts.
+      query = query.eq('tickets.client_id', req.auth!.clientId).in('status', ['dispatched', 'approved', 'expired']);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    res.json({ proformas: data ?? [] });
+  },
+);
+
+// ----------------------------------------------------------------------------
 // GET /v1/proformas/:id - proforma with line items.
 // Client: own proforma only (via ticket → client join).
 // Admin/delivery_lead: any proforma.

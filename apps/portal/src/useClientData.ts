@@ -38,6 +38,45 @@ export interface ClientService {
   created_at: string;
 }
 
+export interface ClientProformaLine {
+  id: string;
+  task_name: string;
+  task_description: string | null;
+  estimated_hours: number;
+  rate_kes_per_hour: number;
+  amount_kes: number;
+  position: number;
+}
+
+// A proforma as the client sees it. `tickets`/`clients` are PostgREST embeds
+// (to-one, but the API can return them as a single object or a 1-element array).
+export interface ClientProforma {
+  id: string;
+  ref: string;
+  status: 'dispatched' | 'approved' | 'expired' | string;
+  subtotal_kes: number;
+  discount_kes: number;
+  vat_kes: number;
+  total_kes: number;
+  content_hash: string | null;
+  dispatched_at: string | null;
+  expires_at: string | null;
+  created_at: string;
+  tickets: ProformaTicketRel | ProformaTicketRel[] | null;
+  proforma_line_items: ClientProformaLine[];
+}
+interface ProformaClientRel { id: string; business_name: string; contact_name: string; email: string }
+interface ProformaTicketRel {
+  id: string; ref: string; description: string; urgency: string; client_id: string;
+  clients: ProformaClientRel | ProformaClientRel[] | null;
+}
+
+/** Unwrap a PostgREST to-one embed that may arrive as an object or 1-element array. */
+export function firstRel<T>(rel: T | T[] | null | undefined): T | null {
+  if (rel == null) return null;
+  return Array.isArray(rel) ? (rel[0] ?? null) : rel;
+}
+
 //  Dashboard "operating system" composites 
 export type ProjectKind = 'active' | 'review' | 'done' | 'queued';
 export interface ProjectCard {
@@ -87,6 +126,7 @@ interface ClientData {
   tickets: ClientTicket[] | null;
   invoices: ClientInvoice[] | null;
   services: ClientService[] | null;
+  proformas: ClientProforma[] | null;
   dashboard: ClientDashboard | null;
   loading: boolean;
   error: string | null;
@@ -166,6 +206,7 @@ export function useClientData(): ClientData {
   const [tickets, setTickets] = useState<ClientTicket[] | null>(null);
   const [invoices, setInvoices] = useState<ClientInvoice[] | null>(null);
   const [services, setServices] = useState<ClientService[] | null>(null);
+  const [proformas, setProformas] = useState<ClientProforma[] | null>(null);
   const [dashboard, setDashboard] = useState<ClientDashboard | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -176,18 +217,21 @@ export function useClientData(): ClientData {
     try {
       if (DEV_AUTH_BYPASS) {
         setTickets(mockClient.tickets); setInvoices(mockClient.invoices); setServices(mockClient.services);
+        setProformas(mockClient.proformas ?? []);
         setDashboard(mockClient.dashboard);
         setLoading(false);
         return;
       }
-      const [tRes, iRes, sRes] = await Promise.all([
+      const [tRes, iRes, sRes, pRes] = await Promise.all([
         call<{ tickets: ClientTicket[] }>('/v1/tickets'),
         call<{ invoices: ClientInvoice[] }>('/v1/invoices'),
         call<{ services: ClientService[] }>('/v1/services'),
+        call<{ proformas: ClientProforma[] }>('/v1/proformas'),
       ]);
       setTickets(tRes.tickets);
       setInvoices(iRes.invoices);
       setServices(sRes.services);
+      setProformas(pRes.proformas);
       setDashboard(deriveDashboard(tRes.tickets, iRes.invoices, sRes.services));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load data');
@@ -200,7 +244,7 @@ export function useClientData(): ClientData {
     void load();
   }, [load]);
 
-  return { tickets, invoices, services, dashboard, loading, error, reload: load };
+  return { tickets, invoices, services, proformas, dashboard, loading, error, reload: load };
 }
 
 const SERVICE_TYPE_LABELS: Record<string, string> = {

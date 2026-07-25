@@ -37,17 +37,17 @@ interface DraftProforma {
 }
 
 async function nextProformaRef(): Promise<string> {
-  // KWS-XXX format. Sprint 2 uses a simple counter against the existing
-  // row count; production should switch to a sequence (`create sequence
-  // public.kws_proforma_ref_seq`) so concurrent inserts don't collide.
-  // Tracked as a polish item for S4.
+  // Professional KWS-YYYY-###### number (e.g. KWS-2026-000124): year prefix +
+  // a zero-padded running number (the total proforma count - fine at MVP scale).
+  // Switch to a Postgres sequence (`create sequence public.kws_proforma_ref_seq`)
+  // when concurrent inserts could collide.
   const sb = getServiceClient();
   const { count, error } = await sb
     .from('proformas')
     .select('id', { head: true, count: 'exact' });
   if (error) throw new HttpError(500, 'proforma_ref_failed');
   const next = (count ?? 0) + 1;
-  return `KWS-${String(next).padStart(3, '0')}`;
+  return `KWS-${new Date().getFullYear()}-${String(next).padStart(6, '0')}`;
 }
 
 export async function createDraftProforma(input: CreateDraftInput): Promise<DraftProforma> {

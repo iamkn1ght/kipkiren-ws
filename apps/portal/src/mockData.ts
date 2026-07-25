@@ -147,7 +147,24 @@ const clientDashboard: ClientDashboard = {
   },
 };
 
-export const mockClient = { tickets: clientTickets, invoices: clientInvoices, services: clientServices, dashboard: clientDashboard };
+const clientProformas = [
+  {
+    id: 'pf1', ref: 'KWS-2026-000124', status: 'dispatched' as const,
+    subtotal_kes: 13125, discount_kes: 1313, vat_kes: 1893, total_kes: 13705,
+    content_hash: 'demohash', dispatched_at: hrs(-20), expires_at: days(12), created_at: hrs(-22),
+    tickets: {
+      id: 't1', ref: 'KWS-T-0042', description: 'Homepage hero section redesign', urgency: 'standard', client_id: 'dev-client-id',
+      clients: { id: 'dev-client-id', business_name: 'Maridadi Press', contact_name: 'Demo Client', email: 'client@demo.co.ke' },
+    },
+    proforma_line_items: [
+      { id: 'l1', task_name: 'Hero layout + responsive build', task_description: null, estimated_hours: 2.0, rate_kes_per_hour: 3500, amount_kes: 7000, position: 0 },
+      { id: 'l2', task_name: 'Copywriting + image treatment', task_description: null, estimated_hours: 1.25, rate_kes_per_hour: 3500, amount_kes: 4375, position: 1 },
+      { id: 'l3', task_name: 'QA + launch', task_description: null, estimated_hours: 0.5, rate_kes_per_hour: 3500, amount_kes: 1750, position: 2 },
+    ],
+  },
+];
+
+export const mockClient = { tickets: clientTickets, invoices: clientInvoices, services: clientServices, proformas: clientProformas, dashboard: clientDashboard };
 
 //  Task view 
 const activeTasks: Task[] = [

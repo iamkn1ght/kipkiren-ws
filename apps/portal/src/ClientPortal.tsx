@@ -10,8 +10,8 @@ import { useState, type FormEvent, type CSSProperties, type ReactNode } from 're
 import { useAuth, useApi } from './auth.tsx';
 import { KlpToggle } from './klpTheme.tsx';
 import {
-  useClientData, serviceTypeLabel, formatKes,
-  type ClientTicket, type ClientInvoice,
+  useClientData, serviceTypeLabel, formatKes, firstRel,
+  type ClientTicket, type ClientInvoice, type ClientProforma,
 } from './useClientData.ts';
 import './landing.css';
 
@@ -81,14 +81,14 @@ function ticketPill(status: string): { cls: string; label: string } {
 
 export function ClientPortal() {
   const { session, signOut } = useAuth();
-  const { tickets, invoices, services, loading, reload } = useClientData();
+  const { tickets, invoices, services, proformas, loading, reload } = useClientData();
   const [view, setView] = useState<View>('overview');
 
   const name = session?.email?.split('@')[0] ?? 'there';
   const openTickets = (tickets ?? []).filter((t) => t.status !== 'complete' && t.status !== 'closed');
   const activeServices = (services ?? []).filter((s) => s.status === 'active' || s.status === 'expiring');
   const dueInvoices = (invoices ?? []).filter((i) => !i.paid_at);
-  const awaiting = openTickets.filter((t) => t.status === 'dispatched' || t.status === 'ai_draft');
+  const awaitingProformas = (proformas ?? []).filter((p) => p.status === 'dispatched');
 
   return (
     <div className="klp">
@@ -112,7 +112,7 @@ export function ClientPortal() {
                   <span>{n.label}</span>
                   {n.id === 'overview' && view === 'overview' && <span>→</span>}
                   {n.id === 'invoices' && dueInvoices.length > 0 && <span className="badge">{dueInvoices.length}</span>}
-                  {n.id === 'proformas' && awaiting.length > 0 && <span className="badge">{awaiting.length}</span>}
+                  {n.id === 'proformas' && awaitingProformas.length > 0 && <span className="badge">{awaitingProformas.length}</span>}
                 </button>
               ))}
             </nav>
@@ -139,9 +139,9 @@ export function ClientPortal() {
               </div>
             </header>
 
-            {view === 'overview' && <Overview name={name} tickets={tickets} invoices={invoices} openCount={openTickets.length} activeCount={activeServices.length} awaitingCount={awaiting.length} loading={loading} onNav={setView} />}
+            {view === 'overview' && <Overview name={name} tickets={tickets} invoices={invoices} openCount={openTickets.length} activeCount={activeServices.length} awaitingCount={awaitingProformas.length} loading={loading} onNav={setView} />}
             {view === 'tickets' && <TicketList tickets={tickets} loading={loading} onNew={() => setView('new')} />}
-            {view === 'proformas' && <ProformaView awaiting={awaiting} />}
+            {view === 'proformas' && <ProformaView proformas={proformas} loading={loading} reload={reload} />}
             {view === 'invoices' && <InvoiceList invoices={invoices} loading={loading} />}
             {view === 'services' && <ServiceList services={services} loading={loading} />}
             {view === 'new' && <NewTicket onDone={() => { reload(); setView('tickets'); }} />}
@@ -299,55 +299,175 @@ function ServiceList({ services, loading }: { services: import('./useClientData.
 }
 
 //  proformas 
-function ProformaView({ awaiting }: { awaiting: ClientTicket[] }) {
+const COMPANY = {
+  name: 'Kipkiren Web Services',
+  tagline: 'A Kipkiren Teknolojia company',
+  location: 'Nairobi, Kenya',
+  email: 'studio@kipkiren.co.ke',
+  site: 'ws.kipkiren.co.ke',
+};
+
+function proformaStatusPill(status: string): { cls: string; label: string } {
+  if (status === 'approved') return { cls: 'approved', label: 'Accepted' };
+  if (status === 'expired') return { cls: 'warn', label: 'Expired' };
+  if (status === 'dispatched') return { cls: 'quoted', label: 'Awaiting your approval' };
+  return { cls: 'draft', label: status.replace(/_/g, ' ') };
+}
+
+type PayMethod = 'mpesa' | 'card' | 'bank';
+const PAY_METHODS: readonly (readonly [PayMethod, string, string])[] = [
+  ['mpesa', 'M-Pesa', 'STK push to your Safaricom line'],
+  ['card', 'Card', 'Visa / Mastercard via Paystack'],
+  ['bank', 'Bank transfer', 'We email account details; you pay offline'],
+];
+
+function ProformaView({ proformas, loading, reload }: { proformas: ClientProforma[] | null; loading: boolean; reload: () => void }) {
+  const call = useApi();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [checkout, setCheckout] = useState(false);
-  const [attempted, setAttempted] = useState(false);
+  const [method, setMethod] = useState<PayMethod>('mpesa');
+  const [msisdn, setMsisdn] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null);
+
+  const rows = proformas ?? [];
+  const selected = rows.find((p) => p.id === selectedId) ?? (rows.length === 1 ? rows[0]! : null);
+
+  if (loading) return <div className="klp-list"><div className="klp-list-empty">Loading...</div></div>;
+  if (rows.length === 0) return <EmptyState icon={ICONS.proforma} title="No proformas yet" body="When we quote one of your requests, the proforma appears here to review, approve and pay." />;
+
+  // List view (more than one, none selected yet).
+  if (!selected) {
+    return (
+      <div className="klp-list">
+        {rows.map((p) => {
+          const pill = proformaStatusPill(p.status);
+          const t = firstRel(p.tickets);
+          return (
+            <button key={p.id} type="button" className="klp-list-row klp-list-row-btn" style={cssVars({ gridTemplateColumns: 'minmax(120px,auto) 1fr auto auto' })}
+              onClick={() => { setSelectedId(p.id); setCheckout(false); setResult(null); }}>
+              <span className="ref">{p.ref}</span>
+              <span className="title">{t?.description ?? 'Proforma'}</span>
+              <span className="amt">KES {formatKes(p.total_kes)}</span>
+              <span className={`klp-pill ${pill.cls}`}>{pill.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  const p = selected;
+  const t = firstRel(p.tickets);
+  const client = firstRel(t?.clients);
+  const pill = proformaStatusPill(p.status);
+  const lines = [...p.proforma_line_items].sort((a, b) => a.position - b.position);
+  const canPay = p.status === 'dispatched';
+
+  const doApprove = async () => {
+    if (submitting) return;
+    if (method === 'bank') {
+      setResult({ ok: true, msg: `Bank transfer selected. We'll email our account details - quote ${p.ref} as the reference. Scope locks and work begins once payment reflects.` });
+      return;
+    }
+    if (method === 'mpesa' && msisdn.trim().length < 9) { setResult({ ok: false, msg: 'Enter the Safaricom number that should receive the M-Pesa prompt.' }); return; }
+    setSubmitting(true); setResult(null);
+    try {
+      const body = method === 'mpesa' ? { rail: 'mpesa', msisdn: msisdn.trim() } : { rail: 'card' };
+      const res = await call<{ rail: string; status?: string; authorization_url?: string }>(`/v1/proformas/${p.id}/approve`, { method: 'POST', body });
+      if (res.rail === 'card' && res.authorization_url) { window.location.href = res.authorization_url; return; }
+      setResult({ ok: true, msg: 'Check your phone - an M-Pesa prompt has been sent. Approve it to confirm. Scope locks the moment payment clears.' });
+      reload();
+    } catch {
+      // The rail (Kipkiren Pay / Paystack) is not activated yet, or the gateway
+      // is temporarily unavailable. Be honest and offer the offline path.
+      setResult({ ok: false, msg: 'Live payment is completing activation, so the charge cannot be taken just yet. Your acceptance is saved - use bank transfer, or we\'ll email you the moment M-Pesa opens.' });
+    } finally { setSubmitting(false); }
+  };
 
   return (
-    <div className="klp-card klp-panel" style={cssVars({ maxWidth: 720 })}>
-      <div className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>Proforma · KWS-042</div>
-      <h2 className="klp-display-md" style={cssVars({ marginTop: 8 })}>Homepage hero section redesign</h2>
-      <div className="klp-mono" style={cssVars({ color: 'var(--mid)', marginTop: 8 })}>Submitted 9 Apr 2026 · Growth plan</div>
-      <span className="klp-pill quoted" style={cssVars({ marginTop: 16, display: 'inline-block' })}>Awaiting your approval</span>
-
-      <div className="klp-dl" style={cssVars({ marginTop: 24 })}>
-        <div><div className="k">Line items</div><div className="v">5 sub-tasks · 3.75 hrs</div></div>
-        <div><div className="k">Rate</div><div className="v">KES 3,500 / hr</div></div>
-      </div>
-      <div style={cssVars({ marginTop: 20 })}>
-        <div className="klp-totrow"><span className="l">Subtotal</span><span className="r">KES 13,125</span></div>
-        <div className="klp-totrow"><span className="l">Growth discount (10%)</span><span className="r" style={cssVars({ color: 'var(--teal-deep)' })}>less KES 1,313</span></div>
-        <div className="klp-totrow"><span className="l">VAT 16%</span><span className="r">KES 1,893</span></div>
-        <div className="klp-totrow total"><span className="l">Total due</span><span className="r">KES 13,705</span></div>
-      </div>
-
-      {!checkout && (
-        <div className="klp-portal-actions">
-          <button type="button" className="klp-btn primary" onClick={() => setCheckout(true)}>Approve & pay →</button>
-          <button type="button" className="klp-btn ghost">Request revision</button>
-        </div>
-      )}
-
-      {checkout && (
-        <div style={cssVars({ marginTop: 24, paddingTop: 24, borderTop: '1px solid var(--hairline)' })}>
-          <div className="klp-mono" style={cssVars({ color: 'var(--mid)', marginBottom: 12 })}>Checkout · KES 13,705</div>
-          <div className="klp-dl">
-            <div><div className="k">Pay by M-Pesa</div><div className="v">STK push to your Safaricom line</div></div>
-            <div><div className="k">Pay by card</div><div className="v">Visa / Mastercard via Paystack</div></div>
+    <div>
+      {rows.length > 1 && <button type="button" className="klp-back klp-noprint" onClick={() => { setSelectedId(null); setCheckout(false); setResult(null); }}>‹ All proformas</button>}
+      <div className="klp-card klp-panel klp-proforma-doc" style={cssVars({ maxWidth: 760, marginTop: rows.length > 1 ? 16 : 0 })}>
+        <div className="klp-pf-head">
+          <div className="klp-pf-co">
+            <div className="klp-pf-co-name">{COMPANY.name}</div>
+            <div className="klp-pf-co-sub">{COMPANY.tagline}<br />{COMPANY.location}<br />{COMPANY.email} · {COMPANY.site}</div>
           </div>
-          {attempted
-            ? <div className="klp-note amber" style={cssVars({ marginTop: 16 })}>Kipkiren Pay is completing activation, so the live charge cannot be taken just yet. Everything up to this point is saved. We will email you the moment payment opens, or you can pay by invoice today.</div>
-            : <div className="klp-note" style={cssVars({ marginTop: 16 })}>Scope locks the moment payment confirms. Work begins within 2 business days.</div>}
-          <div className="klp-portal-actions">
-            <button type="button" className="klp-btn primary" onClick={() => setAttempted(true)}>Send STK push</button>
-            <button type="button" className="klp-btn ghost" onClick={() => setCheckout(false)}>Cancel</button>
+          <div className="klp-pf-meta">
+            <div className="klp-pf-title">PROFORMA</div>
+            <div className="klp-pf-ref">{p.ref}</div>
+            <span className={`klp-pill ${pill.cls}`}>{pill.label}</span>
           </div>
         </div>
-      )}
 
-      {awaiting.length > 0 && !checkout && (
-        <div className="klp-note" style={cssVars({ marginTop: 24 })}>You have {awaiting.length} proforma{awaiting.length !== 1 ? 's' : ''} awaiting review.</div>
-      )}
+        <div className="klp-dl" style={cssVars({ marginTop: 20 })}>
+          <div><div className="k">Billed to</div><div className="v">{client?.business_name ?? '-'}{client?.contact_name ? <span style={cssVars({ display: 'block', color: 'var(--mid)', fontSize: 13 })}>{client.contact_name} · {client.email}</span> : null}</div></div>
+          <div><div className="k">Request</div><div className="v">{t?.ref ?? '-'}</div></div>
+          <div><div className="k">Issued</div><div className="v">{fmtDate(p.dispatched_at ?? p.created_at)}</div></div>
+          <div><div className="k">Valid until</div><div className="v">{p.expires_at ? fmtDate(p.expires_at) : '30 days from issue'}</div></div>
+        </div>
+
+        {t?.description && <p style={cssVars({ marginTop: 18, fontSize: 15, lineHeight: 1.55 })}>{t.description}</p>}
+
+        <div className="klp-pf-lines">
+          <div className="klp-pf-lrow klp-pf-lhead"><span>Item</span><span className="num">Hrs</span><span className="num">Rate</span><span className="num">Amount</span></div>
+          {lines.map((li) => (
+            <div key={li.id} className="klp-pf-lrow">
+              <span>{li.task_name}{li.task_description ? <span className="klp-pf-ldesc">{li.task_description}</span> : null}</span>
+              <span className="num">{li.estimated_hours.toFixed(2)}</span>
+              <span className="num">{formatKes(li.rate_kes_per_hour)}</span>
+              <span className="num">{formatKes(li.amount_kes)}</span>
+            </div>
+          ))}
+        </div>
+
+        <div style={cssVars({ marginTop: 16 })}>
+          <div className="klp-totrow"><span className="l">Subtotal</span><span className="r">KES {formatKes(p.subtotal_kes)}</span></div>
+          {p.discount_kes > 0 && <div className="klp-totrow"><span className="l">Discount</span><span className="r" style={cssVars({ color: 'var(--teal-deep)' })}>less KES {formatKes(p.discount_kes)}</span></div>}
+          <div className="klp-totrow"><span className="l">VAT (16%)</span><span className="r">KES {formatKes(p.vat_kes)}</span></div>
+          <div className="klp-totrow total"><span className="l">Total due</span><span className="r">KES {formatKes(p.total_kes)}</span></div>
+        </div>
+
+        <div className="klp-pf-terms">
+          <div className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>Payment</div>
+          <p>Approve below to pay by M-Pesa or card. For bank transfer, quote <strong>{p.ref}</strong> as your reference. Scope locks and work begins the moment payment confirms.</p>
+        </div>
+
+        {!checkout && (
+          <div className="klp-portal-actions klp-noprint">
+            {canPay && <button type="button" className="klp-btn primary" onClick={() => { setCheckout(true); setResult(null); }}>Accept &amp; pay →</button>}
+            <button type="button" className="klp-btn ghost" onClick={() => window.print()}>Print / Download PDF</button>
+          </div>
+        )}
+        {result && !checkout && <div className={`klp-note ${result.ok ? '' : 'amber'} klp-noprint`} style={cssVars({ marginTop: 16 })}>{result.msg}</div>}
+
+        {checkout && canPay && (
+          <div className="klp-pf-checkout klp-noprint" style={cssVars({ marginTop: 22, paddingTop: 22, borderTop: '1px solid var(--hairline)' })}>
+            <div className="klp-mono" style={cssVars({ color: 'var(--mid)', marginBottom: 12 })}>Checkout · KES {formatKes(p.total_kes)}</div>
+            <div className="klp-pf-methods" role="radiogroup" aria-label="Payment method">
+              {PAY_METHODS.map(([m, label, sub]) => (
+                <button key={m} type="button" role="radio" aria-checked={method === m} className={`klp-pf-method ${method === m ? 'sel' : ''}`} onClick={() => { setMethod(m); setResult(null); }}>
+                  <span className="klp-pf-method-t">{label}</span><span className="klp-pf-method-s">{sub}</span>
+                </button>
+              ))}
+            </div>
+            {method === 'mpesa' && (
+              <div style={cssVars({ marginTop: 14 })}>
+                <label className="klp-field-label" htmlFor="pf-msisdn">Safaricom number</label>
+                <input id="pf-msisdn" className="klp-field-input" inputMode="tel" autoComplete="tel" placeholder="07XX XXX XXX" value={msisdn} onChange={(e) => setMsisdn(e.target.value)} disabled={submitting} />
+              </div>
+            )}
+            {result && <div className={`klp-note ${result.ok ? '' : 'amber'}`} style={cssVars({ marginTop: 16 })}>{result.msg}</div>}
+            <div className="klp-portal-actions">
+              <button type="button" className="klp-btn primary" disabled={submitting} onClick={() => void doApprove()}>
+                {submitting ? 'Working...' : method === 'mpesa' ? 'Send M-Pesa prompt' : method === 'card' ? 'Pay by card →' : 'Confirm bank transfer'}
+              </button>
+              <button type="button" className="klp-btn ghost" disabled={submitting} onClick={() => { setCheckout(false); setResult(null); }}>Cancel</button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

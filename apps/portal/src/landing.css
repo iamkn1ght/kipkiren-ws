@@ -1165,3 +1165,44 @@
 
 /* clickable queue rows (ticket preview) */
 .klp-list-row-btn { -webkit-appearance: none; appearance: none; font: inherit; color: inherit; }
+
+/* ============================================================================
+   CLIENT PROFORMA DOCUMENT + CHECKOUT (Sprint 1)
+   ============================================================================ */
+.klp-pf-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; flex-wrap: wrap; }
+.klp-pf-co-name { font-family: var(--font-serif); font-size: 22px; letter-spacing: -.01em; }
+.klp-pf-co-sub { margin-top: 6px; font-size: 12.5px; line-height: 1.6; color: var(--mid); }
+.klp-pf-meta { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.klp-pf-title { font-family: var(--font-mono); font-size: 11px; letter-spacing: .28em; color: var(--mid); }
+.klp-pf-ref { font-family: var(--font-mono); font-size: 15px; font-variant-numeric: tabular-nums; }
+
+.klp-pf-lines { margin-top: 20px; border: 1px solid var(--hairline); border-radius: 14px; overflow: hidden; }
+.klp-pf-lrow { display: grid; grid-template-columns: 1fr 56px 90px 104px; gap: 12px; padding: 12px 16px; align-items: baseline; font-size: 14px; }
+.klp-pf-lrow + .klp-pf-lrow { border-top: 1px solid var(--hairline); }
+.klp-pf-lrow .num { text-align: right; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.klp-pf-lhead { background: color-mix(in oklab, var(--paper) 55%, var(--muted)); font-family: var(--font-mono); font-size: 9px; letter-spacing: .16em; text-transform: uppercase; color: var(--mid); }
+.klp-pf-ldesc { display: block; margin-top: 3px; font-size: 12px; color: var(--mid); }
+
+.klp-pf-terms { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--hairline); }
+.klp-pf-terms p { margin-top: 6px; font-size: 13.5px; line-height: 1.6; color: var(--slate); }
+
+.klp-pf-methods { display: grid; gap: 10px; }
+@media (min-width: 560px) { .klp-pf-methods { grid-template-columns: repeat(3, 1fr); } }
+.klp-pf-method { display: flex; flex-direction: column; gap: 4px; text-align: left; padding: 14px 16px; border: 1px solid var(--hairline); border-radius: 14px; background: var(--card); cursor: pointer; transition: border-color .18s ease, background .18s ease; }
+.klp-pf-method.sel { border-color: var(--teal-deep); background: var(--teal-light); }
+.klp-pf-method-t { font-family: var(--font-serif); font-size: 16px; }
+.klp-pf-method-s { font-size: 12px; color: var(--mid); }
+
+@media (max-width: 559.98px) {
+  .klp-pf-lrow { grid-template-columns: 1fr auto; }
+  .klp-pf-lrow > .num:nth-child(2), .klp-pf-lrow > .num:nth-child(3) { display: none; }
+}
+
+/* print / PDF: show only the proforma document */
+@media print {
+  .klp-topbrand, .klp-portal-aside, .klp-portal-head, .klp-noprint, .klp-toast { display: none !important; }
+  .klp, .klp-container, .klp-portal, .klp-portal-layout, .klp-portal-content { display: block !important; padding: 0 !important; margin: 0 !important; max-width: none !important; }
+  .klp::before { display: none !important; }
+  .klp-proforma-doc { border: none !important; box-shadow: none !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
+  .klp-pf-method, .klp-pf-checkout { display: none !important; }
+}

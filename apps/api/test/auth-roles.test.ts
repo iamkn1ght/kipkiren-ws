@@ -37,6 +37,7 @@ const KAMAU_FORBIDDEN_ROUTES: Array<['get' | 'post' | 'put', string]> = [
   ['post', '/v1/tickets'],
   ['get', '/v1/tickets/00000000-0000-0000-0000-000000000050'],
   ['put', '/v1/tickets/00000000-0000-0000-0000-000000000050/assign'],
+  ['get', '/v1/proformas'],
   ['get', '/v1/proformas/00000000-0000-0000-0000-000000000051'],
   ['post', '/v1/proformas/00000000-0000-0000-0000-000000000051/approve'],
   ['put', '/v1/proformas/00000000-0000-0000-0000-000000000051/review'],
