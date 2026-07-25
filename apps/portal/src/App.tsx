@@ -21,6 +21,12 @@ const AUDIENCE = (((import.meta.env.VITE_PORTAL_AUDIENCE as string) || 'all').tr
 const CLIENT_URL = 'https://ws.kipkiren.co.ke';
 const STAFF_URL = 'https://studio.kipkiren.co.ke';
 
+// The staff console gets its own tab identity; the client build keeps the
+// marketing <title> from index.html.
+if (AUDIENCE === 'staff' && typeof document !== 'undefined') {
+  document.title = 'Kipkiren WS · Delivery Console';
+}
+
 function audienceAllows(portal: PortalRole): boolean {
   if (AUDIENCE === 'all') return true;
   if (AUDIENCE === 'client') return portal === 'client';
