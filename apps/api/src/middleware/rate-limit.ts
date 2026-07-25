@@ -27,6 +27,17 @@ export const signupRateLimit = rateLimit({
   message: { error: 'rate_limited', endpoint: 'auth_signup' },
 });
 
+// Public forgot-password + set-password. Per-IP, strict - these hit Supabase
+// Auth (recovery email + password update) and must resist enumeration/abuse.
+export const passwordResetRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  standardHeaders: 'draft-7',
+  legacyHeaders: false,
+  keyGenerator: (req) => req.ip ?? 'anon',
+  message: { error: 'rate_limited', endpoint: 'auth_password_reset' },
+});
+
 export const ticketRateLimit = rateLimit({
   windowMs: 60 * 60 * 1000,
   limit: 10,

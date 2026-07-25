@@ -1206,3 +1206,14 @@
   .klp-proforma-doc { border: none !important; box-shadow: none !important; max-width: none !important; margin: 0 !important; padding: 0 !important; }
   .klp-pf-method, .klp-pf-checkout { display: none !important; }
 }
+
+/* password strength meter + auth links (Sprint 2) */
+.klp-pwmeter { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+.klp-pwmeter-bars { display: flex; gap: 4px; flex: 1; }
+.klp-pwmeter-bars span { height: 4px; flex: 1; border-radius: 999px; background: var(--hairline); transition: background .2s ease; }
+.klp-pwmeter-bars span.on.s1 { background: var(--amber-deep); }
+.klp-pwmeter-bars span.on.s2 { background: var(--amber); }
+.klp-pwmeter-bars span.on.s3 { background: var(--teal); }
+.klp-pwmeter-bars span.on.s4 { background: var(--teal-deep); }
+.klp-pwmeter-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--mid); min-width: 62px; text-align: right; }
+.klp-login-forgot { display: block; margin-top: 12px; font-size: 12.5px; }

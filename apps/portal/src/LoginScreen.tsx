@@ -37,7 +37,7 @@ const INTRO: Record<PortalRole, { eyebrow: string; hint: string; list: string[] 
   },
 };
 
-export function LoginScreen({ role, onBack, onCreateAccount }: { role: PortalRole; onBack: () => void; onCreateAccount?: (() => void) | undefined }) {
+export function LoginScreen({ role, onBack, onCreateAccount, onForgot }: { role: PortalRole; onBack: () => void; onCreateAccount?: (() => void) | undefined; onForgot?: (() => void) | undefined }) {
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -111,6 +111,7 @@ export function LoginScreen({ role, onBack, onCreateAccount }: { role: PortalRol
                 <button type="submit" className="klp-btn primary full" disabled={submitting}>
                   {submitting ? 'Signing in...' : 'Sign in →'}
                 </button>
+                {onForgot && <button type="button" className="klp-auth-link klp-login-forgot" onClick={onForgot}>Forgot password?</button>}
               </form>
               {onCreateAccount
                 ? <p className="klp-auth-terms">New to Kipkiren? <button type="button" className="klp-auth-link" onClick={onCreateAccount}>Create an account</button></p>

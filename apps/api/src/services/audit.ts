@@ -73,7 +73,9 @@ export type AuditEventType =
   | 'client_invite_resent'
   | 'client_password_reset_sent'
   | 'auth_login_succeeded'
-  | 'auth_login_failed';
+  | 'auth_login_failed'
+  | 'auth_password_reset_requested'
+  | 'auth_password_set';
 
 export interface AuditEventInput {
   actor_id: string | null;

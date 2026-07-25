@@ -9,7 +9,7 @@ import {
   hashRefreshToken,
 } from '../lib/tokens.js';
 import { requireAuth } from '../middleware/auth.js';
-import { loginRateLimit, signupRateLimit } from '../middleware/rate-limit.js';
+import { loginRateLimit, signupRateLimit, passwordResetRateLimit } from '../middleware/rate-limit.js';
 import { HttpError } from '../middleware/error.js';
 import { writeAuditEvent } from '../services/audit.js';
 import {
@@ -203,6 +203,70 @@ authRouter.post('/signup', signupRateLimit, async (req: Request, res: Response) 
     client: { id: result.client.id, business_name: result.client.business_name },
     plan_name: result.plan_name,
   });
+});
+
+// ----------------------------------------------------------------------------
+// POST /v1/auth/forgot-password - request a reset email (Supabase recovery).
+// Always 200 (never reveal whether the email exists). Delivery depends on the
+// email provider being configured; the request itself is always accepted.
+// ----------------------------------------------------------------------------
+const ForgotInput = z.object({ email: z.string().trim().toLowerCase().email() });
+authRouter.post('/forgot-password', passwordResetRateLimit, async (req: Request, res: Response) => {
+  const parsed = ForgotInput.safeParse(req.body);
+  if (parsed.success) {
+    const env = loadEnv();
+    const redirectTo = `${env.allowedOrigins[0] ?? 'https://ws.kipkiren.co.ke'}/`;
+    try {
+      await getServiceClient().auth.resetPasswordForEmail(parsed.data.email, { redirectTo });
+    } catch (err) {
+      logger.warn({ err }, 'forgot_password_send_failed');
+    }
+    void writeAuditEvent({ actor_id: null, actor_role: null, event_type: 'auth_password_reset_requested', entity_type: 'auth', entity_id: parsed.data.email, payload_snapshot: { self_service: true, ip: req.ip ?? null } });
+  }
+  res.json({ ok: true });
+});
+
+// ----------------------------------------------------------------------------
+// POST /v1/auth/set-password - complete an invite OR a password recovery.
+// The client passes the access_token from the email link's URL hash; we use it
+// to set the new password via Supabase Auth. Works for both `type=invite` and
+// `type=recovery` (both carry a short-lived, one-time user access token).
+// ----------------------------------------------------------------------------
+const SetPasswordInput = z.object({
+  access_token: z.string().min(20),
+  password: z.string().min(8, 'Use at least 8 characters').max(72),
+});
+authRouter.post('/set-password', passwordResetRateLimit, async (req: Request, res: Response) => {
+  const parsed = SetPasswordInput.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: 'invalid_input', message: parsed.error.issues[0]?.message ?? 'Invalid details' });
+    return;
+  }
+  const env = loadEnv();
+  let userId: string | null = null;
+  try {
+    const r = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
+      method: 'PUT',
+      headers: {
+        apikey: env.SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${parsed.data.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ password: parsed.data.password }),
+    });
+    if (!r.ok) {
+      res.status(400).json({ error: 'link_invalid', message: 'This link has expired or was already used. Please request a new one.' });
+      return;
+    }
+    const user = (await r.json()) as { id?: string };
+    userId = user.id ?? null;
+  } catch (err) {
+    logger.error({ err }, 'set_password_failed');
+    res.status(502).json({ error: 'set_password_unavailable', message: 'Could not set your password just now. Please try again.' });
+    return;
+  }
+  void writeAuditEvent({ actor_id: userId, actor_role: null, event_type: 'auth_password_set', entity_type: 'auth', entity_id: userId ?? 'unknown', payload_snapshot: { ip: req.ip ?? null } });
+  res.json({ ok: true });
 });
 
 // ----------------------------------------------------------------------------

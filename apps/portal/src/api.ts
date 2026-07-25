@@ -148,6 +148,16 @@ export async function getPublicPlans(): Promise<PublicPlan[]> {
   return r.plans;
 }
 
+/** Request a password-reset email. Always resolves (no account enumeration). */
+export async function forgotPassword(email: string): Promise<void> {
+  await apiRequest('/v1/auth/forgot-password', { method: 'POST', body: { email } });
+}
+
+/** Set a new password using the access token from an invite/recovery email link. */
+export async function setPassword(accessToken: string, password: string): Promise<void> {
+  await apiRequest('/v1/auth/set-password', { method: 'POST', body: { access_token: accessToken, password } });
+}
+
 export async function refreshSession(): Promise<string | null> {
   const token = await rawRefresh();
   if (token) accessToken = token;

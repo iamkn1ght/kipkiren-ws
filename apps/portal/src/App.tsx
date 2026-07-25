@@ -5,6 +5,7 @@ import { LegalPage, type LegalDocId } from './Legal.tsx';
 import { RolePicker } from './RolePicker.tsx';
 import { LoginScreen } from './LoginScreen.tsx';
 import { SignupScreen } from './SignupScreen.tsx';
+import { ForgotPassword, SetPassword, parseRecoveryHash } from './ResetPassword.tsx';
 import { ClientPortal } from './ClientPortal.tsx';
 import { AdminPortal } from './AdminPortal.tsx';
 import { TaskView } from './TaskView.tsx';
@@ -62,11 +63,25 @@ function Router() {
   const [entered, setEntered] = useState(AUDIENCE === 'staff');
   const [authMode, setAuthMode] = useState<'default' | 'signup'>('default');
   const [legal, setLegal] = useState<LegalDocId | null>(null);
+  const [showForgot, setShowForgot] = useState(false);
+  // Invite/recovery links land with a token in the URL hash. Parse once at mount.
+  const [recovery, setRecovery] = useState(() => parseRecoveryHash());
 
   const enterSignIn = () => { setAuthMode('default'); setEntered(true); if (AUDIENCE === 'client') pickRole('client'); };
   const enterSignUp = () => { setAuthMode('signup'); setEntered(true); };
 
   if (bootstrapping) return <div className="boot">Loading...</div>;
+
+  // Highest priority: completing an invite or a password recovery from an email
+  // link (works on any domain/audience, signed in or not).
+  if (recovery) {
+    return <SetPassword ctx={recovery} onDone={() => { setRecovery(null); void signOut(); setEntered(true); }} />;
+  }
+
+  // Forgot-password screen (reached from the login screen).
+  if (showForgot && !session) {
+    return <ForgotPassword onBack={() => setShowForgot(false)} />;
+  }
 
   // Signed in: route by REAL JWT role, but block the wrong audience for this domain.
   if (session) {
@@ -96,6 +111,7 @@ function Router() {
   // Login (themed by the picked workspace).
   if (picked) {
     return <LoginScreen role={picked} onBack={() => void signOut()}
+      onForgot={() => setShowForgot(true)}
       onCreateAccount={picked === 'client' && AUDIENCE !== 'staff' ? enterSignUp : undefined} />;
   }
 

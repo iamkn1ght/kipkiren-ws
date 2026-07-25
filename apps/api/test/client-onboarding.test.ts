@@ -244,3 +244,26 @@ describe('onboarding routes - role perimeter', () => {
     expect(res.body.error).toBe('invalid_signup');
   });
 });
+
+describe('password recovery routes (Sprint 2)', () => {
+  let app: Express;
+  beforeAll(() => { app = buildApp(); });
+
+  it('forgot-password is public and never enumerates (bad email still -> 200 ok)', async () => {
+    const res = await request(app).post('/v1/auth/forgot-password').send({ email: 'not-an-email' });
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ ok: true });
+  });
+
+  it('set-password validates its body before any Supabase call (short password -> 400)', async () => {
+    const res = await request(app).post('/v1/auth/set-password').send({ access_token: 'x'.repeat(30), password: 'short' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('invalid_input');
+  });
+
+  it('set-password rejects a missing/short token (400, not auth-gated)', async () => {
+    const res = await request(app).post('/v1/auth/set-password').send({ access_token: 'nope', password: 'longenough123' });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toBe('invalid_input');
+  });
+});
