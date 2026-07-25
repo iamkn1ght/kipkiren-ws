@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="kg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#13A890"/><stop offset="1" stop-color="#0D5C4E"/></linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0B0B0C"/><stop offset="1" stop-color="#0f1917"/></linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <g transform="translate(96,132)">
+    <rect width="120" height="120" rx="26" fill="#0B0B0C" stroke="#1f2b28" stroke-width="1.5"/>
+    <path d="M60 17 L103 60 L60 103 L17 60 Z" fill="url(#kg)"/>
+    <circle cx="60" cy="60" r="8.5" fill="#F5A623"/>
+  </g>
+  <text x="98" y="352" font-family="Georgia, 'Times New Roman', serif" font-size="74" font-weight="600" fill="#F7F4EE">Kipkiren Web Services</text>
+  <text x="100" y="410" font-family="Georgia, 'Times New Roman', serif" font-size="30" fill="#9aa39f">Precision websites, quietly operated.</text>
+  <text x="100" y="464" font-family="'Courier New', monospace" font-size="19" fill="#13A890" letter-spacing="3">DESIGN &#183; ENGINEERING &#183; SEO &#183; HOSTING</text>
+  <rect x="98" y="520" width="1004" height="1.5" fill="#1f2b28"/>
+  <text x="98" y="566" font-family="'Courier New', monospace" font-size="19" fill="#6b746f" letter-spacing="2">WS.KIPKIREN.CO.KE &#183; NAIROBI</text>
+</svg>
