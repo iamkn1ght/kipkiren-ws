@@ -1,27 +1,23 @@
-import { useEffect, useState, type CSSProperties } from 'react';
+import { memo, useEffect, useRef, type MouseEvent } from 'react';
 import { KlpToggle } from './klpTheme.tsx';
 import { LEGAL_NAV, type LegalDocId } from './Legal.tsx';
+import { initLanding } from './landingFx.ts';
 import './landing.css';
+import './landing-x.css';
 
 /**
- * Public landing page, rebuilt to the warm editorial design reference
- * (design_reference/index.html + styles.css). Self-contained warm "paper"
- * system scoped under .klp; Playfair Display / Syne / JetBrains Mono; hairline
- * dividers, ink pill buttons, teal-deep philosophy band. onSignIn() enters the
- * portal flow; nav links smooth-scroll to sections.
+ * Public landing page, v0.3 "the live site, elevated" (reviewed as a design
+ * prototype, then ported). Same palette, copy, light / warm-dark modes and
+ * section order as before, plus: page tone that follows the scroll, glass
+ * surfaces with a site-wide interactive card treatment, a particle hero,
+ * a word-by-word manifesto, a pinned 3D exploded view, a horizontal service
+ * reel, a night-shift care log, frosted pricing over a giant word, numbered
+ * glass process steps, an orbit hub and a beam + horizon close.
+ *
+ * Markup is static (SSR-safe for the build-time prerender); all motion and
+ * interaction live in landingFx.ts, started once on mount and torn down on
+ * unmount. Styles are scoped under .kx in landing-x.css.
  */
-
-const cssVars = (v: Record<string, string | number>) => v as CSSProperties;
-
-// Page narrative order (founder-directed): About 01 -> Services 02 -> Process 03
-// -> Pricing 04 -> Contact 05.
-const NAV = [
-  { id: 'about', label: 'About' },
-  { id: 'services', label: 'Services' },
-  { id: 'process', label: 'Process' },
-  { id: 'pricing', label: 'Pricing' },
-  { id: 'contact', label: 'Contact' },
-];
 
 // Build + Care pricing. A one-time build (priced below the one-time-only shops)
 // plus a monthly care plan. The differentiator: we build it, then we run it.
@@ -40,12 +36,6 @@ export const PLANS = [
     cta: 'Choose Business', featured: false },
 ];
 
-// The competitive contrast. Answers "why you, not a cheaper one-time build?"
-const COMPARE_THEM = ['Pay once, then you are on your own', 'Maintenance billed separately, if at all', 'Slow to reach when something breaks', 'The site quietly rots within a year', 'You chase them for every small fix'];
-const COMPARE_US = ['Built once, then run for years', 'Care included from the first day', 'A named team and a phone that answers', 'Monitored, patched and updated for you', 'We watch it so you never have to'];
-
-const GUARANTEES = ['You own everything', 'No lock-in, ever', 'Every price approved before we build', 'A proforma within 48 hours'];
-
 export const FAQ = [
   { q: 'Do prices include VAT?', a: 'No. All figures exclude 16% VAT, which is itemised on your proforma.' },
   { q: 'How does payment work?', a: 'Every build and every change is priced on a proforma you approve first. Pay by M-Pesa or card. The one-time build is invoiced in stages; monthly care is billed on the 1st. No surprise invoices, ever.' },
@@ -55,474 +45,369 @@ export const FAQ = [
   { q: 'What if we want to leave?', a: 'We hand over the codebase, database, DNS and every account. No lock-in, ever. The site is yours.' },
 ];
 
+const COMPARE_THEM = ['Maintenance billed separately, if at all', 'Slow to reach when something breaks', 'The site quietly rots within a year', 'You chase them for every small fix'];
+const COMPARE_US = ['Care included from the first day', 'A named team and a phone that answers', 'Monitored, patched and updated for you', 'We watch it so you never have to'];
+
 // Authentic competence signal (real stack) in place of fabricated client logos.
 const STACK = ['React', 'TypeScript', 'Supabase', 'PostgreSQL', 'Cloudflare', 'M-Pesa', 'Paystack', 'Vite', 'Row-level security', 'Daily backups'];
 
-// Genuine reasons a business chooses Kipkiren. Every one is true to how we work.
-const WHY = [
-  { n: '01', t: 'Transparent pricing', d: 'You approve a fixed-price proforma before any work starts. No surprise invoices, no padded hours, no "it depends".' },
-  { n: '02', t: 'We run what we build', d: 'Care is a first-class part of the work, not an upsell. Most agencies hand over and vanish. We stay on the line.' },
-  { n: '03', t: 'Response you can count on', d: 'A 12 to 48 hour SLA by plan, in business hours, with a named person who knows your site. Not a shared inbox.' },
-  { n: '04', t: 'You own everything', d: 'Code, database, DNS and every account are yours. We hand them over on request. There is no lock-in, ever.' },
-  { n: '05', t: 'Serious, secure engineering', d: 'React and Supabase with row-level isolation, SSL, daily backups and continuous monitoring on every site we host.' },
-  { n: '06', t: 'Local, senior, reachable', d: 'A small Nairobi team on Kenyan time, fluent in M-Pesa and the market you sell to. Senior hands only, no juniors learning on your budget.' },
-];
-
-const SERVICES = [
-  { n: '01', title: 'Design', body: "Editorial, deliberate, and grounded in your brand. No moodboard-of-the-week.",
-    more: ['A visual system, not a one-off mockup', 'Real content and structure from day one', 'Mobile-first and accessible by default', 'Design files and tokens you keep'] },
-  { n: '02', title: 'Engineering', body: 'React, TanStack, Supabase. Ships fast, stays fast, scored honestly.',
-    more: ['React and TypeScript, typed end to end', 'Supabase and Postgres with row-level security', 'Fast, measured and continuously monitored', 'Clean code and a full handover, always'] },
-  { n: '03', title: 'SEO & content', body: 'Structured for discovery. Written by humans who read what they publish.',
-    more: ['Technical SEO and structured data', 'Copy written by people, not templates', 'Analytics and Search Console wired in', 'Ongoing content support on care plans'] },
-  { n: '04', title: 'Managed hosting', body: 'We own uptime, backups, updates and the 03:00 phone call. You own the site.',
-    more: ['Continuous uptime monitoring and alerts', 'SSL, daily backups and tested restores', 'Security patches applied as they land', 'A named person who answers the phone'] },
-];
-
-// Commitments we put in writing (proforma + service terms), not track-record
-// claims. Swap in real operating numbers once the founding cohort is live.
-const STATS = [
-  { n: '01', v: '48h', l: 'From first call to fixed-price proforma' },
-  { n: '02', v: '99.9%', l: 'Monthly uptime target on sites we host' },
-  { n: '03', v: '24h', l: 'Ticket response SLA' },
-  { n: '04', v: '100%', l: 'Of your code, data and accounts are yours' },
-];
-
 const PROCESS = [
-  { n: '01', t: 'Discovery', d: '45-90 minutes. We listen more than we present.' },
-  { n: '02', t: 'Proforma', d: 'Fixed scope, fixed price, in your inbox within 48 hours.' },
-  { n: '03', t: 'Design', d: 'Editorial layouts, real content, one direction refined, not three shown.' },
-  { n: '04', t: 'Build', d: 'Weekly demos. You can watch the site come together.' },
-  { n: '05', t: 'Launch', d: 'Quiet, deliberate, with rollback on hand. No launch tweets required.' },
-  { n: '06', t: 'Operation', d: 'The part most studios skip. We stay.' },
+  { t: 'Discovery', d: '45-90 minutes. We listen more than we present.' },
+  { t: 'Proforma', d: 'Fixed scope, fixed price, in your inbox within 48 hours.' },
+  { t: 'Design', d: 'Editorial layouts, real content, one direction refined, not three shown.' },
+  { t: 'Build', d: 'Weekly demos. You can watch the site come together.' },
+  { t: 'Launch', d: 'Quiet, deliberate, with rollback on hand. No launch tweets required.' },
+  { t: 'Operation', d: 'The part most studios skip. We stay.' },
 ];
+
+const STATS = [
+  { k: '01', n: '48', suf: 'h', l: 'From first call to fixed-price proforma' },
+  { k: '02', n: '99.9', suf: '%', dec: '1', l: 'Monthly uptime target on sites we host' },
+  { k: '03', n: '24', suf: 'h', l: 'Ticket response SLA' },
+  { k: '04', n: '100', suf: '%', l: 'Of your code, data and accounts are yours' },
+];
+
+const MANIFESTO = 'Websites decay. Traffic shifts. Frameworks age. The gap between "we shipped it" and "it still works two years later" is where most agencies quietly disappear. *We stay,* with monitoring, backups, patches and a real person who knows your business, *for as long as it runs.*';
 
 // Short labels for the footer legal column (the full names live on the pages).
 const FOOTER_LEGAL: Record<string, string> = { terms: 'Terms', privacy: 'Privacy', refunds: 'Refunds', sla: 'Service', cookies: 'Cookies', faq: 'FAQ' };
 
-// Small stroke icons for the footer contact column + social.
-const IconPin = () => (<svg className="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10Z" /><circle cx="12" cy="11" r="2" /></svg>);
-const IconMail = () => (<svg className="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3.5 7 8.5 6 8.5-6" /></svg>);
-const IconClock = () => (<svg className="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7.5V12l3 2" /></svg>);
-const IconUser = () => (<svg className="fi" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 20a7.5 7.5 0 0 1 15 0" /><circle cx="12" cy="8" r="4" /></svg>);
-const IconLinkedIn = () => (<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9h4v12H3V9Zm6 0h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V21h-4v-5.4c0-1.3 0-2.95-1.8-2.95-1.8 0-2.08 1.4-2.08 2.85V21H9V9Z" /></svg>);
-const IconInstagram = () => (<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="3.5" y="3.5" width="17" height="17" rx="5" /><circle cx="12" cy="12" r="3.8" /><circle cx="17.3" cy="6.7" r="1.1" fill="currentColor" stroke="none" /></svg>);
+function manifestoWords() {
+  const out: JSX.Element[] = [];
+  MANIFESTO.split(/(\*[^*]+\*)/).forEach((chunk, ci) => {
+    const em = chunk.startsWith('*');
+    chunk.replace(/\*/g, '').split(/(\s+)/).forEach((w, wi) => {
+      if (!w) return;
+      if (/^\s+$/.test(w)) { out.push(<span key={`${ci}-${wi}`}>{w}</span>); return; }
+      out.push(<span key={`${ci}-${wi}`} className={em ? 'w em' : 'w'}>{w}</span>);
+    });
+  });
+  return out;
+}
 
-export function Landing({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; onSignUp: () => void; onLegal: (id: LegalDocId) => void }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const [openService, setOpenService] = useState<number | null>(null);
-  const go = (id: string) => () => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  const goClose = (id: string) => () => { setMenuOpen(false); document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
+const Check = () => <span className="chk" />;
+
+function LandingImpl({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; onSignUp: () => void; onLegal: (id: LegalDocId) => void }) {
+  const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const els = Array.from(document.querySelectorAll<HTMLElement>('.klp-reveal'));
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((e) => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
-    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
-    els.forEach((el) => io.observe(el));
-    return () => io.disconnect();
+    if (!rootRef.current) return undefined;
+    return initLanding(rootRef.current);
   }, []);
 
-  // While the mobile menu is open: lock body scroll and close on Escape.
-  useEffect(() => {
-    if (!menuOpen) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenuOpen(false); };
-    window.addEventListener('keydown', onKey);
-    return () => { document.body.style.overflow = prevOverflow; window.removeEventListener('keydown', onKey); };
-  }, [menuOpen]);
+  const legal = (id: LegalDocId) => (e: MouseEvent) => { e.preventDefault(); onLegal(id); };
 
   return (
-    <div className="klp">
-      {/* header */}
-      <header className="klp-header">
-        <div className="klp-container row">
-          <a className="klp-brand" href="#top" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
-            <span className="mark">K</span>
-            <span className="name">Kipkiren<small>WEB SERVICES</small></span>
-          </a>
-          <nav className="klp-nav">
-            {NAV.map((n) => <button key={n.id} type="button" onClick={go(n.id)}>{n.label}</button>)}
-          </nav>
-          <div className="auth">
-            <KlpToggle />
-            <button type="button" className="klp-btn ghost" onClick={onSignIn}>Sign in</button>
-            <button type="button" className="klp-btn primary" onClick={onSignUp}>Start a project</button>
-            <button type="button" className="klp-burger" aria-label="Open menu" aria-expanded={menuOpen} aria-controls="klp-mobile-nav" onClick={() => setMenuOpen(true)}><span className="bl" /></button>
-          </div>
+    <div className="kx" ref={rootRef}>
+      <div id="tone" aria-hidden="true" />
+      <div className="haze" aria-hidden="true" />
+      <div className="grain" aria-hidden="true" />
+
+      <header className="nav glass" id="nav">
+        <a className="brand" href="#top" aria-label="Kipkiren Web Services home"><span className="mark">K</span><span className="nm">Kipkiren<small>Web services</small></span></a>
+        <nav className="nav-links" id="navLinks" aria-label="Main">
+          <span className="nav-pill" id="navPill" />
+          <a href="#about">About</a><a href="#services">Services</a><a href="#process">Process</a><a href="#pricing">Pricing</a><a href="#contact">Contact</a>
+        </nav>
+        <div className="nav-r">
+          <KlpToggle />
+          <button type="button" className="btn ghost" onClick={onSignIn}>Sign in</button>
+          <button type="button" className="btn primary" onClick={onSignUp}>Start a project</button>
+          <button className="menu-btn" id="menuBtn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="msheet"><span /><span /></button>
         </div>
       </header>
-
-      {/* mobile full-screen navigation */}
-      <div className={`klp-msheet ${menuOpen ? 'open' : ''}`} id="klp-mobile-nav" role="dialog" aria-modal="true" aria-label="Site menu">
-        <div className="klp-msheet-inner klp-container">
-          <div className="klp-msheet-head">
-            <span className="klp-msheet-brand">
-              <span className="mark">K</span>
-              <span className="name">Kipkiren<small>WEB SERVICES</small></span>
-            </span>
-            <div className="klp-msheet-head-r">
-              <KlpToggle />
-              <button type="button" className="klp-msheet-close" onClick={() => setMenuOpen(false)} aria-label="Close menu"><span /><span /></button>
-            </div>
-          </div>
-
-          <nav className="klp-msheet-nav">
-            <div className="klp-msheet-group">
-              <div className="klp-msheet-label" style={cssVars({ '--i': 0 })}>Explore</div>
-              {NAV.map((n, i) => (
-                <button key={n.id} type="button" className="klp-msheet-link" style={cssVars({ '--i': i + 1 })} onClick={goClose(n.id)}>
-                  <span className="lft"><span className="n">{String(i + 1).padStart(2, '0')}</span><span className="t">{n.label}</span></span>
-                  <span className="x">&rarr;</span>
-                </button>
-              ))}
-            </div>
-            <div className="klp-msheet-group">
-              <div className="klp-msheet-label" style={cssVars({ '--i': 6 })}>Legal &amp; trust</div>
-              <div className="klp-msheet-chips" style={cssVars({ '--i': 7 })}>
-                {LEGAL_NAV.map((n) => (
-                  <button key={n.id} type="button" className="klp-msheet-chip" onClick={() => { setMenuOpen(false); onLegal(n.id); }}>{n.label}</button>
-                ))}
-              </div>
-            </div>
-          </nav>
-
-          <div className="klp-msheet-foot" style={cssVars({ '--i': 8 })}>
-            <div className="klp-msheet-label">Get started</div>
-            <div className="klp-msheet-cta">
-              <button type="button" className="klp-btn primary" onClick={() => { setMenuOpen(false); onSignUp(); }}>Start a project</button>
-              <button type="button" className="klp-btn ghost" onClick={() => { setMenuOpen(false); onSignIn(); }}>Sign in</button>
-            </div>
-            <a className="klp-msheet-contact" href="mailto:studio@kipkiren.co.ke">studio@kipkiren.co.ke · Nairobi</a>
-          </div>
+      <div className="msheet glass" id="msheet" hidden>
+        <nav aria-label="Mobile"><a href="#about">About</a><a href="#services">Services</a><a href="#process">Process</a><a href="#pricing">Pricing</a><a href="#contact">Contact</a></nav>
+        <div className="msheet-ctas">
+          <button type="button" className="btn primary" onClick={onSignUp}>Start a project <span className="ar">&rarr;</span></button>
+          <button type="button" className="btn ghost" onClick={onSignIn}>Sign in</button>
         </div>
+        <p className="mono">studio@kipkiren.co.ke · Nairobi</p>
       </div>
 
       <main id="top">
         {/* hero */}
-        <section className="klp-container klp-hero">
-          <div className="klp-hero-grid">
-            <div className="klp-hero-main">
-              <span className="klp-eyebrow teal klp-reveal"><span className="dot" />A managed web services studio · Nairobi</span>
-              <h1 className="klp-display-xl klp-reveal" style={cssVars({ '--d': '80ms' })}>Precision websites,<br /><em style={cssVars({ color: 'var(--teal-deep)' })}>quietly operated.</em></h1>
-              <p className="klp-lead klp-reveal" style={cssVars({ '--d': '160ms' })}>
-                Kipkiren designs, builds and runs the websites Kenyan businesses depend on. One senior team,
-                one transparent price, and a phone that still answers long after launch.
-              </p>
-              <div className="klp-hero-ctas klp-reveal" style={cssVars({ '--d': '240ms' })}>
-                <button type="button" className="klp-btn primary" onClick={go('pricing')}>See pricing <span>&rarr;</span></button>
-                <button type="button" className="klp-btn ghost" onClick={go('contact')}>Book a conversation</button>
-              </div>
-              <div className="klp-hero-assure klp-reveal" style={cssVars({ '--d': '320ms' })}>
-                <span><span className="tk" />Fixed price before any work</span>
-                <span><span className="tk" />You own everything</span>
-                <span><span className="tk" />No lock-in</span>
-              </div>
+        <section className="hero" id="hero" data-tone="paper">
+          <canvas id="field" aria-hidden="true" />
+          <div className="wrap">
+            <div>
+              <h1 className="d-xl hero-h1" id="heroTitle"><span className="ln"><span>Precision websites,</span></span><span className="ln"><span><em>quietly operated.</em></span></span></h1>
+              <p className="lead">Kipkiren designs, builds and runs the websites Kenyan businesses depend on. One senior team, one transparent price, and a phone that still answers long after launch.</p>
+              <div className="ctas"><a className="btn primary" href="#pricing">See pricing <span className="ar">&rarr;</span></a><a className="btn ghost" href="#contact">Book a conversation</a></div>
+              <div className="assure"><span>Fixed price before any work</span><span>You own everything</span><span>No lock-in</span></div>
             </div>
-            <aside className="klp-hero-aside klp-reveal" style={cssVars({ '--d': '360ms' })}>
-              <div className="klp-herocard">
-                <div className="klp-mono">Studio note · 004</div>
-                <p className="quote">"The web is quieter than it looks. Almost every site we are asked to rescue was shipped in a rush by someone who was never going to answer the phone six months later."</p>
-                <div className="klp-mono by">Kipkiren Studio, on why we run what we build</div>
-                <div className="klp-herocard-facts">
-                  <div><span className="n">48h</span><span className="l">To proforma</span></div>
-                  <div><span className="n">99.9%</span><span className="l">Uptime target</span></div>
-                  <div><span className="n">24h</span><span className="l">Response SLA</span></div>
-                </div>
-                <button type="button" className="klp-herocard-price" onClick={go('pricing')}>
-                  <span className="p"><span className="k">Build from</span> <strong>KES 45,000</strong> <span className="k">plus care from 3,500/mo</span></span>
-                  <span className="go">See pricing <span>&rarr;</span></span>
-                </button>
-              </div>
+            <aside className="studio glass" id="studio">
+              <span className="mono">Studio note · 004</span>
+              <p className="q">"The web is quieter than it looks. Almost every site we are asked to rescue was shipped in a rush by someone who was never going to answer the phone six months later."</p>
+              <p className="mono by">Kipkiren Studio, on why we run what we build</p>
+              <div className="facts"><div><span className="n">48h</span><span className="l">To proforma</span></div><div><span className="n">99.9%</span><span className="l">Uptime target</span></div><div><span className="n">24h</span><span className="l">Response SLA</span></div></div>
+              <div className="studio-price"><span>Build from <strong>KES 45,000</strong> plus care from 3,500/mo</span><a href="#pricing">See pricing &rarr;</a></div>
             </aside>
           </div>
         </section>
 
-        {/* built-with marquee (real stack, not fabricated logos) */}
-        <section className="klp-marquee-band">
-          <div className="klp-container inner">
-            <span className="klp-mono" style={cssVars({ flexShrink: 0 })}>Built with</span>
-            <div className="klp-marquee">
-              <div className="klp-marquee-track">
-                {[...STACK, ...STACK].map((c, i) => <span key={i}>{c}</span>)}
-              </div>
-            </div>
+        <div className="marquee glass" aria-hidden="true"><span className="mono">Built with</span><div className="mq"><div className="mq-track">{[...STACK, ...STACK].map((s, i) => <span key={i}>{s}</span>)}</div></div></div>
+
+        {/* philosophy */}
+        <section className="sec band" id="about" data-tone="paper">
+          <div className="wrap">
+            <span className="eyebrow">Philosophy · 01</span>
+            <h2 className="d-lg">We treat your site<br /><em>like infrastructure.</em></h2>
+            <p className="manifesto" id="manifesto">{manifestoWords()}</p>
           </div>
         </section>
 
-        {/* about / philosophy band */}
-        <section className="klp-band" id="about">
-          <div className="klp-container klp-section">
-            <div className="klp-band-grid">
-              <div className="l">
-                <span className="klp-mono eb">Philosophy · 01</span>
-                <h2 className="klp-display-lg">We treat your site<br /><em style={cssVars({ color: 'var(--amber)' })}>like infrastructure.</em></h2>
-              </div>
-              <div className="r klp-reveal">
-                <p className="big">Websites decay. Traffic patterns shift. Frameworks age. The gap between "we shipped it" and "it still works two years later" is where most agencies quietly disappear.</p>
-                <p>Every Kipkiren engagement includes ongoing operation as a first-class deliverable, not a subscription bolted on afterwards. Monitoring, backups, security patching, quarterly performance reviews, content updates, and a real person who knows your business.</p>
-                <p>It's less exciting than a redesign every eighteen months. It's also what serious businesses need.</p>
-              </div>
+        {/* numbers */}
+        <section className="sec" data-tone="paper">
+          <div className="wrap">
+            <div className="sec-head">
+              <div><span className="eyebrow">By the numbers</span><h2 className="d-lg">Numbers we put<br /><em>in writing.</em></h2></div>
+              <p className="lead">Commitments, not vanity metrics. Each one is part of your proforma or our service terms, so you can hold us to it.</p>
             </div>
-          </div>
-        </section>
-
-        {/* stats band */}
-        <section className="klp-statband">
-          <div className="klp-container klp-section">
-            <div className="klp-sec-head">
-              <div className="h">
-                <span className="klp-eyebrow teal">By the numbers</span>
-                <h2 className="klp-display-lg">Numbers we put<br /><em>in writing.</em></h2>
-              </div>
-              <p className="klp-lead p">Commitments, not vanity metrics. Each one is part of your proforma or our service terms, so you can hold us to it.</p>
-            </div>
-            <div className="klp-stats klp-reveal">
+            <div className="stats">
               {STATS.map((s) => (
-                <div key={s.n} className="klp-stat">
-                  <div className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>{s.n}</div>
-                  <div className="n">{s.v}</div>
-                  <div className="l">{s.l}</div>
-                </div>
+                <div key={s.k} className="stat glass"><span className="k">{s.k}</span><span className="n" data-count={s.n} data-suf={s.suf} data-dec={s.dec ?? '0'}>{s.n}{s.suf}</span><span className="l">{s.l}</span></div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* services */}
-        <section className="klp-container klp-section" id="services">
-          <div className="klp-sec-head klp-reveal">
-            <div className="h">
-              <span className="klp-eyebrow teal">Services · 02</span>
-              <h2 className="klp-display-lg">Four disciplines,<br /><em>one team.</em></h2>
+        {/* how we build: exploded view */}
+        <section data-tone="paper" id="how">
+          <div className="ex-pin" id="exPin">
+            <div className="ex-copy">
+              <span className="eyebrow">How we build · four layers</span>
+              <h2 className="d-lg">Every site is four layers deep. <em>We own all four.</em></h2>
+              <ol className="ex-list" id="exList">
+                <li data-i="3"><span className="k">L4</span><span><b>Interface</b><small>Your brand, mobile-first, accessible, fast on a Safaricom 4G phone.</small></span></li>
+                <li data-i="2"><span className="k">L3</span><span><b>Structure</b><small>A grid, a type scale and performance budgets set before a pixel ships.</small></span></li>
+                <li data-i="1"><span className="k">L2</span><span><b>Code</b><small>React and TypeScript, tested, with M-Pesa wired in through Kipkiren Pay.</small></span></li>
+                <li data-i="0"><span className="k">L1</span><span><b>Infrastructure</b><small>Edge network, API, Postgres with row-level security, nightly backups.</small></span></li>
+              </ol>
             </div>
-            <p className="klp-lead p" style={cssVars({ alignSelf: 'end' })}>
-              We deliberately kept the studio small. Every client works with the same designer, engineer and
-              account lead from first call through year three of hosting.
-            </p>
-          </div>
-          <div className="klp-grid-cells klp-reveal">
-            {SERVICES.map((s, i) => {
-              const open = openService === i;
-              return (
-                <article key={s.n} className={`klp-cell ${open ? 'open' : ''}`}>
-                  <span className="num">{s.n}</span>
-                  <h3>{s.title}</h3>
-                  <p>{s.body}</p>
-                  <div className="klp-cell-more">
-                    <ul>
-                      {s.more.map((m) => <li key={m}><span className="m" />{m}</li>)}
-                    </ul>
+            <div className="ex-stage" aria-hidden="true">
+              <div className="ex-stack" id="exStack">
+                <div className="ex-layer L-infra">
+                  <span className="tag">L1 · Infrastructure</span>
+                  <svg viewBox="0 0 560 385" preserveAspectRatio="none"><path d="M140 110 H280 V190 M280 190 H420 M280 230 V300 M420 190 V280" /></svg>
+                  <div className="node" style={{ left: '8%', top: '22%' }}>Cloudflare edge<br />CDN · SSL · DNS</div>
+                  <div className="node t" style={{ left: '40%', top: '42%' }}>API<br />RS256 JWT</div>
+                  <div className="node t" style={{ left: '66%', top: '40%' }}>Postgres<br />RLS per client</div>
+                  <div className="node" style={{ left: '40%', top: '76%' }}>Nightly backups</div>
+                  <div className="node" style={{ left: '66%', top: '72%' }}>Uptime · 60s</div>
+                </div>
+                <div className="ex-layer L-code">
+                  <span className="tag">L2 · Code</span>
+                  <pre>
+                    <span className="cm">{'// checkout.tsx'}</span>{'\n'}
+                    <span className="kw">export async function</span>{' payWithMpesa(order: Order) {\n  '}
+                    <span className="kw">const</span>{' pf = '}<span className="kw">await</span>{' proforma.approve(order.id)\n  '}
+                    <span className="kw">if</span>{' (pf.hash !== order.hash) '}<span className="kw">throw</span>{' '}<span className="st">{"'scope changed'"}</span>{'\n  '}
+                    <span className="kw">return</span>{' kipkirenPay.stkPush({\n    msisdn: order.phone,\n    amount: pf.total_kes,  '}<span className="cm">{'// KES, VAT incl.'}</span>{'\n    ref: pf.ref,\n  })\n}'}
+                  </pre>
+                </div>
+                <div className="ex-layer L-wire">
+                  <span className="tag">L3 · Structure</span>
+                  <div className="wf" style={{ left: '6%', right: '6%', top: '16%', height: '9%' }}><b>nav · sticky · 64px</b></div>
+                  <div className="wf" style={{ left: '6%', width: '46%', top: '35%', height: '20%' }}><b>h1 · serif 44/1.04</b></div>
+                  <div className="wf" style={{ left: '6%', width: '22%', top: '63%', height: '7%' }}><b>STK push</b></div>
+                  <div className="wf" style={{ left: '58%', right: '6%', top: '33%', height: '40%' }}><b>img · AVIF · 38 KB</b></div>
+                  <div className="wf" style={{ left: '6%', right: '6%', top: '82%', height: '9%' }}><b>grid · 3 col</b></div>
+                </div>
+                <div className="ex-layer L-ui">
+                  <span className="tag">L4 · Interface</span>
+                  <div className="site">
+                    <div className="s-nav"><span className="s-logo">Kilele</span><span className="s-links"><span>Menu</span><span>Order</span><span>Visit</span></span><span className="s-cta">Order now</span></div>
+                    <div className="s-hero"><div><h4>Fresh from the oven by seven.</h4><p>Order cakes and bread before midnight. Collect in Westlands from 7 a.m.</p><span className="s-btn">Order with M-Pesa</span></div><div className="s-img" /></div>
+                    <div className="s-row"><div><span>Sourdough</span><span>KES 450</span></div><div><span>Black forest</span><span>KES 2,400</span></div><div><span>Mandazi x6</span><span>KES 180</span></div></div>
                   </div>
-                  <button type="button" className="klp-readmore" aria-expanded={open} onClick={() => setOpenService(open ? null : i)}>
-                    {open ? 'Show less' : 'What this includes'} <span>&rarr;</span>
-                  </button>
-                </article>
-              );
-            })}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* services reel */}
+        <section className="reel" id="services" data-tone="night">
+          <div className="reel-pin" id="reelPin">
+            <span className="orb a" /><span className="orb b" />
+            <div className="reel-head"><div><span className="eyebrow">Services · 02</span><h2 className="d-lg">Four disciplines, <em>one team.</em></h2></div><div className="reel-prog"><i id="reelBar" /></div></div>
+            <div className="reel-track" id="reelTrack">
+              <article className="panel glass">
+                <div className="panel-l"><span className="code">01 · DESIGN</span><div><h3>Design</h3><p>Editorial, deliberate, and grounded in your brand. No moodboard-of-the-week.</p></div><ul><li>A visual system, not a one-off mockup</li><li>Real content and structure from day one</li><li>Mobile-first and accessible by default</li></ul></div>
+                <div className="panel-r"><svg viewBox="0 0 300 300" aria-hidden="true"><rect className="df-l" x="30" y="60" width="60" height="60" rx="10" /><rect className="df-t" x="100" y="60" width="60" height="60" rx="10" /><rect className="df-p" x="170" y="60" width="60" height="60" rx="10" /><text className="dt big" x="30" y="200">Aa</text><path className="dl m" d="M30 228 H270" /><text className="dt t" x="30" y="256">TOKENS YOU KEEP</text></svg><div className="rate"><span>Design work</span><b>from KES 3,500/hr</b></div></div>
+              </article>
+              <article className="panel glass">
+                <div className="panel-l"><span className="code">02 · ENGINEERING</span><div><h3>Engineering</h3><p>React, TanStack, Supabase. Ships fast, stays fast, scored honestly.</p></div><ul><li>React and TypeScript, typed end to end</li><li>Supabase and Postgres with row-level security</li><li>Clean code and a full handover, always</li></ul></div>
+                <div className="panel-r"><svg viewBox="0 0 300 300" aria-hidden="true"><rect className="dl" x="20" y="120" width="76" height="48" rx="10" /><text className="dt" x="30" y="149">BROWSER</text><rect className="df-t" x="112" y="120" width="76" height="48" rx="10" /><text className="dt" x="138" y="149" style={{ fill: '#fff' }}>API</text><rect className="df-p" x="204" y="120" width="76" height="48" rx="10" /><text className="dt" x="210" y="149" style={{ fill: 'var(--paper)' }}>POSTGRES</text><path className="dl t" d="M96 144 H112 M188 144 H204" /><text className="dt t" x="20" y="220">RS256 · RLS · AUDIT LOG</text></svg><div className="rate"><span>Build work</span><b>from KES 3,500/hr</b></div></div>
+              </article>
+              <article className="panel glass">
+                <div className="panel-l"><span className="code">03 · SEO &amp; CONTENT</span><div><h3>Search</h3><p>Structured for discovery. Written by humans who read what they publish.</p></div><ul><li>Technical SEO and structured data</li><li>Analytics and Search Console wired in</li><li>Ongoing content support on care plans</li></ul></div>
+                <div className="panel-r"><svg viewBox="0 0 300 300" aria-hidden="true"><rect className="dl" x="20" y="80" width="260" height="38" rx="19" /><text className="dt" x="38" y="104">bakery near westlands</text><rect className="df-t" x="20" y="132" width="260" height="46" rx="12" /><text className="dt" x="36" y="160" style={{ fill: '#fff' }}>KILELE BAKERY · OPEN NOW</text><path className="dl m" d="M20 204 H240 M20 222 H200 M20 240 H220" /></svg><div className="rate"><span>SEO work</span><b>from KES 3,000/hr</b></div></div>
+              </article>
+              <article className="panel glass">
+                <div className="panel-l"><span className="code">04 · MANAGED HOSTING</span><div><h3>Hosting</h3><p>We own uptime, backups, updates and the 03:00 phone call. You own the site.</p></div><ul><li>Continuous uptime monitoring and alerts</li><li>SSL, daily backups and tested restores</li><li>A named person who answers the phone</li></ul></div>
+                <div className="panel-r"><svg viewBox="0 0 300 300" aria-hidden="true"><text className="dt big" x="30" y="130">99.9%</text><text className="dt" x="30" y="160">MONTHLY UPTIME TARGET</text><path className="dl m" d="M30 200 H270" /><rect className="df-l" x="30" y="214" width="8" height="8" rx="4" /><text className="dt t" x="46" y="222">CHECKED EVERY 60s</text></svg><div className="rate"><span>Included in</span><b>every care plan</b></div></div>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        {/* care / night shift */}
+        <section className="sec night" id="care" data-tone="night">
+          <span className="orb c" />
+          <div className="wrap grid">
+            <div>
+              <span className="eyebrow">Care · after launch</span>
+              <div className="clock" id="clock">03:00<sup>EAT</sup></div>
+              <h2 className="d-md">While Nairobi sleeps, <em>your site is still being looked after.</em></h2>
+              <p className="lead">Every care plan keeps checking, renewing, backing up and patching through the night, and a named person answers if anything breaks.</p>
+            </div>
+            <div className="log glass">
+              <div className="log-hd"><span className="live">Care log · sample</span><span>kilele-bakery.co.ke</span></div>
+              <ol id="log" />
+              <div className="log-ft"><span>Incidents in the last 30 days: 0</span><span>Uptime target 99.9%</span></div>
+            </div>
           </div>
         </section>
 
         {/* process */}
-        <section className="klp-container klp-section" id="process">
-          <div className="klp-proc-grid">
-            <div className="l klp-reveal">
-              <span className="klp-eyebrow teal">Process · 03</span>
-              <h2 className="klp-display-lg">How the work moves.</h2>
-              <p className="klp-lead">Six steps. Predictable calendar. No mystery deliverables.</p>
-              <button type="button" className="klp-btn ghost" onClick={go('contact')}>Start the conversation</button>
-              <div className="klp-proc-promise">
-                <div className="klp-mono">On every project</div>
-                <ul>
-                  <li><span className="m" />A fixed-price proforma before any work begins</li>
-                  <li><span className="m" />Weekly demos with real content, never mockup theatre</li>
-                  <li><span className="m" />The same senior team from the first call to year three</li>
-                  <li><span className="m" />Everything handed over. You own all of it.</li>
-                </ul>
-              </div>
+        <section className="sec" id="process" data-tone="paper">
+          <div className="wrap">
+            <div className="sec-head">
+              <div><span className="eyebrow">Process · 03</span><h2 className="d-lg">How the work <em>moves.</em></h2></div>
+              <p className="lead">Six steps. Predictable calendar. No mystery deliverables.</p>
             </div>
-            <ol className="klp-proc-list r klp-reveal" style={cssVars({ '--d': '120ms' })}>
-              {PROCESS.map((p) => (
-                <li key={p.n} className="klp-proc-item">
-                  <span className="num">{p.n}</span>
-                  <div><div className="t">{p.t}</div><div className="d">{p.d}</div></div>
-                </li>
+            <div className="proc-grid" id="procGrid">
+              {PROCESS.map((p, i) => (
+                <div key={p.t} className="step glass"><span className="num">{String(i + 1).padStart(2, '0')}</span><span className="ghost-n" aria-hidden="true">{i + 1}</span><h3>{p.t}</h3><p>{p.d}</p></div>
               ))}
-            </ol>
+            </div>
           </div>
         </section>
 
         {/* pricing */}
-        <section className="klp-container klp-section klp-hairline-t" id="pricing">
-          <div className="klp-sec-head klp-reveal">
-            <div className="h">
-              <span className="klp-eyebrow teal">Pricing · 04</span>
-              <h2 className="klp-display-lg">Built once.<br /><em style={cssVars({ color: 'var(--teal-deep)' })}>Run for years.</em></h2>
+        <section className="sec pricing" id="pricing" data-tone="paper">
+          <div className="wrap">
+            <div className="head">
+              <span className="eyebrow">Pricing · 04</span>
+              <p className="lead">One transparent build price to launch, one monthly care plan to keep it fast, secure and growing. Every figure in Kenyan shillings, VAT itemised on the proforma.</p>
             </div>
-            <p className="klp-lead p" style={cssVars({ alignSelf: 'end' })}>One transparent build price to launch, one monthly care plan to keep it fast, secure and growing. No agency will quote you cleaner. Every figure is in Kenyan shillings, VAT itemised on the proforma.</p>
-          </div>
-
-          <div className="klp-guarantees klp-reveal">
-            {GUARANTEES.map((g) => <span key={g} className="klp-guarantee"><span className="tick" />{g}</span>)}
-          </div>
-
-          <div className="klp-plans klp-reveal" style={cssVars({ marginTop: 44 })}>
-            {PLANS.map((p) => (
-              <div key={p.name} className={`klp-card klp-plan ${p.featured ? 'feat' : ''}`}>
-                {p.featured && <div className="klp-plan-flag">Most chosen</div>}
-                <div className="klp-plan-kick">{p.kick}</div>
-                <div className="klp-plan-name">{p.name}</div>
-                <p className="klp-plan-desc">{p.desc}</p>
-                <div className="klp-plan-price">
-                  <div className="build-row"><span className="cur">KES</span><span className="amt">{p.build}</span><span className="once">one-time<br />build</span></div>
-                  <div className="care-row"><span className="k">then</span><strong>KES {p.care}</strong><span className="k">/ month care</span></div>
-                </div>
-                <ul className="klp-plan-feats">
-                  {p.feats.map((f) => <li key={f}><span className="m" />{f}</li>)}
-                </ul>
-                <button type="button" className={`klp-btn ${p.featured ? 'primary' : 'ghost'}`} onClick={onSignUp}>{p.cta}</button>
+            <div className="giant-wrap">
+              <div className="giant" aria-hidden="true">Pric<em>ing</em></div>
+              <div className="plans" id="plans">
+                {PLANS.map((p, i) => (
+                  <article key={p.name} className={`plan glass${p.featured ? ' feat' : ''}`} data-build={p.build.replace(/,/g, '')} data-care={p.care.replace(/,/g, '')}>
+                    <div className="plan-top">
+                      <div className="plan-name"><span>{p.name} plan</span>{p.featured && <span className="plan-flag">Most chosen</span>}</div>
+                      <p className="plan-desc">{p.desc}</p>
+                      <div className="amt"><span className="cur">KES</span><span className="v" data-i={i}>{p.build}</span><span className="per">/build</span></div>
+                      <div className="care-line">Plus care <strong>KES {p.care}</strong> / month</div>
+                    </div>
+                    <ul className="plan-feats">{p.feats.map((f) => <li key={f}><Check />{f}</li>)}</ul>
+                    <div className="plan-cta"><button type="button" className="btn" onClick={onSignUp}>{p.cta}</button></div>
+                  </article>
+                ))}
               </div>
-            ))}
-          </div>
-
-          {/* why managed beats a one-time build */}
-          <div className="klp-compare klp-reveal" style={cssVars({ marginTop: 64 })}>
-            <div className="klp-compare-col them">
-              <span className="eb">The one-time build</span>
-              <h3>What most agencies sell.</h3>
-              <ul>{COMPARE_THEM.map((t) => <li key={t}><span className="m" />{t}</li>)}</ul>
-            </div>
-            <div className="klp-compare-col us">
-              <span className="eb">The Kipkiren way</span>
-              <h3>Build, then run. We stay.</h3>
-              <ul>{COMPARE_US.map((t) => <li key={t}><span className="m" />{t}</li>)}</ul>
-            </div>
-          </div>
-
-          <div className="klp-band-grid klp-reveal" style={cssVars({ marginTop: 72, paddingTop: 56, borderTop: '1px solid var(--hairline)' })}>
-            <div className="l">
-              <span className="klp-eyebrow teal">Custom</span>
-              <h2 className="klp-display-lg" style={cssVars({ marginTop: 20 })}>Something else in mind?</h2>
-            </div>
-            <div className="r">
-              <p className="klp-lead">Larger builds, migrations, rescue projects, ongoing product work. Open a ticket describing what you have and what you need. We reply personally, always.</p>
-              <div className="klp-hero-ctas" style={cssVars({ marginTop: 24 })}>
-                <button type="button" className="klp-btn primary" onClick={onSignIn}>Open a ticket</button>
-                <a className="klp-btn ghost" href="mailto:studio@kipkiren.co.ke">Or email us</a>
+              <div className="switch-row">
+                <button className="switch" id="yearSwitch" type="button" role="switch" aria-checked="false"><span className="tr" /><span>Show first year, with care</span></button>
+                <span className="mono" id="switchNote">One-time build fee, ex-VAT</span>
               </div>
             </div>
-          </div>
-
-          <div className="klp-reveal" style={cssVars({ marginTop: 72, paddingTop: 56, borderTop: '1px solid var(--hairline)' })}>
-            <h2 className="klp-display-md" style={cssVars({ marginBottom: 32 })}>Questions people ask, plainly answered.</h2>
-            <div className="klp-faq">
-              {FAQ.map((f, i) => {
-                const open = openFaq === i;
-                return (
-                  <div key={f.q} className={`klp-faq-item ${open ? 'open' : ''}`}>
-                    <button type="button" className="q" aria-expanded={open} onClick={() => setOpenFaq(open ? null : i)}>
-                      <span>{f.q}</span>
-                      <span className="ic" aria-hidden="true" />
-                    </button>
-                    <div className="a-wrap"><p className="a">{f.a}</p></div>
-                  </div>
-                );
-              })}
+            <div className="plans-link" aria-hidden="true">
+              <span className="pill glass">Why Build + Care</span>
+              <svg viewBox="0 0 820 70" preserveAspectRatio="none"><path d="M410 0 V22 M410 22 H90 V70 M410 22 H730 V70" /><circle cx="90" cy="70" r="3" /><circle cx="730" cy="70" r="3" /></svg>
             </div>
-            <p className="klp-faq-more klp-mono">More in our <button type="button" onClick={() => onLegal('faq')}>full FAQ</button> and <button type="button" onClick={() => onLegal('terms')}>terms</button>.</p>
+            <div className="compare glass">
+              <div className="them"><span className="mono">A one-time build</span><h3>Pay once, then you are on your own.</h3><ul>{COMPARE_THEM.map((c) => <li key={c}>{c}</li>)}</ul></div>
+              <div className="us"><span className="mono">Kipkiren Build + Care</span><h3>Built once, then run for years.</h3><ul>{COMPARE_US.map((c) => <li key={c}>{c}</li>)}</ul></div>
+            </div>
           </div>
         </section>
 
-        {/* why choose (authentic trust builders, no borrowed logos) */}
-        <section className="klp-container klp-section">
-          <div className="klp-sec-head klp-reveal">
-            <div className="h">
-              <span className="klp-eyebrow teal">Why Kipkiren</span>
-              <h2 className="klp-display-lg">Reasons to trust us<br /><em>with your website.</em></h2>
+        {/* FAQ */}
+        <section className="sec" data-tone="paper">
+          <div className="wrap faq-grid">
+            <div><span className="eyebrow">FAQ</span><h2 className="d-lg" style={{ marginTop: 20 }}>Questions people ask, <em>plainly answered.</em></h2></div>
+            <div className="faq-list" id="faqs">
+              {FAQ.map((f, i) => (
+                <div key={f.q} className={`faq glass${i === 0 ? ' open' : ''}`}><button type="button" aria-expanded={i === 0}><span>{f.q}</span><span className="chev" /></button><div className="body"><p>{f.a}</p></div></div>
+              ))}
             </div>
-            <p className="klp-lead p" style={cssVars({ alignSelf: 'end' })}>No borrowed logos, no invented awards. Just the things that actually matter when you hand a business over to a studio.</p>
           </div>
-          <div className="klp-why klp-reveal">
-            {WHY.map((w) => (
-              <article key={w.n} className="klp-why-card">
-                <div className="klp-mono num">{w.n}</div>
-                <h3>{w.t}</h3>
-                <p>{w.d}</p>
-              </article>
-            ))}
+        </section>
+
+        {/* why: orbit hub */}
+        <section className="sec" data-tone="paper">
+          <div className="wrap">
+            <div className="sec-head">
+              <div><span className="eyebrow">Why Kipkiren</span><h2 className="d-lg">Reasons to trust us <em>with your website.</em></h2></div>
+              <p className="lead">No borrowed logos, no invented awards. Just the things that actually matter when you hand a business over to a studio.</p>
+            </div>
+            <div className="hub" id="hub">
+              <svg className="hub-lines" id="hubLines" aria-hidden="true" />
+              <div className="hub-card glass hc1"><span className="n">01 · Transparent pricing</span><h3>A proforma before any work.</h3><p>No surprise invoices, no padded hours, no "it depends".</p></div>
+              <div className="hub-card glass hc2"><span className="n">02 · We run what we build</span><h3>We stay on the line.</h3><p>Care is a first-class part of the work, not an upsell.</p></div>
+              <div className="core" aria-hidden="true"><span className="ring"><i /></span><span className="ring r2" /><span className="ball">K</span></div>
+              <div className="hub-card glass hc3"><span className="n">03 · You own everything</span><h3>No lock-in, ever.</h3><p>Code, database, DNS and every account are yours.</p></div>
+              <div className="hub-card glass hc4"><span className="n">04 · Local, senior, reachable</span><h3>A small Nairobi team.</h3><p>On Kenyan time, fluent in M-Pesa and the market you sell to.</p></div>
+            </div>
           </div>
         </section>
 
         {/* CTA */}
-        <section className="klp-container klp-section" id="contact" style={cssVars({ paddingTop: 0 })}>
-          <div className="klp-cta klp-reveal">
-            <div className="l">
-              <span className="klp-eyebrow teal">Start · 05</span>
-              <h2 className="klp-display-lg">Ready when you are.</h2>
-              <p className="klp-lead">Pick a plan or open a ticket for something custom. Either path starts a real conversation with a real designer, usually the same day.</p>
-            </div>
-            <div className="r">
-              <button type="button" className="klp-btn primary" onClick={go('pricing')}>See plans &rarr;</button>
-              <button type="button" className="klp-btn ghost" onClick={onSignUp}>Open a custom ticket</button>
+        <section className="cta" id="contact" data-tone="paper">
+          <div className="beam" aria-hidden="true" />
+          <div className="wrap">
+            <div className="cta-card glass">
+              <span className="eyebrow">Start · 05</span>
+              <h2 className="d-lg">Ready when <em>you are.</em></h2>
+              <p className="lead">Pick a plan or open a ticket for something custom. Either path starts a real conversation with a real designer, usually the same day.</p>
+              <div className="ctas"><a className="btn primary" href="#pricing">See plans <span className="ar">&rarr;</span></a><button type="button" className="btn ghost" onClick={onSignUp}>Open a custom ticket</button></div>
             </div>
           </div>
+          <div className="floaters" aria-hidden="true">
+            <div className="fl glass f1"><span className="k">Proforma</span><b>Approved</b><span className="ok">Scope locked</span></div>
+            <div className="fl glass f2"><span className="k">M-Pesa</span><b>Payment received</b><span className="ok">Receipt sent</span></div>
+            <div className="fl glass f3"><span className="k">SSL</span><b>Renewed</b><span className="ok">Valid 90 days</span></div>
+            <div className="fl glass f4"><span className="k">Ticket</span><b>Scoped in 48h</b><span className="ok">Awaiting you</span></div>
+          </div>
+          <div className="horizon" aria-hidden="true" />
         </section>
       </main>
 
       {/* footer */}
-      <footer className="klp-footer">
-        <div className="klp-container">
-          <div className="klp-foot-top">
-            <div className="klp-foot-brand">
-              <span className="mark">K</span>
-              <span className="wm">Kipkiren<small>WEB SERVICES</small></span>
+      <footer className="foot">
+        <div className="wrap">
+          <div className="foot-panel glass">
+            <div className="foot-top">
+              <div className="foot-brand">
+                <a className="brand" href="#top"><span className="mark">K</span><span className="fb-name">Kipkiren<small>Web services</small></span></a>
+                <p className="foot-tag">Precision websites, quietly operated. Designed, built and run by a small senior team in Nairobi.</p>
+              </div>
+              <div className="foot-social">
+                <a className="soc" href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="Kipkiren on LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9h4v12H3V9Zm6 0h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05 4.03 0 4.78 2.65 4.78 6.1V21h-4v-5.4c0-1.3 0-2.95-1.8-2.95-1.8 0-2.08 1.4-2.08 2.85V21H9V9Z" /></svg></a>
+                <a className="soc" href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Kipkiren on Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7"><rect x="3.5" y="3.5" width="17" height="17" rx="5" /><circle cx="12" cy="12" r="3.8" /><circle cx="17.3" cy="6.7" r="1.1" fill="currentColor" stroke="none" /></svg></a>
+              </div>
             </div>
-            <p className="klp-foot-tag">Precision websites, quietly operated. Designed, built and run by a small senior team in Nairobi.</p>
-            <div className="klp-foot-social">
-              <a aria-label="Kipkiren on LinkedIn" href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer"><IconLinkedIn /></a>
-              <a aria-label="Kipkiren on Instagram" href="https://www.instagram.com" target="_blank" rel="noopener noreferrer"><IconInstagram /></a>
+            <div className="foot-cols">
+              <div className="foot-col"><span className="fc-h">Studio</span><ul><li><a href="#services">Services</a></li><li><a href="#process">Process</a></li><li><a href="#about">About</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#contact">Contact</a></li></ul></div>
+              <div className="foot-col"><span className="fc-h">Legal</span><ul>{LEGAL_NAV.map((n) => <li key={n.id}><a href={`/${n.id}`} onClick={legal(n.id)}>{FOOTER_LEGAL[n.id] ?? n.label}</a></li>)}</ul></div>
+              <div className="foot-col foot-contact"><span className="fc-h">Contact</span><ul>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10Z" /><circle cx="12" cy="11" r="2" /></svg><span>Nairobi, Kenya. Serving locally and beyond.</span></li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="14" rx="2" /><path d="m3.5 7 8.5 6 8.5-6" /></svg><a href="mailto:studio@kipkiren.co.ke">studio@kipkiren.co.ke</a></li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7.5V12l3 2" /></svg><span>Mon to Fri, 09:00 to 18:00 EAT</span></li>
+                <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M4.5 20a7.5 7.5 0 0 1 15 0" /><circle cx="12" cy="8" r="4" /></svg><a href="#top" onClick={(e) => { e.preventDefault(); onSignIn(); }}>Client portal</a></li>
+              </ul></div>
             </div>
-          </div>
-
-          <div className="klp-foot-cols">
-            <div className="klp-foot-col">
-              <div className="klp-mono h">Studio</div>
-              <ul>
-                <li><button type="button" onClick={go('services')}>Services</button></li>
-                <li><button type="button" onClick={go('process')}>Process</button></li>
-                <li><button type="button" onClick={go('about')}>About</button></li>
-                <li><button type="button" onClick={go('pricing')}>Pricing</button></li>
-                <li><button type="button" onClick={go('contact')}>Contact</button></li>
-              </ul>
-            </div>
-            <div className="klp-foot-col">
-              <div className="klp-mono h">Legal</div>
-              <ul>
-                {LEGAL_NAV.map((n) => (
-                  <li key={n.id}><button type="button" onClick={() => onLegal(n.id)}>{FOOTER_LEGAL[n.id] ?? n.label}</button></li>
-                ))}
-              </ul>
-            </div>
-            <div className="klp-foot-col klp-foot-contact">
-              <div className="klp-mono h">Contact</div>
-              <ul>
-                <li><IconPin /><span>Nairobi, Kenya. Serving locally and beyond.</span></li>
-                <li><IconMail /><a href="mailto:studio@kipkiren.co.ke">studio@kipkiren.co.ke</a></li>
-                <li><IconClock /><span>Mon to Fri, 09:00 to 18:00 EAT</span></li>
-                <li><IconUser /><button type="button" onClick={onSignIn}>Client portal</button></li>
-              </ul>
-            </div>
-          </div>
-
-          <div className="klp-footbar">
-            <div className="klp-mono">© 2026 Kipkiren Web Services Ltd. · Nairobi</div>
-            <button type="button" className="klp-foot-toplink" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Back to top</button>
+            <div className="footbar"><span className="mono">&copy; 2026 Kipkiren Web Services Ltd. · Nairobi · A Kipkiren Teknolojia company</span><a className="toplink" href="#top">Back to top &uarr;</a></div>
           </div>
         </div>
       </footer>
     </div>
   );
 }
+
+// The page is static markup driven by landingFx; never re-render it (a parent
+// re-render would only hand in equivalent callbacks).
+export const Landing = memo(LandingImpl, () => true);
