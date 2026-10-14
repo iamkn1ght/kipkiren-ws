@@ -123,6 +123,19 @@ const DOCS: Record<LegalDocId, LegalDoc> = {
   },
 };
 
+const SITE_TITLE = 'Kipkiren Web Services · Precision websites, quietly operated';
+
+/** Map a URL path (/privacy, /privacy/, /privacy.html) to a legal doc id. */
+export function legalDocFromPath(path: string): LegalDocId | null {
+  const id = path.replace(/^\/+|\/+$/g, '').replace(/\.html$/, '');
+  return LEGAL_NAV.some((n) => n.id === id) ? (id as LegalDocId) : null;
+}
+
+/** Title + summary per doc, for the build-time prerender's head tags. */
+export function legalDocMeta(id: LegalDocId): { title: string; description: string } {
+  return { title: `${DOCS[id].title} · Kipkiren Web Services`, description: DOCS[id].intro };
+}
+
 export function LegalPage({
   doc,
   onBack,
@@ -138,6 +151,8 @@ export function LegalPage({
 
   useEffect(() => {
     window.scrollTo({ top: 0 });
+    document.title = legalDocMeta(doc).title;
+    return () => { document.title = SITE_TITLE; };
   }, [doc]);
 
   return (

@@ -25,7 +25,7 @@ const NAV = [
 
 // Build + Care pricing. A one-time build (priced below the one-time-only shops)
 // plus a monthly care plan. The differentiator: we build it, then we run it.
-const PLANS = [
+export const PLANS = [
   { kick: '01 · starter', name: 'Starter', desc: 'A polished presence for a small business getting online properly.',
     build: '45,000', care: '3,500',
     feats: ['Up to 5 pages, designed and built', 'Domain, hosting and business email', 'Mobile-perfect, fast, SEO-ready', 'Care: uptime, SSL, backups, edits', '48-hour support SLA'],
@@ -46,7 +46,7 @@ const COMPARE_US = ['Built once, then run for years', 'Care included from the fi
 
 const GUARANTEES = ['You own everything', 'No lock-in, ever', 'Every price approved before we build', 'A proforma within 48 hours'];
 
-const FAQ = [
+export const FAQ = [
   { q: 'Do prices include VAT?', a: 'No. All figures exclude 16% VAT, which is itemised on your proforma.' },
   { q: 'How does payment work?', a: 'Every build and every change is priced on a proforma you approve first. Pay by M-Pesa or card. The one-time build is invoiced in stages; monthly care is billed on the 1st. No surprise invoices, ever.' },
   { q: 'Do I have to take a care plan?', a: 'The build and its first year of care go together, so your site is looked after from day one. After that, care is month to month and you can pause any time. You always keep the site.' },
@@ -176,7 +176,7 @@ export function Landing({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void;
               {NAV.map((n, i) => (
                 <button key={n.id} type="button" className="klp-msheet-link" style={cssVars({ '--i': i + 1 })} onClick={goClose(n.id)}>
                   <span className="lft"><span className="n">{String(i + 1).padStart(2, '0')}</span><span className="t">{n.label}</span></span>
-                  <span className="x">→</span>
+                  <span className="x">&rarr;</span>
                 </button>
               ))}
             </div>
@@ -213,7 +213,7 @@ export function Landing({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void;
                 one transparent price, and a phone that still answers long after launch.
               </p>
               <div className="klp-hero-ctas klp-reveal" style={cssVars({ '--d': '240ms' })}>
-                <button type="button" className="klp-btn primary" onClick={go('pricing')}>See pricing <span>→</span></button>
+                <button type="button" className="klp-btn primary" onClick={go('pricing')}>See pricing <span>&rarr;</span></button>
                 <button type="button" className="klp-btn ghost" onClick={go('contact')}>Book a conversation</button>
               </div>
               <div className="klp-hero-assure klp-reveal" style={cssVars({ '--d': '320ms' })}>
@@ -318,7 +318,7 @@ export function Landing({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void;
                     </ul>
                   </div>
                   <button type="button" className="klp-readmore" aria-expanded={open} onClick={() => setOpenService(open ? null : i)}>
-                    {open ? 'Show less' : 'What this includes'} <span>→</span>
+                    {open ? 'Show less' : 'What this includes'} <span>&rarr;</span>
                   </button>
                 </article>
               );
@@ -465,8 +465,8 @@ export function Landing({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void;
               <p className="klp-lead">Pick a plan or open a ticket for something custom. Either path starts a real conversation with a real designer, usually the same day.</p>
             </div>
             <div className="r">
-              <button type="button" className="klp-btn primary" onClick={go('pricing')}>See plans →</button>
-              <button type="button" className="klp-btn ghost" onClick={onSignIn}>Open a custom ticket</button>
+              <button type="button" className="klp-btn primary" onClick={go('pricing')}>See plans &rarr;</button>
+              <button type="button" className="klp-btn ghost" onClick={onSignUp}>Open a custom ticket</button>
             </div>
           </div>
         </section>

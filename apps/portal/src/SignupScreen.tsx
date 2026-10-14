@@ -11,6 +11,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import { useAuth } from './auth.tsx';
 import { KlpToggle } from './klpTheme.tsx';
 import { ApiError, getPublicPlans, type PublicPlan } from './api.ts';
+import { PLANS } from './Landing.tsx';
 import './landing.css';
 
 const BENEFITS = [
@@ -19,6 +20,20 @@ const BENEFITS = [
   'See progress, invoices and history in one place',
   'Pay by M-Pesa or card, keep every receipt',
 ];
+
+// Show the same Build + Care prices the visitor just saw on the landing, not
+// the legacy retainer fee still stored on retainer_plans. Plans the landing
+// does not list (e.g. Enterprise) are quoted on the proforma.
+function planLabel(p: PublicPlan): string {
+  const lp = PLANS.find((x) => x.name === p.name);
+  if (lp) return `${p.name} · KES ${lp.build} build + ${lp.care}/mo care`;
+  return `${p.name} · custom quote`;
+}
+
+function sortPlans(plans: PublicPlan[]): PublicPlan[] {
+  const rank = (p: PublicPlan) => { const i = PLANS.findIndex((x) => x.name === p.name); return i === -1 ? PLANS.length : i; };
+  return [...plans].sort((a, b) => rank(a) - rank(b));
+}
 
 export function SignupScreen({ onBack, onSwitchToSignin }: { onBack: () => void; onSwitchToSignin: () => void }) {
   const { signUp } = useAuth();
@@ -35,7 +50,11 @@ export function SignupScreen({ onBack, onSwitchToSignin }: { onBack: () => void;
 
   useEffect(() => {
     getPublicPlans()
-      .then((p) => { setPlans(p); if (p[0]) setPlanId((cur) => cur || p[0]!.id); })
+      .then((raw) => {
+        const p = sortPlans(raw);
+        setPlans(p);
+        if (p[0]) setPlanId((cur) => cur || p[0]!.id);
+      })
       .catch(() => setPlans([]));
   }, []);
 
@@ -80,7 +99,7 @@ export function SignupScreen({ onBack, onSwitchToSignin }: { onBack: () => void;
           <span className="name">Kipkiren<small>WEB SERVICES</small></span>
           <div className="klp-topbrand-r">
             <KlpToggle />
-            <button type="button" className="klp-back exit" onClick={onBack}>‹ Back to site</button>
+            <button type="button" className="klp-back exit" onClick={onBack}>&lsaquo; Back to site</button>
           </div>
         </div>
 
@@ -137,7 +156,7 @@ export function SignupScreen({ onBack, onSwitchToSignin }: { onBack: () => void;
                   <label className="klp-field-label" htmlFor="su-plan">Plan you're interested in</label>
                   <select id="su-plan" className="klp-field-input" value={planId} onChange={(e) => setPlanId(e.target.value)} disabled={submitting || !plans}>
                     {!plans && <option>Loading plans...</option>}
-                    {plans?.map((p) => <option key={p.id} value={p.id}>{p.name} · KES {p.monthly_fee_kes.toLocaleString()}/mo</option>)}
+                    {plans?.map((p) => <option key={p.id} value={p.id}>{planLabel(p)}</option>)}
                   </select>
                   <p className="klp-field-help">You can change this later. Final pricing is confirmed on your proforma.</p>
                 </div>

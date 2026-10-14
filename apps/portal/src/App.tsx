@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AuthProvider, useAuth, hasStoredSession, portalForRole, type PortalRole } from './auth.tsx';
 import { Landing } from './Landing.tsx';
-import { LegalPage, type LegalDocId } from './Legal.tsx';
+import { LegalPage, legalDocFromPath, type LegalDocId } from './Legal.tsx';
 import { RolePicker } from './RolePicker.tsx';
 import { LoginScreen } from './LoginScreen.tsx';
 import { SignupScreen } from './SignupScreen.tsx';
@@ -68,7 +68,19 @@ function Router() {
   // Staff console has no public marketing landing - go straight to sign-in.
   const [entered, setEntered] = useState(AUDIENCE === 'staff');
   const [authMode, setAuthMode] = useState<'default' | 'signup'>('default');
-  const [legal, setLegal] = useState<LegalDocId | null>(null);
+  // Legal/FAQ pages have real URLs (/terms, /privacy, ...) so they can be
+  // linked, indexed and given to payment providers. Keep state and URL in sync.
+  const [legal, setLegalState] = useState<LegalDocId | null>(() => (AUDIENCE === 'staff' ? null : legalDocFromPath(window.location.pathname)));
+  const setLegal = (id: LegalDocId | null) => {
+    const path = id ? `/${id}` : '/';
+    if (window.location.pathname !== path) window.history.pushState(null, '', path);
+    setLegalState(id);
+  };
+  useEffect(() => {
+    const onPop = () => setLegalState(legalDocFromPath(window.location.pathname));
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
   const [showForgot, setShowForgot] = useState(false);
   // Invite/recovery links land with a token in the URL hash. Parse once at mount.
   const [recovery, setRecovery] = useState(() => parseRecoveryHash());
@@ -80,11 +92,15 @@ function Router() {
     <Landing onSignIn={() => { setLegal(null); enterSignIn(); }} onSignUp={() => { setLegal(null); enterSignUp(); }} onLegal={setLegal} />
   );
 
+  const legalPage = (id: LegalDocId) => (
+    <LegalPage doc={id} onBack={() => setLegal(null)} onOpen={setLegal} onSignIn={() => { setLegal(null); enterSignIn(); }} />
+  );
+
   // Public visitors keep seeing the (prerendered) landing while the session
   // refresh runs, instead of a loader replacing it. Likely-signed-in tabs and
   // the staff console still wait on the loader.
   if (bootstrapping) {
-    if (AUDIENCE !== 'staff' && !entered && !legal && !recovery && !hasStoredSession()) return landing;
+    if (AUDIENCE !== 'staff' && !entered && !recovery && !hasStoredSession()) return legal ? legalPage(legal) : landing;
     return <div className="boot">Loading...</div>;
   }
 
@@ -111,7 +127,7 @@ function Router() {
   // Public marketing landing - client / all audiences only.
   if (AUDIENCE !== 'staff' && !entered) {
     if (legal) {
-      return <LegalPage doc={legal} onBack={() => setLegal(null)} onOpen={setLegal} onSignIn={() => { setLegal(null); enterSignIn(); }} />;
+      return legalPage(legal);
     }
     return landing;
   }
