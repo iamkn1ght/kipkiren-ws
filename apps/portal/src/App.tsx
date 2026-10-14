@@ -18,6 +18,13 @@ import { KlpToggle } from './klpTheme.tsx';
 type Audience = 'client' | 'staff' | 'all';
 const AUDIENCE = (((import.meta.env.VITE_PORTAL_AUDIENCE as string) || 'all').trim() as Audience);
 
+const DEV_AUTH_BYPASS = import.meta.env.VITE_DEV_AUTH_BYPASS === '1';
+
+// Staff on a shared ('all') deployment reach the workspace picker at /staff.
+// Everyone else who clicks "Sign in" goes straight to the client login - the
+// JWT role still routes a staff member to their console after login.
+const STAFF_PATH = '/staff';
+
 const CLIENT_URL = 'https://ws.kipkiren.co.ke';
 const STAFF_URL = 'https://studio.kipkiren.co.ke';
 
@@ -65,8 +72,10 @@ function WrongDomain({ onSignOut }: { onSignOut: () => void }) {
 
 function Router() {
   const { session, picked, bootstrapping, pickRole, signOut } = useAuth();
+  const [staffEntry] = useState(() => AUDIENCE === 'all' && window.location.pathname.replace(/\/+$/, '') === STAFF_PATH);
+  const showPicker = AUDIENCE === 'staff' || staffEntry || DEV_AUTH_BYPASS;
   // Staff console has no public marketing landing - go straight to sign-in.
-  const [entered, setEntered] = useState(AUDIENCE === 'staff');
+  const [entered, setEntered] = useState(AUDIENCE === 'staff' || staffEntry);
   const [authMode, setAuthMode] = useState<'default' | 'signup'>('default');
   // Legal/FAQ pages have real URLs (/terms, /privacy, ...) so they can be
   // linked, indexed and given to payment providers. Keep state and URL in sync.
@@ -85,7 +94,7 @@ function Router() {
   // Invite/recovery links land with a token in the URL hash. Parse once at mount.
   const [recovery, setRecovery] = useState(() => parseRecoveryHash());
 
-  const enterSignIn = () => { setAuthMode('default'); setEntered(true); if (AUDIENCE === 'client') pickRole('client'); };
+  const enterSignIn = () => { setAuthMode('default'); setEntered(true); if (!showPicker) pickRole('client'); };
   const enterSignUp = () => { setAuthMode('signup'); setEntered(true); };
 
   const landing = (
@@ -142,10 +151,15 @@ function Router() {
 
   // Login (themed by the picked workspace).
   if (picked) {
-    return <LoginScreen role={picked} onBack={() => void signOut()}
+    return <LoginScreen role={picked}
+      onBack={showPicker ? () => void signOut() : () => { void signOut(); setEntered(false); }}
+      backLabel={showPicker ? 'Change role' : 'Back to site'}
       onForgot={() => setShowForgot(true)}
       onCreateAccount={picked === 'client' && AUDIENCE !== 'staff' ? enterSignUp : undefined} />;
   }
+
+  // Signed out with no workspace picked: public visitors go back to the site.
+  if (!showPicker) return legal ? legalPage(legal) : landing;
 
   // Role picker - filtered to this audience (staff: admin + task view; all: everyone).
   return <RolePicker onPick={pickRole} audience={AUDIENCE}

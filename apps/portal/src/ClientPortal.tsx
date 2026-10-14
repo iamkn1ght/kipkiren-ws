@@ -71,18 +71,57 @@ function EmptyState({ icon, title, body, cta, onCta }: { icon: ReactNode; title:
   );
 }
 
+// Client-facing ticket status. Internal stages (submitted, decomposing,
+// ai_draft, review) all mean "we are scoping it": the client cannot see a
+// proforma until it is dispatched, so none of them are "awaiting you".
 function ticketPill(status: string): { cls: string; label: string } {
-  if (status === 'complete' || status === 'closed') return { cls: 'closed', label: status };
+  if (status === 'complete' || status === 'closed') return { cls: 'closed', label: 'Complete' };
   if (status === 'in_progress') return { cls: 'progress', label: 'In progress' };
-  if (status === 'dispatched' || status === 'ai_draft') return { cls: 'quoted', label: 'Awaiting you' };
-  if (status === 'paid' || status === 'approved') return { cls: 'approved', label: 'Approved' };
-  return { cls: 'open', label: status.replace(/_/g, ' ') };
+  if (status === 'dispatched') return { cls: 'quoted', label: 'Proforma ready' };
+  if (status === 'approved') return { cls: 'approved', label: 'Accepted' };
+  if (status === 'paid') return { cls: 'approved', label: 'Paid' };
+  return { cls: 'open', label: 'Being scoped' };
+}
+
+function ticketNext(status: string): string {
+  if (status === 'dispatched') return 'Your fixed-price proforma is ready. Review it, then approve and pay to lock the scope and start the work.';
+  if (status === 'approved') return 'You have accepted the proforma. Work is scheduled to start once payment confirms.';
+  if (status === 'paid') return 'Payment received and scope locked. Your delivery lead is scheduling the work.';
+  if (status === 'in_progress') return 'Work is underway. We will let you know as soon as it is complete.';
+  if (status === 'complete' || status === 'closed') return 'This request is complete. Open a new ticket any time you need something else.';
+  return 'We are scoping your request. A fixed-price proforma follows within 48 hours, and nothing is charged until you approve it.';
+}
+
+const CATEGORY_LABEL: Record<string, string> = { web: 'Web development', cloud: 'Cloud services', seo: 'SEO', social: 'Social media', dns: 'Domain / DNS', general: 'General' };
+
+async function downloadMyData(call: ReturnType<typeof useApi>): Promise<void> {
+  const data = await call<unknown>('/v1/onboarding/dsar');
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `kipkiren-my-data-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export function ClientPortal() {
   const { session, signOut } = useAuth();
   const { tickets, invoices, services, proformas, loading, reload } = useClientData();
-  const [view, setView] = useState<View>('overview');
+  const call = useApi();
+  const [view, setViewState] = useState<View>('overview');
+  const [openTicketId, setOpenTicketId] = useState<string | null>(null);
+  const [focusProformaId, setFocusProformaId] = useState<string | null>(null);
+  const [submittedRef, setSubmittedRef] = useState<string | null>(null);
+  const [dataBusy, setDataBusy] = useState(false);
+  const setView = (v: View) => { setViewState(v); setOpenTicketId(null); setFocusProformaId(null); if (v !== 'tickets') setSubmittedRef(null); };
+  const openTicket = (id: string) => { setViewState('tickets'); setOpenTicketId(id); };
+  const openProforma = (id: string) => { setViewState('proformas'); setFocusProformaId(id); };
+  const onDownloadData = async () => {
+    if (dataBusy) return;
+    setDataBusy(true);
+    try { await downloadMyData(call); } catch { window.alert('We could not prepare your data just now. Please try again, or email studio@kipkiren.co.ke.'); } finally { setDataBusy(false); }
+  };
 
   const name = session?.email?.split('@')[0] ?? 'there';
   const openTickets = (tickets ?? []).filter((t) => t.status !== 'complete' && t.status !== 'closed');
@@ -110,7 +149,7 @@ export function ClientPortal() {
               {NAV.map((n) => (
                 <button key={n.id} type="button" className={view === n.id ? 'active' : ''} onClick={() => setView(n.id)}>
                   <span>{n.label}</span>
-                  {n.id === 'overview' && view === 'overview' && <span>→</span>}
+                  {n.id === 'overview' && view === 'overview' && <span>&rarr;</span>}
                   {n.id === 'invoices' && dueInvoices.length > 0 && <span className="badge">{dueInvoices.length}</span>}
                   {n.id === 'proformas' && awaitingProformas.length > 0 && <span className="badge">{awaitingProformas.length}</span>}
                 </button>
@@ -121,6 +160,7 @@ export function ClientPortal() {
               <div className="klp-portal-signout-wrap">
                 <div className="who klp-portal-foot" style={cssVars({ marginTop: 20, paddingTop: 20 })}>{session?.email ?? ''}</div>
                 <button type="button" className="klp-portal-signout" onClick={() => void signOut()}>Sign out</button>
+                <button type="button" className="klp-portal-signout" style={cssVars({ display: 'block', marginTop: 12 })} onClick={() => void onDownloadData()} disabled={dataBusy}>{dataBusy ? 'Preparing...' : 'Download my data'}</button>
               </div>
             </div>
           </aside>
@@ -131,20 +171,31 @@ export function ClientPortal() {
               <div className="klp-portal-greet">
                 <div className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>{VIEW_TITLE[view]}</div>
                 <h1 className="klp-display-md">{view === 'overview' ? greeting() : VIEW_TITLE[view]}</h1>
-                {view === 'overview' && <p className="klp-portal-sub">Welcome back. Everything across your projects and services, in one place.</p>}
+                {view === 'overview' && tickets !== null && (
+                  <p className="klp-portal-sub">{tickets.length === 0
+                    ? 'Welcome to Kipkiren. Tell us what you need and we will send a fixed-price proforma within 48 hours.'
+                    : 'Welcome back. Everything across your projects and services, in one place.'}</p>
+                )}
               </div>
               <div className="actions">
                 {view !== 'new' && <button type="button" className="klp-btn primary" onClick={() => setView('new')}>New ticket</button>}
-                {view === 'new' && <button type="button" className="klp-btn ghost" onClick={() => setView('overview')}>‹ Back</button>}
+                {view === 'new' && <button type="button" className="klp-btn ghost" onClick={() => setView('overview')}>&lsaquo; Back</button>}
               </div>
             </header>
 
-            {view === 'overview' && <Overview name={name} tickets={tickets} invoices={invoices} openCount={openTickets.length} activeCount={activeServices.length} awaitingCount={awaitingProformas.length} loading={loading} onNav={setView} />}
-            {view === 'tickets' && <TicketList tickets={tickets} loading={loading} onNew={() => setView('new')} />}
-            {view === 'proformas' && <ProformaView proformas={proformas} loading={loading} reload={reload} />}
+            {view === 'overview' && <Overview name={name} tickets={tickets} invoices={invoices} openCount={openTickets.length} activeCount={activeServices.length} awaitingCount={awaitingProformas.length} loading={loading} onNav={setView} onOpenTicket={openTicket} />}
+            {view === 'tickets' && submittedRef && !openTicketId && (
+              <div className="klp-note" style={cssVars({ marginBottom: 16 })}>
+                Request {submittedRef} received. We are scoping it now and will send a fixed-price proforma within 48 hours. It will appear under Proformas, and nothing is charged until you approve it.
+              </div>
+            )}
+            {view === 'tickets' && (openTicketId
+              ? <TicketDetail ticket={(tickets ?? []).find((t) => t.id === openTicketId) ?? null} proformas={proformas} onBack={() => setOpenTicketId(null)} onOpenProforma={openProforma} />
+              : <TicketList tickets={tickets} loading={loading} onNew={() => setView('new')} onOpen={openTicket} />)}
+            {view === 'proformas' && <ProformaView key={focusProformaId ?? 'all'} initialId={focusProformaId} proformas={proformas} loading={loading} reload={reload} />}
             {view === 'invoices' && <InvoiceList invoices={invoices} loading={loading} />}
             {view === 'services' && <ServiceList services={services} loading={loading} />}
-            {view === 'new' && <NewTicket onDone={() => { reload(); setView('tickets'); }} />}
+            {view === 'new' && <NewTicket onDone={(ref) => { reload(); setView('tickets'); setSubmittedRef(ref); }} />}
           </div>
         </div>
       </div>
@@ -169,9 +220,9 @@ function OverviewSkeleton() {
     </>
   );
 }
-function Overview({ name, tickets, invoices, openCount, activeCount, awaitingCount, loading, onNav }: {
+function Overview({ name, tickets, invoices, openCount, activeCount, awaitingCount, loading, onNav, onOpenTicket }: {
   name: string; tickets: ClientTicket[] | null; invoices: ClientInvoice[] | null;
-  openCount: number; activeCount: number; awaitingCount: number; loading: boolean; onNav: (v: View) => void;
+  openCount: number; activeCount: number; awaitingCount: number; loading: boolean; onNav: (v: View) => void; onOpenTicket: (id: string) => void;
 }) {
   void name;
   if (loading) return <OverviewSkeleton />;
@@ -192,28 +243,18 @@ function Overview({ name, tickets, invoices, openCount, activeCount, awaitingCou
       </div>
 
       <section className="klp-portal-sec">
-        <div className="sechd"><h2>Recent tickets</h2>{recentTickets.length > 0 && <button type="button" onClick={() => onNav('tickets')}>View all →</button>}</div>
+        <div className="sechd"><h2>Recent tickets</h2>{recentTickets.length > 0 && <button type="button" onClick={() => onNav('tickets')}>View all &rarr;</button>}</div>
         {recentTickets.length === 0
           ? <EmptyState icon={ICONS.ticket} title="No tickets yet" body="Create your first request and we'll turn it into a fixed-scope proforma before any work begins." cta="New ticket" onCta={() => onNav('new')} />
           : (
             <div className="klp-list">
-              {recentTickets.slice(0, 4).map((t) => {
-                const p = ticketPill(t.status);
-                return (
-                  <div key={t.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: 'minmax(120px,auto) 1fr auto auto' })}>
-                    <span className="ref">{t.ref}</span>
-                    <span className="title">{t.description}</span>
-                    <span className={`klp-pill ${p.cls}`}>{p.label}</span>
-                    <span className="date">{fmtDate(t.created_at)}</span>
-                  </div>
-                );
-              })}
+              {recentTickets.slice(0, 4).map((t) => <TicketRow key={t.id} t={t} onOpen={onOpenTicket} />)}
             </div>
           )}
       </section>
 
       <section className="klp-portal-sec">
-        <div className="sechd"><h2>Recent orders</h2>{recentOrders.length > 0 && <button type="button" onClick={() => onNav('invoices')}>View all →</button>}</div>
+        <div className="sechd"><h2>Recent orders</h2>{recentOrders.length > 0 && <button type="button" onClick={() => onNav('invoices')}>View all &rarr;</button>}</div>
         {recentOrders.length === 0
           ? <EmptyState icon={ICONS.order} title="No orders yet" body="Approved proformas and paid invoices will show up here as your work gets underway." />
           : (
@@ -234,23 +275,58 @@ function Overview({ name, tickets, invoices, openCount, activeCount, awaitingCou
 }
 
 //  tickets list 
-function TicketList({ tickets, loading, onNew }: { tickets: ClientTicket[] | null; loading: boolean; onNew: () => void }) {
+function TicketRow({ t, onOpen }: { t: ClientTicket; onOpen: (id: string) => void }) {
+  const p = ticketPill(t.status);
+  return (
+    <button type="button" className="klp-list-row klp-list-row-btn" style={cssVars({ gridTemplateColumns: 'minmax(120px,auto) 1fr auto auto' })} onClick={() => onOpen(t.id)}>
+      <span className="ref">{t.ref}</span>
+      <span className="title">{t.description}</span>
+      <span className={`klp-pill ${p.cls}`}>{p.label}</span>
+      <span className="date">{fmtDate(t.created_at)}</span>
+    </button>
+  );
+}
+
+function TicketList({ tickets, loading, onNew, onOpen }: { tickets: ClientTicket[] | null; loading: boolean; onNew: () => void; onOpen: (id: string) => void }) {
   const rows = tickets ?? [];
   if (loading) return <div className="klp-list"><div className="klp-list-empty">Loading...</div></div>;
   if (rows.length === 0) return <EmptyState icon={ICONS.ticket} title="No tickets yet" body="Create your first request and we'll turn it into a fixed-scope proforma before any work begins." cta="New ticket" onCta={onNew} />;
   return (
     <div className="klp-list">
-      {rows.map((t) => {
-        const p = ticketPill(t.status);
-        return (
-          <div key={t.id} className="klp-list-row" style={cssVars({ gridTemplateColumns: 'minmax(120px,auto) 1fr auto auto' })}>
-            <span className="ref">{t.ref}</span>
-            <span className="title">{t.description}</span>
-            <span className={`klp-pill ${p.cls}`}>{p.label}</span>
-            <span className="date">{fmtDate(t.created_at)}</span>
+      {rows.map((t) => <TicketRow key={t.id} t={t} onOpen={onOpen} />)}
+    </div>
+  );
+}
+
+//  ticket detail
+function TicketDetail({ ticket, proformas, onBack, onOpenProforma }: {
+  ticket: ClientTicket | null; proformas: ClientProforma[] | null; onBack: () => void; onOpenProforma: (id: string) => void;
+}) {
+  if (!ticket) return <EmptyState icon={ICONS.ticket} title="Ticket not found" body="It may still be loading. Go back to your tickets and try again." cta="All tickets" onCta={onBack} />;
+  const p = ticketPill(ticket.status);
+  const pf = (proformas ?? []).find((x) => firstRel(x.tickets)?.id === ticket.id) ?? null;
+  return (
+    <div>
+      <button type="button" className="klp-back" onClick={onBack}>&lsaquo; All tickets</button>
+      <div className="klp-card klp-panel" style={cssVars({ maxWidth: 760, marginTop: 16 })}>
+        <div className="sechd" style={cssVars({ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 })}>
+          <span className="klp-mono">{ticket.ref}</span>
+          <span className={`klp-pill ${p.cls}`}>{p.label}</span>
+        </div>
+        <p style={cssVars({ marginTop: 16, fontSize: 16, lineHeight: 1.6 })}>{ticket.description}</p>
+        <div className="klp-dl" style={cssVars({ marginTop: 20 })}>
+          <div><div className="k">Service</div><div className="v">{CATEGORY_LABEL[ticket.category] ?? ticket.category}</div></div>
+          <div><div className="k">Urgency</div><div className="v">{ticket.urgency.charAt(0).toUpperCase() + ticket.urgency.slice(1)}</div></div>
+          <div><div className="k">Submitted</div><div className="v">{fmtDate(ticket.created_at)}</div></div>
+          <div><div className="k">Response due</div><div className="v">{fmtDate(ticket.sla_deadline_at)}</div></div>
+        </div>
+        <div className="klp-note" style={cssVars({ marginTop: 20 })}>{ticketNext(ticket.status)}</div>
+        {pf && (
+          <div className="klp-portal-actions">
+            <button type="button" className="klp-btn primary" onClick={() => onOpenProforma(pf.id)}>View proforma {pf.ref} &rarr;</button>
           </div>
-        );
-      })}
+        )}
+      </div>
     </div>
   );
 }
@@ -321,9 +397,9 @@ const PAY_METHODS: readonly (readonly [PayMethod, string, string])[] = [
   ['bank', 'Bank transfer', 'We email account details; you pay offline'],
 ];
 
-function ProformaView({ proformas, loading, reload }: { proformas: ClientProforma[] | null; loading: boolean; reload: () => void }) {
+function ProformaView({ proformas, loading, reload, initialId }: { proformas: ClientProforma[] | null; loading: boolean; reload: () => void; initialId?: string | null }) {
   const call = useApi();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(initialId ?? null);
   const [checkout, setCheckout] = useState(false);
   const [method, setMethod] = useState<PayMethod>('mpesa');
   const [msisdn, setMsisdn] = useState('');
@@ -387,7 +463,7 @@ function ProformaView({ proformas, loading, reload }: { proformas: ClientProform
 
   return (
     <div>
-      {rows.length > 1 && <button type="button" className="klp-back klp-noprint" onClick={() => { setSelectedId(null); setCheckout(false); setResult(null); }}>‹ All proformas</button>}
+      {rows.length > 1 && <button type="button" className="klp-back klp-noprint" onClick={() => { setSelectedId(null); setCheckout(false); setResult(null); }}>&lsaquo; All proformas</button>}
       <div className="klp-card klp-panel klp-proforma-doc" style={cssVars({ maxWidth: 760, marginTop: rows.length > 1 ? 16 : 0 })}>
         <div className="klp-pf-head">
           <div className="klp-pf-co">
@@ -436,7 +512,7 @@ function ProformaView({ proformas, loading, reload }: { proformas: ClientProform
 
         {!checkout && (
           <div className="klp-portal-actions klp-noprint">
-            {canPay && <button type="button" className="klp-btn primary" onClick={() => { setCheckout(true); setResult(null); }}>Accept &amp; pay →</button>}
+            {canPay && <button type="button" className="klp-btn primary" onClick={() => { setCheckout(true); setResult(null); }}>Accept &amp; pay &rarr;</button>}
             <button type="button" className="klp-btn ghost" onClick={() => window.print()}>Print / Download PDF</button>
           </div>
         )}
@@ -461,7 +537,7 @@ function ProformaView({ proformas, loading, reload }: { proformas: ClientProform
             {result && <div className={`klp-note ${result.ok ? '' : 'amber'}`} style={cssVars({ marginTop: 16 })}>{result.msg}</div>}
             <div className="klp-portal-actions">
               <button type="button" className="klp-btn primary" disabled={submitting} onClick={() => void doApprove()}>
-                {submitting ? 'Working...' : method === 'mpesa' ? 'Send M-Pesa prompt' : method === 'card' ? 'Pay by card →' : 'Confirm bank transfer'}
+                {submitting ? 'Working...' : method === 'mpesa' ? 'Send M-Pesa prompt' : method === 'card' ? 'Pay by card \u2192' : 'Confirm bank transfer'}
               </button>
               <button type="button" className="klp-btn ghost" disabled={submitting} onClick={() => { setCheckout(false); setResult(null); }}>Cancel</button>
             </div>
@@ -476,7 +552,7 @@ function ProformaView({ proformas, loading, reload }: { proformas: ClientProform
 const CATEGORY_MAP: Record<string, string> = { 'Web Development': 'web', 'Cloud Services': 'cloud', 'SEO': 'seo', 'Social Media': 'social', 'Domain / DNS': 'dns', 'Not sure': 'web' };
 const URGENCY_MAP: Record<string, string> = { 'Standard': 'standard', 'Elevated · within 48h': 'elevated', 'Urgent · within 24h': 'urgent' };
 
-function NewTicket({ onDone }: { onDone: () => void }) {
+function NewTicket({ onDone }: { onDone: (ref: string | null) => void }) {
   const call = useApi();
   const [desc, setDesc] = useState('');
   const [category, setCategory] = useState('Web Development');
@@ -494,8 +570,8 @@ function NewTicket({ onDone }: { onDone: () => void }) {
     if (!canSubmit) return;
     setSubmitting(true); setError(null);
     try {
-      await call('/v1/tickets', { method: 'POST', body: { description: trimmed, category: CATEGORY_MAP[category] ?? 'web', urgency: URGENCY_MAP[urgency] ?? 'standard' } });
-      onDone();
+      const res = await call<{ ref?: string }>('/v1/tickets', { method: 'POST', body: { description: trimmed, category: CATEGORY_MAP[category] ?? 'web', urgency: URGENCY_MAP[urgency] ?? 'standard' } });
+      onDone(res?.ref ?? null);
     } catch (err) {
       const e2 = err as { code?: string; status?: number };
       const c = e2?.code;
@@ -532,7 +608,7 @@ function NewTicket({ onDone }: { onDone: () => void }) {
         </div>
         {error && <div className="klp-auth-error">{error}</div>}
         <button type="submit" className="klp-btn primary" style={cssVars({ alignSelf: 'flex-start' })} disabled={!canSubmit}>
-          {submitting ? 'Submitting...' : 'Submit request →'}
+          {submitting ? 'Submitting...' : 'Submit request \u2192'}
         </button>
       </form>
       <aside className="panel">

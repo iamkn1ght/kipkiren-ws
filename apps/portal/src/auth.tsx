@@ -26,6 +26,16 @@ import {
 
 const STORAGE_KEY = 'kws_portal_access_token';
 const PICKED_KEY = 'kws_portal_picked_role';
+// Non-secret marker that this browser has signed in before, so anonymous
+// visitors skip the session refresh (which can only 401 without a cookie).
+const HAD_SESSION_KEY = 'kws_had_session';
+
+function readHint(): boolean {
+  try { return localStorage.getItem(HAD_SESSION_KEY) === '1'; } catch { return true; }
+}
+function writeHint(on: boolean): void {
+  try { if (on) localStorage.setItem(HAD_SESSION_KEY, '1'); else localStorage.removeItem(HAD_SESSION_KEY); } catch { /* private mode */ }
+}
 
 const DEV_AUTH_BYPASS = import.meta.env.VITE_DEV_AUTH_BYPASS === '1';
 
@@ -89,6 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     emailRef.current = email;
     setAccessToken(token);
     writeStored(STORAGE_KEY, token);
+    writeHint(true);
     setSession({ accessToken: token, claims, email });
     return true;
   }, []);
@@ -137,6 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (!cancelled) setSession({ accessToken: stored, claims, email: '' });
         }
       }
+      if (!stored && !readHint()) { setBootstrapping(false); return; }
       const refreshed = await refreshSession();
       if (cancelled) return;
       if (refreshed) {
@@ -171,11 +183,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (DEV_AUTH_BYPASS) { signInAs('client'); return; }
     const res = await apiSignup(payload);
     if (!applyRealSession(res.access_token, payload.email)) throw new Error('invalid_session_token');
+    // Record acceptance of the Terms + Privacy Policy shown on the signup form
+    // (KDPA). Best-effort: the account exists either way.
+    void apiRequest('/v1/onboarding/consent', { method: 'POST' }).catch(() => {});
   }, [applyRealSession, signInAs]);
 
   const signOut = useCallback(async () => {
     if (!DEV_AUTH_BYPASS) await apiLogout();
     clearSessionOnly();
+    writeHint(false);
     setPicked(null);
     writeStored(PICKED_KEY, null);
   }, [clearSessionOnly]);

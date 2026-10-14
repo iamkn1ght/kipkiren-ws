@@ -37,7 +37,7 @@ const INTRO: Record<PortalRole, { eyebrow: string; hint: string; list: string[] 
   },
 };
 
-export function LoginScreen({ role, onBack, onCreateAccount, onForgot }: { role: PortalRole; onBack: () => void; onCreateAccount?: (() => void) | undefined; onForgot?: (() => void) | undefined }) {
+export function LoginScreen({ role, onBack, backLabel = 'Change role', onCreateAccount, onForgot }: { role: PortalRole; onBack: () => void; backLabel?: string; onCreateAccount?: (() => void) | undefined; onForgot?: (() => void) | undefined }) {
   const { signIn } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -69,7 +69,7 @@ export function LoginScreen({ role, onBack, onCreateAccount, onForgot }: { role:
           <span className="name">Kipkiren<small>WEB SERVICES</small></span>
           <div className="klp-topbrand-r">
             <KlpToggle />
-            <button type="button" className="klp-back exit" onClick={onBack}>‹ Change role</button>
+            <button type="button" className="klp-back exit" onClick={onBack}>&lsaquo; {backLabel}</button>
           </div>
         </div>
 
@@ -109,7 +109,7 @@ export function LoginScreen({ role, onBack, onCreateAccount, onForgot }: { role:
                 </div>
                 {error && <div className="klp-auth-error">{error}</div>}
                 <button type="submit" className="klp-btn primary full" disabled={submitting}>
-                  {submitting ? 'Signing in...' : 'Sign in →'}
+                  {submitting ? 'Signing in...' : 'Sign in \u2192'}
                 </button>
                 {onForgot && <button type="button" className="klp-auth-link klp-login-forgot" onClick={onForgot}>Forgot password?</button>}
               </form>

@@ -161,6 +161,7 @@ export function SignupScreen({ onBack, onSwitchToSignin }: { onBack: () => void;
                   <p className="klp-field-help">You can change this later. Final pricing is confirmed on your proforma.</p>
                 </div>
                 {error && <div className="klp-auth-error">{error}</div>}
+                <p className="klp-auth-terms" style={{ marginTop: 0 }}>By creating an account you agree to our <a href="/terms" target="_blank" rel="noopener">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener">Privacy Policy</a>.</p>
                 <button type="submit" className="klp-btn primary full" disabled={!valid || submitting}>
                   {submitting ? 'Creating your account...' : 'Create account →'}
                 </button>
