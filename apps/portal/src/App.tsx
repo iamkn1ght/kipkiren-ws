@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AuthProvider, useAuth, portalForRole, type PortalRole } from './auth.tsx';
+import { AuthProvider, useAuth, hasStoredSession, portalForRole, type PortalRole } from './auth.tsx';
 import { Landing } from './Landing.tsx';
 import { LegalPage, type LegalDocId } from './Legal.tsx';
 import { RolePicker } from './RolePicker.tsx';
@@ -76,7 +76,17 @@ function Router() {
   const enterSignIn = () => { setAuthMode('default'); setEntered(true); if (AUDIENCE === 'client') pickRole('client'); };
   const enterSignUp = () => { setAuthMode('signup'); setEntered(true); };
 
-  if (bootstrapping) return <div className="boot">Loading...</div>;
+  const landing = (
+    <Landing onSignIn={() => { setLegal(null); enterSignIn(); }} onSignUp={() => { setLegal(null); enterSignUp(); }} onLegal={setLegal} />
+  );
+
+  // Public visitors keep seeing the (prerendered) landing while the session
+  // refresh runs, instead of a loader replacing it. Likely-signed-in tabs and
+  // the staff console still wait on the loader.
+  if (bootstrapping) {
+    if (AUDIENCE !== 'staff' && !entered && !legal && !recovery && !hasStoredSession()) return landing;
+    return <div className="boot">Loading...</div>;
+  }
 
   // Highest priority: completing an invite or a password recovery from an email
   // link (works on any domain/audience, signed in or not).
@@ -103,7 +113,7 @@ function Router() {
     if (legal) {
       return <LegalPage doc={legal} onBack={() => setLegal(null)} onOpen={setLegal} onSignIn={() => { setLegal(null); enterSignIn(); }} />;
     }
-    return <Landing onSignIn={() => { setLegal(null); enterSignIn(); }} onSignUp={() => { setLegal(null); enterSignUp(); }} onLegal={setLegal} />;
+    return landing;
   }
 
   // Self-service signup (client-facing only).

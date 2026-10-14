@@ -88,7 +88,7 @@ const DOCS: Record<LegalDocId, LegalDoc> = {
     intro: 'A plain summary of what your monthly care plan commits us to. The full terms live in your signed service agreement; this is the part you will actually refer to.',
     blocks: [
       { h: 'Response times', body: ['We respond to tickets within the SLA of your plan, measured in business hours (Monday to Friday, 09:00 to 18:00 EAT):'], list: ['Starter: within 48 hours.', 'Growth: within 24 hours, with a named delivery lead.', 'Business: within 12 hours, with priority handling.'] },
-      { h: 'Uptime and monitoring', body: ['We target 99.9% monthly uptime on sites we host, monitor them continuously, and act on incidents without waiting for you to notice. Our own rolling average across managed sites is 99.98%.'] },
+      { h: 'Uptime and monitoring', body: ['We target 99.9% monthly uptime on sites we host, monitor them continuously, and act on incidents without waiting for you to notice.'] },
       { h: 'Backups and security', list: ['Automated daily backups with tested restores.', 'SSL certificates issued, monitored and renewed automatically.', 'Security patches applied as they are released.', 'Quarterly performance reviews on Growth and Business.'] },
       { h: 'Included vs billable', body: ['Each plan includes a block of change requests each month, such as content edits, small fixes and updates. Larger pieces of work are scoped on a proforma first and billed separately, always at your approval. Unused monthly allowance does not roll over.'] },
       { h: 'Escalation and exit', body: ['Every account has a named person and a clear escalation path for urgent issues. If you ever leave, we hand over the code, database, DNS and accounts in full, and there is no lock-in.'] },
@@ -101,7 +101,7 @@ const DOCS: Record<LegalDocId, LegalDoc> = {
     intro: 'We keep browser storage to the minimum needed to run the site and your portal. We do not use advertising or cross-site tracking cookies.',
     blocks: [
       { h: 'Essential storage', list: ['A session token that keeps you signed in to your portal.', 'A small preference for your light or dark theme (klp_mode).'] },
-      { h: 'Analytics', body: ['If we enable privacy-respecting analytics to understand which pages help visitors, we ask for your consent first and you can decline without losing any functionality. We do not share this data with advertisers.'] },
+      { h: 'Analytics', body: ['We use Cloudflare Web Analytics to understand which pages help visitors. It sets no cookies, stores nothing in your browser, does not fingerprint you and does not track you across sites. It only counts page views in aggregate. We do not share this data with advertisers.'] },
       { h: 'Managing it', body: ['You can clear cookies and site storage at any time in your browser settings. Clearing the session cookie simply signs you out of the portal.'] },
     ],
   },

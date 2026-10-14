@@ -72,6 +72,11 @@ function syntheticSession(role: PortalRole): Session {
   };
 }
 
+/** True when this tab holds a stored access token (a likely signed-in user). */
+export function hasStoredSession(): boolean {
+  return readStored(STORAGE_KEY) !== null;
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [picked, setPicked] = useState<PortalRole | null>(null);

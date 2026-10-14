@@ -79,11 +79,13 @@ const SERVICES = [
     more: ['Continuous uptime monitoring and alerts', 'SSL, daily backups and tested restores', 'Security patches applied as they land', 'A named person who answers the phone'] },
 ];
 
+// Commitments we put in writing (proforma + service terms), not track-record
+// claims. Swap in real operating numbers once the founding cohort is live.
 const STATS = [
-  { n: '01', v: '2019', l: 'Studio founded' },
-  { n: '02', v: '68', l: 'Sites in active operation' },
-  { n: '03', v: '99.98%', l: '12-month uptime average' },
-  { n: '04', v: '24h', l: 'Ticket response SLA' },
+  { n: '01', v: '48h', l: 'From first call to fixed-price proforma' },
+  { n: '02', v: '99.9%', l: 'Monthly uptime target on sites we host' },
+  { n: '03', v: '24h', l: 'Ticket response SLA' },
+  { n: '04', v: '100%', l: 'Of your code, data and accounts are yours' },
 ];
 
 const PROCESS = [
@@ -226,9 +228,9 @@ export function Landing({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void;
                 <p className="quote">"The web is quieter than it looks. Almost every site we are asked to rescue was shipped in a rush by someone who was never going to answer the phone six months later."</p>
                 <div className="klp-mono by">Kipkiren Studio, on why we run what we build</div>
                 <div className="klp-herocard-facts">
-                  <div><span className="n">2019</span><span className="l">Founded</span></div>
-                  <div><span className="n">68</span><span className="l">Sites run</span></div>
-                  <div><span className="n">99.98%</span><span className="l">Uptime</span></div>
+                  <div><span className="n">48h</span><span className="l">To proforma</span></div>
+                  <div><span className="n">99.9%</span><span className="l">Uptime target</span></div>
+                  <div><span className="n">24h</span><span className="l">Response SLA</span></div>
                 </div>
                 <button type="button" className="klp-herocard-price" onClick={go('pricing')}>
                   <span className="p"><span className="k">Build from</span> <strong>KES 45,000</strong> <span className="k">plus care from 3,500/mo</span></span>
@@ -274,9 +276,9 @@ export function Landing({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void;
             <div className="klp-sec-head">
               <div className="h">
                 <span className="klp-eyebrow teal">By the numbers</span>
-                <h2 className="klp-display-lg">The kind of numbers<br /><em>that take years.</em></h2>
+                <h2 className="klp-display-lg">Numbers we put<br /><em>in writing.</em></h2>
               </div>
-              <p className="klp-lead p">Operations you can see. Uptime, longevity and response times are the metrics that only exist when someone stays after launch.</p>
+              <p className="klp-lead p">Commitments, not vanity metrics. Each one is part of your proforma or our service terms, so you can hold us to it.</p>
             </div>
             <div className="klp-stats klp-reveal">
               {STATS.map((s) => (
