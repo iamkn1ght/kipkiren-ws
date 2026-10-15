@@ -605,3 +605,80 @@
   .kx .rib { border-left: 0; }
   .kx .rib + .rib { border-top: 1px solid var(--hairline); }
 }
+
+/* ==========================================================================
+ * Round 6: smoother scrolling, three reasons, phones get the pinned effects
+ * and swipeable side-by-side rows instead of stacks.
+ * ========================================================================== */
+
+/* ---- performance: nothing blurs or blends per scroll frame ---- */
+.kx .grain { mix-blend-mode: normal; opacity: .018; }
+[data-mode="dark"] .kx .grain { mix-blend-mode: normal; opacity: .03; }
+.kx .orb { filter: none; }
+.kx .reel .orb.a { background: radial-gradient(circle, rgba(14,122,104,.42), transparent 66%); }
+.kx .reel .orb.b { background: radial-gradient(circle, rgba(245,166,35,.26), transparent 66%); }
+.kx .night .orb.c { background: radial-gradient(circle, rgba(14,122,104,.36), transparent 66%); }
+.kx .ex-stage::before, .kx .band::before, .kx .proc-grid::before { filter: none; }
+.kx .ex-stack { will-change: transform; }
+.kx .ex-layer { will-change: transform; backface-visibility: hidden; }
+/* panels slide during the pin: a solid-ish glass tint instead of a live backdrop blur */
+.kx .reel .panel.glass { -webkit-backdrop-filter: none; backdrop-filter: none; background: color-mix(in oklab, var(--card) 84%, transparent); }
+
+/* ---- philosophy ribbon: three reasons ---- */
+.kx .ribbon { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+/* ---- tablets + phones: pinned 3D view and horizontal reel (like desktop) ---- */
+@media (max-width: 1040px) {
+  .kx .ex-pin { height: 100svh; min-height: 560px; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); align-content: stretch; padding-block: 88px 12px; }
+  .kx .ex-copy { gap: 14px; }
+  .kx .ex-copy h2 { font-size: clamp(30px, 7vw, 48px); }
+  .kx .ex-list { display: flex; flex-wrap: wrap; gap: 6px; border-top: 0; }
+  .kx .ex-list li { display: inline-flex; gap: 6px; align-items: baseline; padding: 6px 12px; border: 1px solid var(--hairline); border-radius: 99px; background: var(--glass); }
+  .kx .ex-list li.on { border-color: color-mix(in oklab, var(--teal) 55%, transparent); }
+  .kx .ex-list small { display: none; }
+  .kx .ex-list b { font-size: 15px; }
+  .kx .ex-list .k { padding-top: 0; }
+  .kx .ex-stage { height: 100%; min-height: 0; }
+  .kx .ex-stack { width: min(520px, 88%); }
+
+  .kx .reel-pin { height: 100svh; min-height: 560px; padding-block: 84px 16px; }
+  .kx .reel-head { margin-bottom: 18px; }
+  .kx .reel-head h2 { font-size: clamp(30px, 7vw, 48px); }
+  .kx .reel-prog { display: block; width: 90px; }
+  .kx .reel-track { flex-direction: row; gap: 12px; }
+  .kx .panel { flex: 0 0 min(84vw, 560px); width: auto; height: min(62svh, 520px); grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
+  .kx .panel-l { padding: 22px; overflow: hidden; }
+  .kx .panel h3 { font-size: clamp(40px, 11vw, 64px); }
+  .kx .panel-r { height: auto; border-top: 1px solid var(--hairline); grid-template-rows: auto; }
+  .kx .panel-r svg { display: none; }
+}
+
+/* ---- phones: side by side, swipe instead of stacking ---- */
+@media (max-width: 760px) {
+  .kx .ribbon, .kx .proc-grid, .kx .plans, .kx .compare {
+    display: flex; overflow-x: auto; overflow-y: visible; scroll-snap-type: x mandatory; gap: 12px;
+    margin-inline: calc(-1 * var(--gut)); padding-inline: var(--gut); padding-bottom: 18px;
+    max-width: none; scrollbar-width: none; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch;
+  }
+  .kx .ribbon::-webkit-scrollbar, .kx .proc-grid::-webkit-scrollbar, .kx .plans::-webkit-scrollbar, .kx .compare::-webkit-scrollbar { display: none; }
+  .kx .ribbon > *, .kx .proc-grid > *, .kx .plans > *, .kx .compare > * { flex: 0 0 84%; scroll-snap-align: center; }
+  .kx .proc-grid::before { display: none; }
+
+  /* ribbon: the strip becomes a row of separate glass cards */
+  .kx .ribbon { border-radius: 0; background: none; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .kx .ribbon .rib, .kx .ribbon .rib + .rib { border: 1px solid var(--glass-brd); border-radius: 24px; background: var(--glass); box-shadow: var(--glass-hi), var(--glass-shadow); }
+
+  /* compare: "them" and "us" side by side, swipe between */
+  .kx .compare { border-radius: 0; background: none; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .kx .compare > div, .kx .compare > div + div { border: 1px solid var(--glass-brd); border-radius: 24px; background: var(--glass); box-shadow: var(--glass-hi), var(--glass-shadow); padding: 24px; margin: 0; }
+
+}
+@media (max-width: 760px) {
+  /* the gutter alone sets the margins on phones, so swipe rows reach the edges */
+  .kx { --maxw: 100vw; }
+  .kx .ribbon { width: auto; align-self: stretch; }
+}
+@media (max-width: 760px) {
+  /* room for the glass shadows inside the swipe rows (no hard cut-off line) */
+  .kx .ribbon, .kx .proc-grid, .kx .plans, .kx .compare { padding-bottom: 46px; margin-bottom: -28px; }
+}

@@ -213,6 +213,13 @@ export function initLanding(root: HTMLElement): () => void {
   };
   $('#yearSwitch')?.addEventListener('click', (e) => { year = !year; (e.currentTarget as HTMLElement).setAttribute('aria-checked', String(year)); renderPlans(true); }, sig);
 
+  /* phones: the pricing row opens centred on the featured plan */
+  const plansRow = $('#plans');
+  const featPlan = plansRow?.querySelector<HTMLElement>('.plan.feat');
+  if (plansRow && featPlan && window.innerWidth <= 760) {
+    requestAnimationFrame(() => { plansRow.scrollLeft = featPlan.offsetLeft - (plansRow.clientWidth - featPlan.offsetWidth) / 2; });
+  }
+
   /* ---------- FAQ accordion ---------- */
   $$('.faq button').forEach((b) => b.addEventListener('click', () => {
     const f = b.parentElement!, open = !f.classList.contains('open');
@@ -343,6 +350,8 @@ export function initLanding(root: HTMLElement): () => void {
       if (!alive) return;
       gsap = g.gsap; ScrollTrigger = s.ScrollTrigger;
       gsap.registerPlugin(ScrollTrigger);
+      // phones: the address bar showing/hiding must not re-measure the pins mid-scroll
+      ScrollTrigger.config({ ignoreMobileResize: true });
       const G = gsap, STr = ScrollTrigger;
       ctx = G.context(() => {
         G.from('#heroTitle .ln > span', { yPercent: 110, duration: 1.2, ease: 'expo.out', stagger: 0.1, delay: 0.1 });
@@ -359,25 +368,27 @@ export function initLanding(root: HTMLElement): () => void {
         $$('.fl').forEach((f, i) => G.to(f, { y: i % 2 ? -14 : 14, duration: 3 + i * 0.4, ease: 'sine.inOut', yoyo: true, repeat: -1 }));
         $$('.sec-head h2').forEach((el) => G.from(el, { y: 50, opacity: 0, duration: 1.1, ease: 'expo.out', clearProps: 'transform,opacity', scrollTrigger: { trigger: el, start: 'top 88%' } }));
 
-        const mm = G.matchMedia();
-        mmRevert = () => mm.revert();
-        mm.add('(min-width: 1041px)', () => {
+        // Pinned 3D exploded view + horizontal service reel on every screen size
+        // (phones get a shorter scroll distance and tighter layer spacing).
+        const pinned = (small: boolean) => {
           const layers = $$('.ex-layer'), items = $$('#exList li');
-          G.set('#exStack', { rotateX: 0, rotateZ: 0, scale: 0.92 }); G.set(layers, { z: 0 });
-          G.timeline({ scrollTrigger: { trigger: '#exPin', start: 'top top', end: '+=2200', pin: true, scrub: 0.8,
+          G.set('#exStack', { rotateX: 0, rotateZ: 0, scale: small ? 0.9 : 0.92 }); G.set(layers, { z: 0 });
+          G.timeline({ scrollTrigger: { trigger: '#exPin', start: 'top top', end: small ? '+=1300' : '+=2000', pin: true, scrub: 0.5, anticipatePin: 1,
             onUpdate: (st) => { const idx = Math.min(3, Math.floor(st.progress * 4.4)); items.forEach((li) => li.classList.toggle('on', 3 - Number(li.dataset.i) <= idx)); } } })
-            .to('#exStack', { rotateX: 58, rotateZ: -38, scale: 0.78, duration: 1, ease: 'power2.inOut' })
-            .to(layers, { z: (i: number) => i * 120 - 180, duration: 1.4, ease: 'power2.inOut' }, '<.2')
+            .to('#exStack', { rotateX: 58, rotateZ: -38, scale: small ? 0.74 : 0.78, duration: 1, ease: 'power2.inOut' })
+            .to(layers, { z: (i: number) => (small ? i * 70 - 105 : i * 120 - 180), duration: 1.4, ease: 'power2.inOut' }, '<.2')
             .to('#exStack', { rotateZ: -26, duration: 0.8, ease: 'none' });
           const track = $('#reelTrack');
           if (track) {
             const dist = () => Math.max(0, track.scrollWidth - window.innerWidth);
             const bar = $('#reelBar');
-            G.to(track, { x: () => -dist(), ease: 'none', scrollTrigger: { trigger: '#reelPin', start: 'top top', end: () => `+=${dist()}`, pin: true, scrub: 0.6, invalidateOnRefresh: true, onUpdate: (st) => { if (bar) bar.style.width = `${st.progress * 100}%`; } } });
-            G.to('.reel .orb.a', { x: 260, y: -60, ease: 'none', scrollTrigger: { trigger: '#reelPin', start: 'top top', end: () => `+=${dist()}`, scrub: true } });
+            G.to(track, { x: () => -dist(), ease: 'none', scrollTrigger: { trigger: '#reelPin', start: 'top top', end: () => `+=${dist()}`, pin: true, scrub: 0.4, anticipatePin: 1, invalidateOnRefresh: true, onUpdate: (st) => { if (bar) bar.style.width = `${st.progress * 100}%`; } } });
           }
-        });
-        mm.add('(max-width: 1040px)', () => { staticExplode(70, 100); });
+        };
+        const mm = G.matchMedia();
+        mmRevert = () => mm.revert();
+        mm.add('(min-width: 1041px)', () => pinned(false));
+        mm.add('(max-width: 1040px)', () => pinned(true));
       }, root);
       // triggers below the pins were created first; measure them after the pin spacing exists
       STr.sort(); STr.refresh();

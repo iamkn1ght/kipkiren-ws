@@ -62,10 +62,9 @@ const PROCESS = [
 
 // Philosophy + Why Kipkiren (option E): four reasons, each with the number we commit to.
 const BELIEFS = [
-  { k: '01 · Transparent pricing', n: '48', suf: 'h', t: 'A proforma before any work.', d: 'No surprise invoices, no padded hours, no "it depends".' },
-  { k: '02 · We run what we build', n: '99.9', suf: '%', dec: '1', t: 'We stay on the line.', d: 'Care is a first-class part of the work, not an upsell.' },
-  { k: '03 · You own everything', n: '100', suf: '%', t: 'No lock-in, ever.', d: 'Code, database, DNS and every account are yours.' },
-  { k: '04 · Local, senior, reachable', n: '24', suf: 'h', t: 'A small Nairobi team.', d: 'On Kenyan time, fluent in M-Pesa and the market you sell to.' },
+  { k: 'Transparent pricing', n: '48', suf: 'h', t: 'A proforma before any work.', d: 'No surprise invoices, no padded hours, no "it depends".' },
+  { k: 'We run what we build', n: '99.9', suf: '%', dec: '1', t: 'We stay on the line.', d: 'Care is a first-class part of the work, not an upsell.' },
+  { k: 'You own everything', n: '100', suf: '%', t: 'No lock-in, ever.', d: 'Code, database, DNS and every account are yours.' },
 ];
 
 const MANIFESTO = 'Websites decay. Most agencies quietly disappear after launch. *We stay,* with monitoring, backups, patches and a real person who knows your business.';
@@ -172,7 +171,7 @@ function LandingImpl({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; on
         <section data-tone="paper" id="how">
           <div className="ex-pin" id="exPin">
             <div className="ex-copy">
-              <span className="eyebrow">How we build · four layers</span>
+              <span className="eyebrow">How we build</span>
               <h2 className="d-lg">Every site is four layers deep. <em>We own all four.</em></h2>
               <ol className="ex-list" id="exList">
                 <li data-i="3"><span className="k">L4</span><span><b>Interface</b><small>Your brand, mobile-first, accessible, fast on a Safaricom 4G phone.</small></span></li>
@@ -227,24 +226,39 @@ function LandingImpl({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; on
         <section className="reel" id="services" data-tone="night">
           <div className="reel-pin" id="reelPin">
             <span className="orb a" /><span className="orb b" />
-            <div className="reel-head"><div><span className="eyebrow">Services · 02</span><h2 className="d-lg">Four disciplines, <em>one team.</em></h2></div><div className="reel-prog"><i id="reelBar" /></div></div>
+            <div className="reel-head"><div><span className="eyebrow">Services</span><h2 className="d-lg">Four disciplines, <em>one team.</em></h2></div><div className="reel-prog"><i id="reelBar" /></div></div>
             <div className="reel-track" id="reelTrack">
               <article className="panel glass">
-                <div className="panel-l"><span className="code">01 · DESIGN</span><div><h3>Design</h3><p>Editorial, deliberate, and grounded in your brand. No moodboard-of-the-week.</p></div><ul><li>A visual system, not a one-off mockup</li><li>Real content and structure from day one</li><li>Mobile-first and accessible by default</li></ul></div>
+                <div className="panel-l"><span className="code">DESIGN</span><div><h3>Design</h3><p>Editorial, deliberate, and grounded in your brand. No moodboard-of-the-week.</p></div><ul><li>A visual system, not a one-off mockup</li><li>Real content and structure from day one</li><li>Mobile-first and accessible by default</li></ul></div>
                 <div className="panel-r"><svg viewBox="0 0 300 300" aria-hidden="true"><rect className="df-l" x="30" y="60" width="60" height="60" rx="10" /><rect className="df-t" x="100" y="60" width="60" height="60" rx="10" /><rect className="df-p" x="170" y="60" width="60" height="60" rx="10" /><text className="dt big" x="30" y="200">Aa</text><path className="dl m" d="M30 228 H270" /><text className="dt t" x="30" y="256">TOKENS YOU KEEP</text></svg><div className="rate"><span>Design work</span><b>from KES 3,500/hr</b></div></div>
               </article>
               <article className="panel glass">
-                <div className="panel-l"><span className="code">02 · ENGINEERING</span><div><h3>Engineering</h3><p>React, TanStack, Supabase. Ships fast, stays fast, scored honestly.</p></div><ul><li>React and TypeScript, typed end to end</li><li>Supabase and Postgres with row-level security</li><li>Clean code and a full handover, always</li></ul></div>
+                <div className="panel-l"><span className="code">ENGINEERING</span><div><h3>Engineering</h3><p>React, TanStack, Supabase. Ships fast, stays fast, scored honestly.</p></div><ul><li>React and TypeScript, typed end to end</li><li>Supabase and Postgres with row-level security</li><li>Clean code and a full handover, always</li></ul></div>
                 <div className="panel-r"><svg viewBox="0 0 300 300" aria-hidden="true"><rect className="dl" x="20" y="120" width="76" height="48" rx="10" /><text className="dt" x="30" y="149">BROWSER</text><rect className="df-t" x="112" y="120" width="76" height="48" rx="10" /><text className="dt" x="138" y="149" style={{ fill: '#fff' }}>API</text><rect className="df-p" x="204" y="120" width="76" height="48" rx="10" /><text className="dt" x="210" y="149" style={{ fill: 'var(--paper)' }}>POSTGRES</text><path className="dl t" d="M96 144 H112 M188 144 H204" /><text className="dt t" x="20" y="220">RS256 · RLS · AUDIT LOG</text></svg><div className="rate"><span>Build work</span><b>from KES 3,500/hr</b></div></div>
               </article>
               <article className="panel glass">
-                <div className="panel-l"><span className="code">03 · SEO &amp; CONTENT</span><div><h3>Search</h3><p>Structured for discovery. Written by humans who read what they publish.</p></div><ul><li>Technical SEO and structured data</li><li>Analytics and Search Console wired in</li><li>Ongoing content support on care plans</li></ul></div>
+                <div className="panel-l"><span className="code">SEO &amp; CONTENT</span><div><h3>Search</h3><p>Structured for discovery. Written by humans who read what they publish.</p></div><ul><li>Technical SEO and structured data</li><li>Analytics and Search Console wired in</li><li>Ongoing content support on care plans</li></ul></div>
                 <div className="panel-r"><svg viewBox="0 0 300 300" aria-hidden="true"><rect className="dl" x="20" y="80" width="260" height="38" rx="19" /><text className="dt" x="38" y="104">bakery near westlands</text><rect className="df-t" x="20" y="132" width="260" height="46" rx="12" /><text className="dt" x="36" y="160" style={{ fill: '#fff' }}>KILELE BAKERY · OPEN NOW</text><path className="dl m" d="M20 204 H240 M20 222 H200 M20 240 H220" /></svg><div className="rate"><span>SEO work</span><b>from KES 3,000/hr</b></div></div>
               </article>
               <article className="panel glass">
-                <div className="panel-l"><span className="code">04 · MANAGED HOSTING</span><div><h3>Hosting</h3><p>We own uptime, backups, updates and the 03:00 phone call. You own the site.</p></div><ul><li>Continuous uptime monitoring and alerts</li><li>SSL, daily backups and tested restores</li><li>A named person who answers the phone</li></ul></div>
+                <div className="panel-l"><span className="code">MANAGED HOSTING</span><div><h3>Hosting</h3><p>We own uptime, backups, updates and the 03:00 phone call. You own the site.</p></div><ul><li>Continuous uptime monitoring and alerts</li><li>SSL, daily backups and tested restores</li><li>A named person who answers the phone</li></ul></div>
                 <div className="panel-r"><svg viewBox="0 0 300 300" aria-hidden="true"><text className="dt big" x="30" y="130">99.9%</text><text className="dt" x="30" y="160">MONTHLY UPTIME TARGET</text><path className="dl m" d="M30 200 H270" /><rect className="df-l" x="30" y="214" width="8" height="8" rx="4" /><text className="dt t" x="46" y="222">CHECKED EVERY 60s</text></svg><div className="rate"><span>Included in</span><b>every care plan</b></div></div>
               </article>
+            </div>
+          </div>
+        </section>
+
+        {/* process */}
+        <section className="sec" id="process" data-tone="paper">
+          <div className="wrap">
+            <div className="sec-head">
+              <div><span className="eyebrow">Process</span><h2 className="d-lg">How the work <em>moves.</em></h2></div>
+              <p className="lead">Six steps. Predictable calendar. No mystery deliverables.</p>
+            </div>
+            <div className="proc-grid" id="procGrid">
+              {PROCESS.map((p, i) => (
+                <div key={p.t} className="step glass"><span className="num">{String(i + 1).padStart(2, '0')}</span><span className="ghost-n" aria-hidden="true">{i + 1}</span><h3>{p.t}</h3><p>{p.d}</p></div>
+              ))}
             </div>
           </div>
         </section>
@@ -267,26 +281,11 @@ function LandingImpl({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; on
           </div>
         </section>
 
-        {/* process */}
-        <section className="sec" id="process" data-tone="paper">
-          <div className="wrap">
-            <div className="sec-head">
-              <div><span className="eyebrow">Process · 03</span><h2 className="d-lg">How the work <em>moves.</em></h2></div>
-              <p className="lead">Six steps. Predictable calendar. No mystery deliverables.</p>
-            </div>
-            <div className="proc-grid" id="procGrid">
-              {PROCESS.map((p, i) => (
-                <div key={p.t} className="step glass"><span className="num">{String(i + 1).padStart(2, '0')}</span><span className="ghost-n" aria-hidden="true">{i + 1}</span><h3>{p.t}</h3><p>{p.d}</p></div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* pricing */}
         <section className="sec pricing" id="pricing" data-tone="paper">
           <div className="wrap">
             <div className="head">
-              <span className="eyebrow">Pricing · 04</span>
+              <span className="eyebrow">Pricing</span>
               <p className="lead">One transparent build price to launch, one monthly care plan to keep it fast, secure and growing. Every figure in Kenyan shillings, VAT itemised on the proforma.</p>
             </div>
             <div className="giant-wrap">
@@ -346,7 +345,7 @@ function LandingImpl({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; on
           </div>
           <div className="wrap">
             <div className="cta-card glass">
-              <span className="eyebrow">Start · 05</span>
+              <span className="eyebrow">Start</span>
               <h2 className="d-lg">Ready when <em>you are.</em></h2>
               <p className="lead">Pick a plan or open a ticket for something custom. Either path starts a real conversation with a real designer, usually the same day.</p>
               <div className="ctas"><a className="btn primary" href="#pricing">See plans <span className="ar">&rarr;</span></a><button type="button" className="btn ghost" onClick={onSignUp}>Open a custom ticket</button></div>
