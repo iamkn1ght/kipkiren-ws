@@ -387,12 +387,15 @@
 
 /* CTA: beam + horizon + glass */
 .kx .cta { position: relative; overflow: hidden; padding-block: clamp(90px, 10vw, 140px) 0; }
-/* ASCII hands: two hands reach in and clasp as you scroll (cooperation) */
-.kx .hands { position: relative; height: clamp(220px, 30vw, 520px); margin-inline: auto; max-width: var(--maxw); }
-.kx .hands canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.kx .hands::after { content: ''; position: absolute; left: 50%; top: 52%; width: 36%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: radial-gradient(circle, color-mix(in oklab, var(--teal) 30%, transparent), transparent 65%); filter: blur(30px); opacity: var(--clasp, 0); pointer-events: none; transition: opacity .3s; }
-.kx .hands-cap { position: absolute; left: 50%; bottom: 8%; transform: translateX(-50%); font-family: var(--mono); font-size: 10px; letter-spacing: .3em; text-transform: uppercase; color: var(--mid); white-space: nowrap; opacity: var(--clasp, 0); }
-.kx .cta-card { position: relative; z-index: 2; max-width: 760px; margin: calc(clamp(240px, 30vw, 520px) * -0.18) auto 0; border-radius: 32px; padding: clamp(32px, 5vw, 60px); text-align: center; }
+/* closing promise: "Tell us the idea. We build it." revealed word by word */
+.kx .promise { position: relative; text-align: center; padding: 0 var(--gut) clamp(40px, 6vw, 80px); }
+.kx .promise-big { margin: 0; font-family: var(--serif); font-weight: 700; font-size: clamp(56px, 11vw, 190px); line-height: .9; letter-spacing: -.05em; text-wrap: balance; }
+.kx .promise-big .w { display: inline-block; opacity: .1; transform: translateY(22px); transition: opacity .7s, transform .9s var(--ease); }
+.kx .promise.in .promise-big .w { opacity: 1; transform: none; }
+.kx .promise-big .w.t { font-style: italic; font-weight: 500; color: var(--teal-deep); }
+.kx .promise-chips { list-style: none; margin: 26px 0 0; padding: 0; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.kx .promise-chips li { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; padding: 8px 14px; border-radius: 99px; color: var(--slate); background: var(--glass); border: 1px solid var(--glass-brd); box-shadow: var(--glass-hi); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.kx .cta-card { position: relative; z-index: 2; max-width: 760px; margin: 0 auto; border-radius: 32px; padding: clamp(32px, 5vw, 60px); text-align: center; }
 .kx .cta-card h2 { margin-top: 18px; }
 .kx .cta-card h2 em { color: var(--teal-deep); }
 .kx .cta-card .lead { margin: 16px auto 0; max-width: 36rem; }

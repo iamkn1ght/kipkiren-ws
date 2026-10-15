@@ -357,7 +357,15 @@ function LandingImpl({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; on
 
         {/* CTA */}
         <section className="cta" id="contact" data-tone="paper">
-          <div className="hands" id="hands" aria-hidden="true"><canvas id="handsCanvas" /><span className="hands-cap">Your idea · our engineering</span></div>
+          <div className="promise" id="promise">
+            <p className="promise-big">
+              <span className="w">Tell</span> <span className="w">us</span> <span className="w">the</span> <span className="w">idea.</span><br />
+              <span className="w t">We</span> <span className="w t">build</span> <span className="w t">it.</span>
+            </p>
+            <ul className="promise-chips">
+              <li>Fixed price</li><li>Proforma in 48h</li><li>M-Pesa ready</li><li>No lock-in</li><li>We stay after launch</li>
+            </ul>
+          </div>
           <div className="wrap">
             <div className="cta-card glass">
               <span className="eyebrow">Start · 05</span>

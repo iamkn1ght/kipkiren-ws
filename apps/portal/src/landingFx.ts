@@ -8,7 +8,6 @@
  * and the page is fully readable before it arrives.
  */
 
-import { initHands } from './handsFx.ts';
 
 type Gsap = typeof import('gsap').gsap;
 type ST = typeof import('gsap/ScrollTrigger').ScrollTrigger;
@@ -293,13 +292,25 @@ export function initLanding(root: HTMLElement): () => void {
   };
   on('scroll', () => { if (!tickRaf) tickRaf = requestAnimationFrame(syncScroll); }, { passive: true });
 
-  /* ---------- ASCII hands in the closing CTA ---------- */
-  const handsStage = $('#hands');
-  const handsCanvas = $<HTMLCanvasElement>('#handsCanvas');
-  const hands = handsStage && handsCanvas ? initHands(handsStage, handsCanvas, root, reduce, ac.signal) : null;
+  /* ---------- closing promise: words reveal as it scrolls in ---------- */
+  const promise = $('#promise');
+  let promiseIO: IntersectionObserver | null = null;
+  if (promise) {
+    if (reduce) {
+      promise.classList.add('in');
+    } else {
+      $$('#promise .w').forEach((w, i) => { w.style.transitionDelay = `${i * 110}ms`; });
+      promiseIO = new IntersectionObserver(([en]) => {
+        if (!en?.isIntersecting) return;
+        promise.classList.add('in');
+        promiseIO?.disconnect();
+      }, { threshold: 0.4 });
+      promiseIO.observe(promise);
+    }
+  }
 
   /* ---------- theme changes (klpTheme toggles data-mode on <html>) ---------- */
-  const modeObs = new MutationObserver(() => { readTones(); setTone(curTone, true); readDots(); hands?.refresh(); });
+  const modeObs = new MutationObserver(() => { readTones(); setTone(curTone, true); readDots(); });
   modeObs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-mode'] });
 
   /* ---------- layout-dependent pieces ---------- */
@@ -379,7 +390,7 @@ export function initLanding(root: HTMLElement): () => void {
   return () => {
     alive = false;
     ac.abort();
-    hands?.stop();
+    promiseIO?.disconnect();
     heroIO.disconnect();
     modeObs.disconnect();
     timers.forEach((t) => { window.clearTimeout(t); window.clearInterval(t); });
