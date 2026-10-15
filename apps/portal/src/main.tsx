@@ -1,7 +1,9 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { App } from './App.tsx';
+import { initGlassFx } from './glassFx.ts';
 import './styles.css';
+import './klp-glass.css';
 
 // Resolve the warm light/dark mode before first paint (no flash).
 {
@@ -20,3 +22,6 @@ ReactDOM.createRoot(root).render(
     <App />
   </React.StrictMode>,
 );
+
+// Interactive glass cards on every portal / auth / legal screen.
+initGlassFx();

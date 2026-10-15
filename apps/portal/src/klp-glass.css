@@ -1,0 +1,109 @@
+/* ==========================================================================
+ * Glass skin for every .klp screen: sign in / sign up, role picker, password
+ * screens, legal pages, client portal, admin console, delivery task view.
+ * Brings them in line with the v0.3 landing (landing-x.css): frosted
+ * surfaces over the brand haze, the Playfair wordmark, larger section labels,
+ * a floating glass top bar, and the interactive card treatment (glassFx.ts).
+ * Loaded last (main.tsx) so it layers over landing.css without editing it.
+ * ========================================================================== */
+
+.klp {
+  --glass: rgba(255, 255, 255, .5);
+  --glass-strong: rgba(255, 255, 255, .72);
+  --glass-brd: rgba(255, 255, 255, .78);
+  --glass-hi: inset 0 1px 0 rgba(255, 255, 255, .9), inset 0 -1px 0 rgba(17, 16, 8, .04);
+  --glass-shadow: 0 30px 70px -38px rgba(17, 16, 8, .3);
+  --kx-ease: cubic-bezier(.16, 1, .3, 1);
+}
+[data-mode="dark"] .klp {
+  --glass: rgba(37, 31, 22, .46);
+  --glass-strong: rgba(37, 31, 22, .68);
+  --glass-brd: rgba(243, 239, 229, .16);
+  --glass-hi: inset 0 1px 0 rgba(255, 255, 255, .1), inset 0 -1px 0 rgba(0, 0, 0, .3);
+  --glass-shadow: 0 40px 80px -40px rgba(0, 0, 0, .8);
+}
+
+/* ---- frosted surfaces ---- */
+.klp .klp-card,
+.klp .klp-rp-card,
+.klp .klp-list,
+.klp .klp-empty,
+.klp .klp-dl,
+.klp .klp-legal-toc,
+.klp .klp-legal-doc {
+  background: var(--glass);
+  border: 1px solid var(--glass-brd);
+  box-shadow: var(--glass-hi), var(--glass-shadow);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+  backdrop-filter: blur(22px) saturate(150%);
+}
+.klp .klp-card, .klp .klp-rp-card, .klp .klp-list, .klp .klp-empty { border-radius: 24px; }
+.klp .klp-dl { border-radius: 18px; gap: 0; }
+.klp .klp-dl > div { background: transparent; border-bottom: 1px solid var(--hairline); }
+.klp .klp-list-row:hover { background: var(--glass-strong); }
+.klp .klp-modal { background: var(--glass-strong); border: 1px solid var(--glass-brd); border-radius: 28px; box-shadow: var(--glass-hi), var(--glass-shadow); -webkit-backdrop-filter: blur(26px) saturate(150%); backdrop-filter: blur(26px) saturate(150%); }
+.klp .klp-overlay { -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.klp .klp-legal-toc { border-radius: 24px; padding: 22px; align-self: start; }
+.klp .klp-legal-doc { border-radius: 28px; padding: clamp(24px, 4vw, 48px); }
+
+/* ---- floating glass top bar with the Playfair wordmark ---- */
+.klp .klp-topbrand {
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); z-index: 40;
+  margin-top: 12px; margin-bottom: 32px; padding: 8px 10px 8px 12px;
+  border: 1px solid var(--glass-brd); border-radius: 999px;
+  background: var(--glass); box-shadow: var(--glass-hi), var(--glass-shadow);
+  -webkit-backdrop-filter: blur(22px) saturate(150%); backdrop-filter: blur(22px) saturate(150%);
+}
+.klp .klp-topbrand .name, .klp .klp-brand .name { font-family: var(--font-serif); font-size: 20px; font-weight: 500; letter-spacing: -.01em; text-transform: none; line-height: 1; }
+.klp .klp-topbrand .name small, .klp .klp-brand .name small { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: .32em; text-transform: uppercase; margin-top: 5px; color: var(--mid); }
+
+/* ---- portal sidebar: a sticky glass panel on desktop, a frosted tab rail on phones ---- */
+@media (min-width: 1024px) {
+  .klp .klp-portal-aside {
+    padding: 22px; border-radius: 24px; top: 92px;
+    background: var(--glass); border: 1px solid var(--glass-brd); box-shadow: var(--glass-hi), var(--glass-shadow);
+    -webkit-backdrop-filter: blur(22px) saturate(150%); backdrop-filter: blur(22px) saturate(150%);
+  }
+  .klp .klp-portal-nav button { border-radius: 12px; padding-inline: 12px; margin-block: 2px; border-bottom-color: transparent; transition: color .2s, background .25s; }
+  .klp .klp-portal-nav button.active { background: var(--glass-strong); color: var(--ink); box-shadow: var(--glass-hi); }
+  .klp .klp-portal-nav { border-top: 0; }
+}
+@media (max-width: 1023px) {
+  .klp .klp-portal-aside { background: var(--glass-strong); -webkit-backdrop-filter: blur(20px) saturate(150%); backdrop-filter: blur(20px) saturate(150%); }
+}
+
+/* ---- form fields ---- */
+.klp .klp-field-input { background: var(--glass); border-color: var(--hairline); border-radius: 14px; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transition: border-color .2s, box-shadow .25s, background .2s; }
+.klp .klp-field-input:focus { border-color: var(--teal); background: var(--glass-strong); box-shadow: 0 0 0 4px color-mix(in oklab, var(--teal) 16%, transparent); }
+
+/* ---- section labels: no dot, larger (same as the landing) ---- */
+.klp .klp-eyebrow .dot { display: none; }
+.klp .klp-eyebrow { font-size: clamp(12px, 1vw, 13.5px); }
+
+/* ---- buttons: same light sweep as the landing's primary ---- */
+.klp .klp-btn.primary { position: relative; overflow: hidden; isolation: isolate; }
+.klp .klp-btn.primary::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, .26) 50%, transparent 70%); transform: translateX(-120%); transition: transform .8s var(--kx-ease); }
+.klp .klp-btn.primary:hover::after { transform: translateX(120%); }
+
+/* ---- interactive glass cards (glassFx.ts adds .fxc + the .fx layer) ----
+   Cursor spotlight + sheen; lift for standalone cards, none for form cards.
+   Lift uses `translate` so it never fights component transforms. */
+.klp .fxc { --mx: 50%; --my: 0%; isolation: isolate; overflow: hidden; transition: translate .55s var(--kx-ease), border-color .4s, box-shadow .55s; }
+.klp .fx { position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; overflow: hidden; }
+.klp .fx::before { content: ''; position: absolute; inset: 0; background: radial-gradient(420px circle at var(--mx) var(--my), color-mix(in oklab, var(--teal) 22%, transparent), transparent 60%); opacity: 0; transition: opacity .4s; }
+.klp .fx::after { content: ''; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, .2) 50%, transparent 65%); transform: translateX(-110%); transition: transform 1s var(--kx-ease); }
+.klp .fxc.fx-on .fx::before { opacity: 1; }
+.klp .fxc.fx-on .fx::after { transform: translateX(110%); }
+.klp .fxc.fx-lift.fx-on { translate: 0 -6px; border-color: color-mix(in oklab, var(--teal) 60%, transparent); box-shadow: var(--glass-hi), 0 50px 90px -46px color-mix(in oklab, var(--teal) 55%, transparent); }
+.klp .fxc.fx-soft.fx-on { border-color: color-mix(in oklab, var(--teal) 40%, transparent); }
+.klp .fxc:not(.klp-rp-card) { position: relative; }
+
+@media (prefers-reduced-motion: reduce) {
+  .klp .fxc, .klp .fx::before, .klp .fx::after, .klp .klp-btn.primary::after { transition: none !important; }
+}
+@media print {
+  .klp .klp-card, .klp .klp-list, .klp .klp-dl { background: #fff !important; box-shadow: none !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  .klp .fx { display: none !important; }
+}
+/* the injected .fx layer must not count as a list row (rows draw a top rule) */
+.klp .klp-list > .fx + * { border-top: 0; }

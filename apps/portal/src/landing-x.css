@@ -534,3 +534,40 @@
 .kx .nf-path code { font-family: var(--mono); text-transform: none; letter-spacing: 0; color: var(--ink); margin-left: 6px; word-break: break-all; }
 .kx .nf-foot { text-align: center; padding-block: 24px; font-size: 10px; letter-spacing: .14em; }
 @media (prefers-reduced-motion: reduce) { .kx .nf-404 { animation: none; } }
+
+/* ---------- header B: spacious full-width bar at the top, glass pill once
+   scrolled (chosen from the header options artifact) ---------- */
+.kx .nav { top: env(safe-area-inset-top, 0px); width: 100%; border-radius: 0; gap: 24px;
+  padding: 18px max(var(--gut), calc((100vw - var(--maxw)) / 2 + var(--gut)));
+  background: transparent; border: 0; border-bottom: 1px solid var(--hairline); box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none;
+  transition: top .6s var(--ease), width .6s var(--ease), padding .6s var(--ease), border-radius .6s var(--ease), background .4s, box-shadow .4s, border-color .4s; }
+.kx .nav.hide { transform: translateX(-50%); }
+.kx .nav.shrunk { top: calc(env(safe-area-inset-top, 0px) + 12px); width: min(1000px, calc(100% - 24px)); padding: 7px 7px 7px 14px; border-radius: 999px;
+  border: 1px solid var(--glass-brd); background: var(--glass); box-shadow: var(--glass-hi), var(--glass-shadow); -webkit-backdrop-filter: blur(22px) saturate(150%); backdrop-filter: blur(22px) saturate(150%); }
+.kx .brand .nm { font-family: var(--serif); font-size: 22px; font-weight: 500; letter-spacing: -.01em; text-transform: none; line-height: 1; transition: font-size .5s var(--ease); }
+.kx .brand .nm small { font-family: var(--mono); font-size: 8.5px; letter-spacing: .32em; text-transform: uppercase; margin-top: 5px; max-height: 14px; overflow: hidden; transition: opacity .3s, max-height .4s var(--ease), margin .4s var(--ease); }
+.kx .brand .mark { transition: width .5s var(--ease), height .5s var(--ease), font-size .5s var(--ease); }
+.kx .nav.shrunk .brand .nm { font-size: 18px; }
+.kx .nav.shrunk .brand .nm small { opacity: 0; max-height: 0; margin-top: 0; }
+.kx .nav.shrunk .brand .mark { width: 34px; height: 34px; font-size: 16px; }
+.kx .nav-links { background: transparent; }
+.kx .nav-links a { font-family: var(--sans); font-size: 15px; letter-spacing: 0; text-transform: none; color: var(--slate); padding: 9px 14px; transition: font-size .4s var(--ease), padding .4s var(--ease), color .25s; }
+.kx .nav-links a:hover, .kx .nav-links a.on { color: var(--ink); }
+.kx .nav.shrunk .nav-links a { font-size: 13.5px; padding: 8px 11px; }
+.kx .nav .btn.ghost { background: transparent; border-color: transparent; padding: 10px 8px; font-size: 14px; color: var(--slate); -webkit-backdrop-filter: none; backdrop-filter: none; }
+.kx .nav .btn.ghost:hover { color: var(--ink); transform: none; }
+@media (max-width: 1040px) {
+  .kx .nav { padding: 14px var(--gut); }
+  .kx .nav.shrunk { width: calc(100% - 24px); padding: 7px 7px 7px 10px; }
+}
+@media (max-width: 560px) {
+  .kx .brand .nm { display: grid; font-size: 19px; }
+  .kx .brand .nm small { display: none; }
+  .kx .nav.shrunk .brand .nm { display: none; }
+}
+@media (max-width: 560px) {
+  .kx .nav .btn.primary { white-space: nowrap; padding: 10px 14px; font-size: 12.5px; }
+  .kx .nav { gap: 8px; }
+  .kx .hero { padding-top: clamp(250px, 64vw, 300px); }
+}
+@media (max-width: 380px) { .kx .nav .klp-toggle { display: none; } }

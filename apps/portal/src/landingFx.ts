@@ -64,8 +64,10 @@ export function initLanding(root: HTMLElement): () => void {
   const pill = $('#navPill');
   const links = $$<HTMLAnchorElement>('#navLinks a');
   let active: HTMLAnchorElement | null = null;
-  let lastY = window.scrollY;
-  on('scroll', () => { const y = window.scrollY; nav?.classList.toggle('hide', y > lastY && y > 500); lastY = y; }, { passive: true });
+  // header B: full-width bar at the top, glass pill once scrolled
+  const syncNav = () => { nav?.classList.toggle('shrunk', window.scrollY > 40); };
+  on('scroll', syncNav, { passive: true });
+  syncNav();
   const movePill = (a: HTMLAnchorElement | null) => {
     if (!pill) return;
     if (!a) { pill.style.opacity = '0'; return; }
