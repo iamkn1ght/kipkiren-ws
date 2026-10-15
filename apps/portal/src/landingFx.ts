@@ -213,6 +213,13 @@ export function initLanding(root: HTMLElement): () => void {
   };
   $('#yearSwitch')?.addEventListener('click', (e) => { year = !year; (e.currentTarget as HTMLElement).setAttribute('aria-checked', String(year)); renderPlans(true); }, sig);
 
+  /* phones: the pricing row opens centred on the featured plan */
+  const plansRow = $('#plans');
+  const featPlan = plansRow?.querySelector<HTMLElement>('.plan.feat');
+  if (plansRow && featPlan && window.innerWidth <= 760) {
+    requestAnimationFrame(() => { plansRow.scrollLeft = featPlan.offsetLeft - (plansRow.clientWidth - featPlan.offsetWidth) / 2; });
+  }
+
   /* ---------- FAQ accordion ---------- */
   $$('.faq button').forEach((b) => b.addEventListener('click', () => {
     const f = b.parentElement!, open = !f.classList.contains('open');
