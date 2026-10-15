@@ -12,6 +12,7 @@ import { requireAuth } from '../middleware/auth.js';
 import { loginRateLimit, signupRateLimit, passwordResetRateLimit } from '../middleware/rate-limit.js';
 import { HttpError } from '../middleware/error.js';
 import { writeAuditEvent } from '../services/audit.js';
+import { sendEmail, sendStudioAlert } from '../services/email.js';
 import {
   SelfSignupInput,
   runSelfSignup,
@@ -197,6 +198,18 @@ authRouter.post('/signup', signupRateLimit, async (req: Request, res: Response) 
   if (req.ip) meta.ip = req.ip;
   const session = await issueSession(res, profile, meta);
   void writeAuditEvent({ actor_id: profile.id, actor_role: profile.role, event_type: 'auth_login_succeeded', entity_type: 'auth', entity_id: profile.id, payload_snapshot: { ip: req.ip ?? null, via: 'signup' } });
+
+  // Welcome the client and tell the studio. Fire-and-forget, gated on email.
+  void sendEmail({
+    to: parsed.data.email,
+    template: 'welcome',
+    variables: { name: parsed.data.contact_name.split(' ')[0] ?? parsed.data.contact_name, plan: result.plan_name ?? '' },
+    entity_type: 'client', entity_id: result.client.id,
+  });
+  void sendStudioAlert(`New signup: ${result.client.business_name}`, [
+    `${parsed.data.contact_name} <${parsed.data.email}>${parsed.data.phone ? ` · ${parsed.data.phone}` : ''}`,
+    `Plan of interest: ${result.plan_name ?? 'not chosen'}`,
+  ], { type: 'client', id: result.client.id });
 
   res.status(201).json({
     ...publicSession(session),

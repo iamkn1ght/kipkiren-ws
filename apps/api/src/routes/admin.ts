@@ -21,6 +21,7 @@ import { runSlaBreachAlerts } from '../services/sla-alerts.js';
 import { loadSiteHealth } from '../services/observability.js';
 import { loadRailsHealth } from '../services/rails.js';
 import { logger } from '../lib/logger.js';
+import { BillingError, markInvoicePaid, recordManualPayment, runCareBilling, setCareStarted } from '../services/billing.js';
 
 export const adminRouter: Router = Router();
 
@@ -429,5 +430,109 @@ adminRouter.post(
       input: ticketInput,
     });
     res.status(201).json(result);
+  },
+);
+
+// ============================================================================
+// Billing (works before Kipkiren Pay / Todoku): see services/billing.ts.
+// Reads: delivery_lead + admin. Money-moving writes: admin only.
+// ============================================================================
+const billingActor = (req: Request) => ({ id: req.auth!.sub, role: req.auth!.role as 'admin' | 'delivery_lead' });
+const billingFail = (res: Response, err: unknown): void => {
+  if (err instanceof BillingError) { res.status(err.statusCode).json({ error: err.code, message: err.message }); return; }
+  throw err;
+};
+
+// GET /v1/admin/billing - proformas awaiting payment, unpaid + recent invoices, care clients
+adminRouter.get(
+  '/billing',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (_req: Request, res: Response) => {
+    const sb = getServiceClient();
+    const [awaitingQ, unpaidQ, paidQ, bankQ] = await Promise.all([
+      sb.from('proformas').select('id, ref, total_kes, dispatched_at, tickets ( ref, description, clients ( id, business_name, email ) )').eq('status', 'dispatched').order('dispatched_at', { ascending: false }).limit(100),
+      sb.from('invoices').select('id, ref, kind, total_kes, issued_at, period_start, clients ( id, business_name )').is('paid_at', null).order('issued_at', { ascending: false }).limit(100),
+      sb.from('invoices').select('id, ref, kind, total_kes, issued_at, paid_at, clients ( id, business_name )').not('paid_at', 'is', null).order('paid_at', { ascending: false }).limit(20),
+      sb.from('audit_log').select('entity_id, created_at').eq('event_type', 'bank_transfer_requested').order('created_at', { ascending: false }).limit(200),
+    ]);
+    if (awaitingQ.error) throw awaitingQ.error;
+    const bankRequested = new Map<string, string>();
+    for (const r of (bankQ.data ?? []) as { entity_id: string; created_at: string }[]) if (!bankRequested.has(r.entity_id)) bankRequested.set(r.entity_id, r.created_at);
+
+    // care clients: needs migration 0009 (care_started_at); degrade without it
+    let care: unknown[] = [];
+    let careReady = true;
+    const careQ = await sb.from('clients').select('id, business_name, status, care_started_at, retainer_plans ( name, monthly_fee_kes )').eq('status', 'active').order('business_name');
+    if (careQ.error) careReady = false; else care = careQ.data ?? [];
+
+    res.json({
+      awaiting: (awaitingQ.data ?? []).map((p) => ({ ...p, bank_requested_at: bankRequested.get((p as { id: string }).id) ?? null })),
+      unpaid_invoices: unpaidQ.data ?? [],
+      recent_paid: paidQ.data ?? [],
+      care,
+      care_ready: careReady,
+    });
+  },
+);
+
+const RecordPaymentInput = z.object({
+  amount_kes: z.number().int().positive(),
+  reference: z.string().trim().min(2).max(120),
+  method: z.enum(['bank', 'mpesa_till', 'cash']).default('bank'),
+});
+// POST /v1/admin/proformas/:id/record-payment - confirm a bank transfer / till payment
+adminRouter.post(
+  '/proformas/:id/record-payment',
+  requireAuth,
+  requireRole('admin'),
+  async (req: Request, res: Response) => {
+    const parsed = RecordPaymentInput.safeParse(req.body);
+    if (!parsed.success) { res.status(400).json({ error: 'invalid_input', issues: parsed.error.flatten() }); return; }
+    try {
+      const out = await recordManualPayment({ proformaId: String(req.params.id), amountKes: parsed.data.amount_kes, reference: parsed.data.reference, method: parsed.data.method, actor: billingActor(req) });
+      res.json({ ok: true, ...out });
+    } catch (err) { billingFail(res, err); }
+  },
+);
+
+const MarkPaidInput = z.object({
+  reference: z.string().trim().min(2).max(120),
+  method: z.enum(['bank', 'mpesa_till', 'cash']).default('bank'),
+});
+// POST /v1/admin/invoices/:id/mark-paid - record payment of a care / onboarding invoice
+adminRouter.post(
+  '/invoices/:id/mark-paid',
+  requireAuth,
+  requireRole('admin'),
+  async (req: Request, res: Response) => {
+    const parsed = MarkPaidInput.safeParse(req.body);
+    if (!parsed.success) { res.status(400).json({ error: 'invalid_input', issues: parsed.error.flatten() }); return; }
+    try {
+      res.json({ ok: true, ...(await markInvoicePaid({ invoiceId: String(req.params.id), method: parsed.data.method, reference: parsed.data.reference, actor: billingActor(req) })) });
+    } catch (err) { billingFail(res, err); }
+  },
+);
+
+// POST /v1/admin/clients/:id/care - start (or stop) monthly care billing for a client
+adminRouter.post(
+  '/clients/:id/care',
+  requireAuth,
+  requireRole('admin'),
+  async (req: Request, res: Response) => {
+    const start = (req.body as { start?: unknown })?.start !== false;
+    try {
+      res.json({ ok: true, ...(await setCareStarted({ clientId: String(req.params.id), start, actor: billingActor(req) })) });
+    } catch (err) { billingFail(res, err); }
+  },
+);
+
+// POST /v1/admin/billing/run-care - issue this month's care invoices now (idempotent)
+adminRouter.post(
+  '/billing/run-care',
+  requireAuth,
+  requireRole('admin'),
+  async (_req: Request, res: Response) => {
+    try { res.json(await runCareBilling()); } catch (err) { billingFail(res, err); }
   },
 );

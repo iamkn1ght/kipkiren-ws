@@ -75,7 +75,13 @@ export type AuditEventType =
   | 'auth_login_succeeded'
   | 'auth_login_failed'
   | 'auth_password_reset_requested'
-  | 'auth_password_set';
+  | 'auth_password_set'
+  // billing before Kipkiren Pay / Todoku (services/billing.ts)
+  | 'bank_transfer_requested'
+  | 'invoice_issued'
+  | 'invoice_paid'
+  | 'care_started'
+  | 'care_stopped';
 
 export interface AuditEventInput {
   actor_id: string | null;

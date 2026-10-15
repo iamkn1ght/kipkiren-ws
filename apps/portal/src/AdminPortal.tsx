@@ -11,16 +11,17 @@ import { KlpToggle } from './klpTheme.tsx';
 import { useAdminData, slaLabel, type QueueRow, type RailHealth } from './useAdminData.ts';
 import { SkelList, Search, SegBar, EmptyState, ToolbarMeta } from './portalUi.tsx';
 import { AdminClients } from './AdminClients.tsx';
+import { AdminBilling } from './AdminBilling.tsx';
 import './landing.css';
 
-type Tab = 'dashboard' | 'queue' | 'review' | 'clients' | 'capacity' | 'services' | 'rails' | 'health';
+type Tab = 'dashboard' | 'queue' | 'review' | 'clients' | 'billing' | 'capacity' | 'services' | 'rails' | 'health';
 const NAV: { id: Tab; label: string }[] = [
   { id: 'dashboard', label: 'Overview' }, { id: 'queue', label: 'Ticket queue' }, { id: 'review', label: 'AI review' },
-  { id: 'clients', label: 'Clients' }, { id: 'capacity', label: 'Capacity' }, { id: 'services', label: 'Services' },
+  { id: 'clients', label: 'Clients' }, { id: 'billing', label: 'Billing' }, { id: 'capacity', label: 'Capacity' }, { id: 'services', label: 'Services' },
   { id: 'rails', label: 'Rails' }, { id: 'health', label: 'Health' },
 ];
 const TITLE: Record<Tab, string> = {
-  dashboard: 'Overview', queue: 'Ticket queue', review: 'AI review', clients: 'Clients',
+  dashboard: 'Overview', queue: 'Ticket queue', review: 'AI review', clients: 'Clients', billing: 'Billing',
   capacity: 'Capacity', services: 'Services', rails: 'Rails', health: 'Health',
 };
 
@@ -230,6 +231,9 @@ export function AdminPortal() {
 
             {/* clients (CRM + onboarding) */}
             {tab === 'clients' && <AdminClients clients={clients} loading={loading} reload={reload} />}
+
+            {/* billing (bank transfers, receipts, monthly care) */}
+            {tab === 'billing' && <AdminBilling />}
 
             {/* capacity */}
             {tab === 'capacity' && (

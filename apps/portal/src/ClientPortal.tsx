@@ -6,7 +6,7 @@
  * honestly at the Kipkiren Pay activation point (the single known failure).
  */
 
-import { useState, type FormEvent, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useState, type FormEvent, type CSSProperties, type ReactNode } from 'react';
 import { useAuth, useApi } from './auth.tsx';
 import { KlpToggle } from './klpTheme.tsx';
 import {
@@ -394,8 +394,34 @@ type PayMethod = 'mpesa' | 'card' | 'bank';
 const PAY_METHODS: readonly (readonly [PayMethod, string, string])[] = [
   ['mpesa', 'M-Pesa', 'STK push to your Safaricom line'],
   ['card', 'Card', 'Visa / Mastercard via Paystack'],
-  ['bank', 'Bank transfer', 'We email account details; you pay offline'],
+  ['bank', 'Bank transfer', 'Pay from your bank; we confirm and send a receipt'],
 ];
+
+interface BankDetails { bank: string; name: string; account: string; branch: string; swift: string }
+interface PayRails { mpesa: boolean; card: boolean; bank: boolean; bank_details: BankDetails | null }
+interface BankResult { ref: string; total_kes: number; bank_details: BankDetails | null }
+
+function BankInstructions({ r }: { r: BankResult }) {
+  const d = r.bank_details;
+  return (
+    <div className="klp-note" style={cssVars({ marginTop: 16 })}>
+      <strong>Bank transfer noted.</strong> We have emailed these instructions to you too.
+      <div className="klp-dl" style={cssVars({ marginTop: 12 })}>
+        {d ? (<>
+          <div><div className="k">Bank</div><div className="v">{d.bank}{d.branch ? ` · ${d.branch}` : ''}</div></div>
+          <div><div className="k">Account name</div><div className="v">{d.name}</div></div>
+          <div><div className="k">Account number</div><div className="v">{d.account}</div></div>
+          {d.swift ? <div><div className="k">SWIFT</div><div className="v">{d.swift}</div></div> : null}
+        </>) : (
+          <div><div className="k">Account</div><div className="v">Our account details follow by email shortly.</div></div>
+        )}
+        <div><div className="k">Amount</div><div className="v">KES {formatKes(r.total_kes)}</div></div>
+        <div><div className="k">Reference</div><div className="v">{r.ref}</div></div>
+      </div>
+      <p style={cssVars({ marginTop: 12, fontSize: 14 })}>Quote the reference exactly. Once the transfer reflects (usually same or next working day) we confirm it, scope locks, work begins and your receipt arrives by email.</p>
+    </div>
+  );
+}
 
 function ProformaView({ proformas, loading, reload, initialId }: { proformas: ClientProforma[] | null; loading: boolean; reload: () => void; initialId?: string | null }) {
   const call = useApi();
@@ -405,6 +431,21 @@ function ProformaView({ proformas, loading, reload, initialId }: { proformas: Cl
   const [msisdn, setMsisdn] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null);
+  const [rails, setRails] = useState<PayRails | null>(null);
+  const [bankResult, setBankResult] = useState<BankResult | null>(null);
+
+  // Which payment rails are live right now. Bank transfer always is; M-Pesa
+  // and card light up once Kipkiren Pay / Paystack keys are configured.
+  useEffect(() => {
+    let alive = true;
+    call<PayRails>('/v1/proformas/rails').then((r) => {
+      if (!alive) return;
+      setRails(r);
+      if (!r.mpesa) setMethod(r.card ? 'card' : 'bank');
+    }).catch(() => { if (alive) { setRails({ mpesa: false, card: false, bank: true, bank_details: null }); setMethod('bank'); } });
+    return () => { alive = false; };
+  }, [call]);
+  const railLive = (m: PayMethod) => (m === 'bank' ? true : rails ? rails[m] : false);
 
   const rows = proformas ?? [];
   const selected = rows.find((p) => p.id === selectedId) ?? (rows.length === 1 ? rows[0]! : null);
@@ -443,9 +484,16 @@ function ProformaView({ proformas, loading, reload, initialId }: { proformas: Cl
   const doApprove = async () => {
     if (submitting) return;
     if (method === 'bank') {
-      setResult({ ok: true, msg: `Bank transfer selected. We'll email our account details - quote ${p.ref} as the reference. Scope locks and work begins once payment reflects.` });
+      setSubmitting(true); setResult(null);
+      try {
+        const res = await call<BankResult>(`/v1/proformas/${p.id}/approve`, { method: 'POST', body: { rail: 'bank' } });
+        setBankResult(res); setCheckout(false);
+      } catch {
+        setResult({ ok: false, msg: `We could not record that just now. Please try again, or email us quoting ${p.ref}.` });
+      } finally { setSubmitting(false); }
       return;
     }
+    if (!railLive(method)) { setResult({ ok: false, msg: 'That payment option opens soon. Bank transfer is available now.' }); return; }
     if (method === 'mpesa' && msisdn.trim().length < 9) { setResult({ ok: false, msg: 'Enter the Safaricom number that should receive the M-Pesa prompt.' }); return; }
     setSubmitting(true); setResult(null);
     try {
@@ -507,26 +555,30 @@ function ProformaView({ proformas, loading, reload, initialId }: { proformas: Cl
 
         <div className="klp-pf-terms">
           <div className="klp-mono" style={cssVars({ color: 'var(--mid)' })}>Payment</div>
-          <p>Approve below to pay by M-Pesa or card. For bank transfer, quote <strong>{p.ref}</strong> as your reference. Scope locks and work begins the moment payment confirms.</p>
+          <p>Accept below and choose how to pay. For bank transfer, quote <strong>{p.ref}</strong> as your reference. Scope locks and work begins the moment payment confirms, and your receipt is emailed automatically.</p>
         </div>
 
         {!checkout && (
           <div className="klp-portal-actions klp-noprint">
-            {canPay && <button type="button" className="klp-btn primary" onClick={() => { setCheckout(true); setResult(null); }}>Accept &amp; pay &rarr;</button>}
+            {canPay && <button type="button" className="klp-btn primary" onClick={() => { setCheckout(true); setResult(null); setBankResult(null); }}>Accept &amp; pay &rarr;</button>}
             <button type="button" className="klp-btn ghost" onClick={() => window.print()}>Print / Download PDF</button>
           </div>
         )}
+        {bankResult && !checkout && <div className="klp-noprint"><BankInstructions r={bankResult} /></div>}
         {result && !checkout && <div className={`klp-note ${result.ok ? '' : 'amber'} klp-noprint`} style={cssVars({ marginTop: 16 })}>{result.msg}</div>}
 
         {checkout && canPay && (
           <div className="klp-pf-checkout klp-noprint" style={cssVars({ marginTop: 22, paddingTop: 22, borderTop: '1px solid var(--hairline)' })}>
             <div className="klp-mono" style={cssVars({ color: 'var(--mid)', marginBottom: 12 })}>Checkout · KES {formatKes(p.total_kes)}</div>
             <div className="klp-pf-methods" role="radiogroup" aria-label="Payment method">
-              {PAY_METHODS.map(([m, label, sub]) => (
-                <button key={m} type="button" role="radio" aria-checked={method === m} className={`klp-pf-method ${method === m ? 'sel' : ''}`} onClick={() => { setMethod(m); setResult(null); }}>
-                  <span className="klp-pf-method-t">{label}</span><span className="klp-pf-method-s">{sub}</span>
+              {PAY_METHODS.map(([m, label, sub]) => {
+                const live = railLive(m);
+                return (
+                <button key={m} type="button" role="radio" aria-checked={method === m} aria-disabled={!live} disabled={!live} style={live ? undefined : cssVars({ opacity: 0.55, cursor: 'not-allowed' })} className={`klp-pf-method ${method === m ? 'sel' : ''}`} onClick={() => { setMethod(m); setResult(null); }}>
+                  <span className="klp-pf-method-t">{label}</span><span className="klp-pf-method-s">{live ? sub : 'Opening soon'}</span>
                 </button>
-              ))}
+                );
+              })}
             </div>
             {method === 'mpesa' && (
               <div style={cssVars({ marginTop: 14 })}>

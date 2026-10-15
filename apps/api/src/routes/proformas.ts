@@ -8,10 +8,10 @@ import { getServiceClient } from '../lib/supabase.js';
 import { dispatchProforma } from '../services/proforma.js';
 import { writeAuditEvent } from '../services/audit.js';
 import { sendClientSms } from '../services/notifications.js';
-import { sendClientEmail } from '../services/email.js';
+import { bankVars, sendClientEmail, sendStudioAlert } from '../services/email.js';
 import { computeContentHash } from '../lib/content-hash.js';
 import { logger } from '../lib/logger.js';
-import { loadEnv, requireFeatureEnv } from '../config/env.js';
+import { bankDetails, isFeatureConfigured, loadEnv, requireFeatureEnv } from '../config/env.js';
 import {
   getKipkirenPayClient,
   getPaystackClient,
@@ -64,6 +64,25 @@ proformasRouter.get(
     const { data, error } = await query;
     if (error) throw error;
     res.json({ proformas: data ?? [] });
+  },
+);
+
+// ----------------------------------------------------------------------------
+// GET /v1/proformas/rails - which payment methods are live right now.
+// M-Pesa and card light up automatically once Kipkiren Pay / Paystack keys are
+// set in Railway; bank transfer is always available (staff confirm it).
+// ----------------------------------------------------------------------------
+proformasRouter.get(
+  '/rails',
+  requireAuth,
+  requireRole('client', 'delivery_lead', 'admin'),
+  (_req: Request, res: Response) => {
+    res.json({
+      mpesa: isFeatureConfigured('kipkiren_pay'),
+      card: isFeatureConfigured('paystack'),
+      bank: true,
+      bank_details: bankDetails(),
+    });
   },
 );
 
@@ -348,7 +367,7 @@ proformasRouter.put(
 //   - card   → { rail:'card', authorization_url, reference }
 // ----------------------------------------------------------------------------
 const ApproveInput = z.object({
-  rail: z.enum(['mpesa', 'card']),
+  rail: z.enum(['mpesa', 'card', 'bank']),
   msisdn: z.string().min(9).max(15).optional(),
 });
 
@@ -415,6 +434,28 @@ proformasRouter.post(
     // Generate the idempotency key for this approval attempt. The webhook
     // handler uses this key when it INSERTs proforma_approvals - duplicate
     // webhooks for the same key are silently discarded.
+    // Bank transfer: nothing is charged or locked here. The client gets the
+    // bank details by email, the studio is alerted, and staff confirm the
+    // transfer from the console (recordManualPayment), which locks scope
+    // through the same approval path as M-Pesa / card.
+    if (input.rail === 'bank') {
+      await writeAuditEvent({
+        actor_id: req.auth.sub, actor_role: 'client', event_type: 'bank_transfer_requested', entity_type: 'proforma', entity_id: id,
+        payload_snapshot: { ref: proforma.ref, total_kes: proforma.total_kes },
+      });
+      void sendClientEmail({
+        clientId: req.auth.clientId, template: 'bank_transfer_instructions',
+        variables: { ref: proforma.ref, total: proforma.total_kes.toLocaleString(), ...bankVars() },
+        entity_type: 'proforma', entity_id: id,
+      });
+      void sendStudioAlert(`Bank transfer chosen: ${proforma.ref}`, [
+        `KES ${proforma.total_kes.toLocaleString()} expected by bank transfer.`,
+        'Confirm it in the console (Billing) once it reflects, to lock scope and send the receipt.',
+      ], { type: 'proforma', id });
+      res.json({ rail: 'bank', status: 'awaiting_transfer', ref: proforma.ref, total_kes: proforma.total_kes, bank_details: bankDetails() });
+      return;
+    }
+
     const idempotencyKey = randomUUID();
     const env = loadEnv();
     const callbackBase = env.allowedOrigins[0] ?? 'https://ws.kipkiren.co.ke';

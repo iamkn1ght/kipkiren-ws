@@ -4,8 +4,7 @@ import { loadEnv, requireFeatureEnv } from '../config/env.js';
 import { getServiceClient } from '../lib/supabase.js';
 import { verifyKipkirenPaySignature, verifyPaystackSignature, verifyTodokuSignature } from '../lib/hmac.js';
 import { writeAuditEvent } from '../services/audit.js';
-import { sendClientSms } from '../services/notifications.js';
-import { sendClientEmail } from '../services/email.js';
+import { confirmPayment } from '../services/billing.js';
 import { logger } from '../lib/logger.js';
 
 export const webhooksRouter: Router = Router();
@@ -39,18 +38,6 @@ interface RawBodyRequest extends Request {
   rawBody?: string;
 }
 
-async function loadDispatchedHash(proformaId: string): Promise<string | null> {
-  const sb = getServiceClient();
-  const { data, error } = await sb
-    .from('proformas')
-    .select('content_hash, status')
-    .eq('id', proformaId)
-    .single();
-  if (error || !data) return null;
-  if (data.status !== 'dispatched') return null;
-  return data.content_hash;
-}
-
 interface ConfirmInput {
   gateway: 'mpesa' | 'paystack';
   gateway_ref: string;
@@ -60,127 +47,18 @@ interface ConfirmInput {
   client_user_sub: string | null;
 }
 
+// The confirmation itself (approval insert + scope lock + receipt + notices)
+// lives in services/billing.ts so staff-recorded bank transfers share it.
 async function recordConfirmedPayment(input: ConfirmInput): Promise<{ ok: boolean; reason?: string }> {
-  const sb = getServiceClient();
-
-  // Find the pre-registered pending payment by idempotency_key.
-  const { data: pending, error: pErr } = await sb
-    .from('payments')
-    .select('id, proforma_id, amount_kes, status, gateway, gateway_ref')
-    .eq('idempotency_key', input.idempotency_key)
-    .maybeSingle();
-
-  if (pErr) return { ok: false, reason: 'payment_lookup_failed' };
-  if (!pending) return { ok: false, reason: 'unknown_idempotency_key' };
-
-  // Idempotent replay short-circuit.
-  if (pending.status === 'confirmed') return { ok: true, reason: 'already_confirmed' };
-
-  if (pending.gateway !== input.gateway) return { ok: false, reason: 'gateway_mismatch' };
-  if (pending.amount_kes !== input.amount_kes) return { ok: false, reason: 'amount_mismatch' };
-
-  const dispatchedHash = await loadDispatchedHash(pending.proforma_id);
-  if (!dispatchedHash) return { ok: false, reason: 'proforma_not_dispatched' };
-
-  // Resolve the client_id from the proforma → ticket → client chain.
-  const { data: pf, error: pfErr } = await sb
-    .from('proformas')
-    .select('id, ref, total_kes, tickets(client_id)')
-    .eq('id', pending.proforma_id)
-    .single();
-  if (pfErr || !pf) return { ok: false, reason: 'proforma_lookup_failed' };
-  const ticketRel = (pf as { tickets: { client_id: string } | { client_id: string }[] | null }).tickets;
-  const clientId = Array.isArray(ticketRel) ? ticketRel[0]?.client_id : ticketRel?.client_id;
-  if (!clientId) return { ok: false, reason: 'client_not_found' };
-
-  // INSERT proforma_approvals. The migration-0003 trigger
-  // trg_proforma_approvals_hash_match enforces hash match at the DB level.
-  // The unique index on idempotency_key prevents double approvals across
-  // concurrent webhook deliveries.
-  const { error: apprErr } = await sb.from('proforma_approvals').insert({
-    proforma_id: pending.proforma_id,
-    client_id: clientId,
-    content_hash_at_approval: dispatchedHash,
-    payment_ref: input.gateway_ref,
+  return confirmPayment({
+    gateway: input.gateway,
+    gateway_ref: input.gateway_ref,
     idempotency_key: input.idempotency_key,
-  });
-
-  if (apprErr) {
-    // Postgres unique-violation = race-with-prior-confirmation. Treat as success.
-    if (apprErr.code === '23505') {
-      return { ok: true, reason: 'concurrent_confirmation' };
-    }
-    logger.error({ err: apprErr, idempotency_key: input.idempotency_key }, 'approval_insert_failed');
-    return { ok: false, reason: 'approval_insert_failed' };
-  }
-
-  // Mark the payment confirmed (immutable thereafter via trigger).
-  await sb
-    .from('payments')
-    .update({
-      status: 'confirmed',
-      confirmed_at: new Date().toISOString(),
-      webhook_payload_hash: input.payload_hash,
-    })
-    .eq('id', pending.id)
-    .eq('status', 'pending');
-
-  // Move the proforma to approved and the ticket to paid.
-  await sb.from('proformas').update({ status: 'approved' }).eq('id', pending.proforma_id);
-  const { data: pf2 } = await sb
-    .from('proformas')
-    .select('ticket_id')
-    .eq('id', pending.proforma_id)
-    .single();
-  if (pf2?.ticket_id) {
-    await sb.from('tickets').update({ status: 'paid' }).eq('id', pf2.ticket_id);
-  }
-
-  // Audit: payment_confirmed + scope_locked.
-  await writeAuditEvent({
+    amount_kes: input.amount_kes,
+    payload_hash: input.payload_hash,
     actor_id: input.client_user_sub,
     actor_role: 'client',
-    event_type: 'payment_confirmed',
-    entity_type: 'payment',
-    entity_id: pending.id,
-    payload_snapshot: {
-      gateway: input.gateway,
-      gateway_ref: input.gateway_ref,
-      amount_kes: input.amount_kes,
-      proforma_id: pending.proforma_id,
-    },
   });
-  await writeAuditEvent({
-    actor_id: input.client_user_sub,
-    actor_role: 'client',
-    event_type: 'scope_locked',
-    entity_type: 'proforma',
-    entity_id: pending.proforma_id,
-    payload_snapshot: {
-      content_hash_at_approval: dispatchedHash,
-      payment_ref: input.gateway_ref,
-      idempotency_key: input.idempotency_key,
-    },
-  });
-
-  // S9-003: notify the client their payment confirmed + scope is locked.
-  // Fire-and-forget + gated - never blocks or fails the webhook ack.
-  void sendClientSms({
-    clientId,
-    template: 'kws_payment_confirmed',
-    variables: { ref: pf.ref, amount: String(input.amount_kes), gateway_ref: input.gateway_ref },
-    entity_type: 'payment',
-    entity_id: pending.id,
-  });
-  void sendClientEmail({
-    clientId,
-    template: 'payment_confirmed',
-    variables: { ref: pf.ref, amount: input.amount_kes.toLocaleString() },
-    entity_type: 'payment',
-    entity_id: pending.id,
-  });
-
-  return { ok: true };
 }
 
 // ----------------------------------------------------------------------------

@@ -17,7 +17,7 @@ import { writeAuditEvent } from './audit.js';
 import { decomposeTicket } from './decomposition.js';
 import { createDraftProforma, loadActiveRateCard } from './proforma.js';
 import { computeSlaDeadline } from './sla.js';
-import { sendClientEmail } from './email.js';
+import { sendClientEmail, sendStudioAlert } from './email.js';
 import { logger } from '../lib/logger.js';
 import type { UserRole } from '../middleware/auth.js';
 
@@ -172,6 +172,16 @@ export async function intakeTicket(params: IntakeParams): Promise<IntakeResult> 
     entity_type: 'ticket',
     entity_id: ticket.id,
   });
+
+  // Tell the studio a client asked for something (admin-raised tickets are
+  // already known to staff). Fire-and-forget, gated on email.
+  if (actorRole === 'client') {
+    void sendStudioAlert(`New request ${ticket.ref}`, [
+      `${input.category} · ${input.urgency} urgency`,
+      input.description.length > 400 ? `${input.description.slice(0, 397)}...` : input.description,
+      proforma_id ? 'An AI-drafted proforma is waiting in the review queue.' : 'No draft proforma yet (decomposition did not finish); scope it manually.',
+    ], { type: 'ticket', id: ticket.id });
+  }
 
   return { ticket_id: ticket.id, ref: ticket.ref, proforma_id };
 }

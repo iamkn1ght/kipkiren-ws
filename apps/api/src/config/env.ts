@@ -70,6 +70,22 @@ const CoreEnvSchema = z.object({
   EMAIL_API_URL: z.string().optional().default(''),
   EMAIL_API_KEY: z.string().optional().default(''),
   EMAIL_FROM: z.string().optional().default(''),
+  // Or plain SMTP (e.g. Google Workspace: smtp.gmail.com:465 + an App Password).
+  // Email is live when EMAIL_FROM plus EITHER the HTTP pair OR the SMTP trio is set.
+  SMTP_HOST: z.string().optional().default(''),
+  SMTP_PORT: z.coerce.number().int().positive().default(465),
+  SMTP_USER: z.string().optional().default(''),
+  SMTP_PASS: z.string().optional().default(''),
+  // Where internal alerts go (new signup, new ticket, bank transfer requested).
+  STUDIO_NOTIFY_EMAIL: z.string().optional().default('studio@kipkiren.co.ke'),
+
+  // Bank transfer details shown to clients on proformas and care invoices.
+  // Until BANK_ACCOUNT_NUMBER is set, clients are told details follow by email.
+  BANK_NAME: z.string().optional().default(''),
+  BANK_ACCOUNT_NAME: z.string().optional().default(''),
+  BANK_ACCOUNT_NUMBER: z.string().optional().default(''),
+  BANK_BRANCH: z.string().optional().default(''),
+  BANK_SWIFT: z.string().optional().default(''),
 
   // Todoku SMS (S9-003) - transactional SMS on 5 KWS events. Todoku signs
   // with base64 HMAC-SHA256 (NOT hex - distinct from KP/Paystack).
@@ -164,5 +180,20 @@ export function requireFeatureEnv(feature: Feature): void {
  */
 export function isFeatureConfigured(feature: Feature): boolean {
   const env = loadEnv();
+  if (feature === 'email') return emailTransport(env) !== null;
   return FEATURE_REQUIRED[feature].every((k) => env[k] && env[k] !== '');
+}
+
+/** Which email transport is configured: an HTTPS API, SMTP, or none. */
+export function emailTransport(env: Env = loadEnv()): 'http' | 'smtp' | null {
+  if (!env.EMAIL_FROM) return null;
+  if (env.EMAIL_API_URL && env.EMAIL_API_KEY) return 'http';
+  if (env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS) return 'smtp';
+  return null;
+}
+
+/** Bank transfer details for clients, or null until an account number is set. */
+export function bankDetails(env: Env = loadEnv()): { bank: string; name: string; account: string; branch: string; swift: string } | null {
+  if (!env.BANK_ACCOUNT_NUMBER) return null;
+  return { bank: env.BANK_NAME, name: env.BANK_ACCOUNT_NAME, account: env.BANK_ACCOUNT_NUMBER, branch: env.BANK_BRANCH, swift: env.BANK_SWIFT };
 }
