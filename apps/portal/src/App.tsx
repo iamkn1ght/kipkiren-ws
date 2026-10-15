@@ -10,6 +10,7 @@ import { ClientPortal } from './ClientPortal.tsx';
 import { AdminPortal } from './AdminPortal.tsx';
 import { TaskView } from './TaskView.tsx';
 import { KlpToggle } from './klpTheme.tsx';
+import { NotFound } from './NotFound.tsx';
 
 // Which audience this deployment serves. Set per Cloudflare Pages project:
 //   ws.kipkiren.co.ke     -> VITE_PORTAL_AUDIENCE=client  (public site + client portal)
@@ -24,6 +25,16 @@ const DEV_AUTH_BYPASS = import.meta.env.VITE_DEV_AUTH_BYPASS === '1';
 // Everyone else who clicks "Sign in" goes straight to the client login - the
 // JWT role still routes a staff member to their console after login.
 const STAFF_PATH = '/staff';
+
+// Real routes. Everything else gets the 404 page (the SPA fallback serves
+// index.html for any URL). /portal and /admin prefixes stay valid: the Paystack
+// card callback returns clients to /portal/proforma/<id>.
+function isKnownPath(path: string): boolean {
+  const p = path.replace(/\/+$/, '') || '/';
+  if (p === '/' || p === '/index.html' || p === STAFF_PATH) return true;
+  if (legalDocFromPath(p)) return true;
+  return p === '/portal' || p.startsWith('/portal/') || p === '/admin' || p.startsWith('/admin/');
+}
 
 const CLIENT_URL = 'https://ws.kipkiren.co.ke';
 const STAFF_URL = 'https://studio.kipkiren.co.ke';
@@ -85,11 +96,19 @@ function Router() {
     if (window.location.pathname !== path) window.history.pushState(null, '', path);
     setLegalState(id);
   };
+  const [notFound, setNotFound] = useState(() => !isKnownPath(window.location.pathname));
   useEffect(() => {
-    const onPop = () => setLegalState(legalDocFromPath(window.location.pathname));
+    const onPop = () => {
+      setLegalState(legalDocFromPath(window.location.pathname));
+      setNotFound(!isKnownPath(window.location.pathname));
+    };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
+  const goHome = () => {
+    window.history.pushState(null, '', '/');
+    setNotFound(false); setLegalState(null); setEntered(AUDIENCE === 'staff');
+  };
   const [showForgot, setShowForgot] = useState(false);
   // Invite/recovery links land with a token in the URL hash. Parse once at mount.
   const [recovery, setRecovery] = useState(() => parseRecoveryHash());
@@ -104,6 +123,11 @@ function Router() {
   const legalPage = (id: LegalDocId) => (
     <LegalPage doc={id} onBack={() => setLegal(null)} onOpen={setLegal} onSignIn={() => { setLegal(null); enterSignIn(); }} />
   );
+
+  // Unknown URL: the site-wide 404, before anything else (signed in or not).
+  if (notFound) {
+    return <NotFound onHome={goHome} onSignIn={() => { goHome(); enterSignIn(); }} />;
+  }
 
   // Public visitors keep seeing the (prerendered) landing while the session
   // refresh runs, instead of a loader replacing it. Likely-signed-in tabs and

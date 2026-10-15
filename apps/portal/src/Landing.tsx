@@ -357,7 +357,7 @@ function LandingImpl({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; on
 
         {/* CTA */}
         <section className="cta" id="contact" data-tone="paper">
-          <div className="beam" aria-hidden="true" />
+          <div className="hands" id="hands" aria-hidden="true"><canvas id="handsCanvas" /><span className="hands-cap">Your idea · our engineering</span></div>
           <div className="wrap">
             <div className="cta-card glass">
               <span className="eyebrow">Start · 05</span>
@@ -372,7 +372,6 @@ function LandingImpl({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; on
             <div className="fl glass f3"><span className="k">SSL</span><b>Renewed</b><span className="ok">Valid 90 days</span></div>
             <div className="fl glass f4"><span className="k">Ticket</span><b>Scoped in 48h</b><span className="ok">Awaiting you</span></div>
           </div>
-          <div className="horizon" aria-hidden="true" />
         </section>
       </main>
 

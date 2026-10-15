@@ -8,6 +8,8 @@
  * and the page is fully readable before it arrives.
  */
 
+import { initHands } from './handsFx.ts';
+
 type Gsap = typeof import('gsap').gsap;
 type ST = typeof import('gsap/ScrollTrigger').ScrollTrigger;
 
@@ -289,8 +291,13 @@ export function initLanding(root: HTMLElement): () => void {
   };
   on('scroll', () => { if (!tickRaf) tickRaf = requestAnimationFrame(syncScroll); }, { passive: true });
 
+  /* ---------- ASCII hands in the closing CTA ---------- */
+  const handsStage = $('#hands');
+  const handsCanvas = $<HTMLCanvasElement>('#handsCanvas');
+  const hands = handsStage && handsCanvas ? initHands(handsStage, handsCanvas, root, reduce, ac.signal) : null;
+
   /* ---------- theme changes (klpTheme toggles data-mode on <html>) ---------- */
-  const modeObs = new MutationObserver(() => { readTones(); setTone(curTone, true); readDots(); });
+  const modeObs = new MutationObserver(() => { readTones(); setTone(curTone, true); readDots(); hands?.refresh(); });
   modeObs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-mode'] });
 
   /* ---------- layout-dependent pieces ---------- */
@@ -336,7 +343,6 @@ export function initLanding(root: HTMLElement): () => void {
         G.from(steps, { y: 50, opacity: 0, duration: 1, ease: 'expo.out', stagger: 0.08, clearProps: 'transform,opacity', scrollTrigger: { trigger: '#procGrid', start: 'top 82%' } });
         G.fromTo('.giant', { yPercent: 18 }, { yPercent: -12, ease: 'none', scrollTrigger: { trigger: '#pricing', start: 'top bottom', end: 'bottom top', scrub: true } });
         G.from('.plan', { y: 70, opacity: 0, duration: 1.1, ease: 'expo.out', stagger: 0.12, clearProps: 'transform,opacity', scrollTrigger: { trigger: '#plans', start: 'top 80%' } });
-        G.from('.beam', { scaleY: 0, transformOrigin: 'top', duration: 1.4, ease: 'expo.out', scrollTrigger: { trigger: '.cta', start: 'top 70%' } });
         $$('.fl').forEach((f, i) => G.to(f, { y: i % 2 ? -14 : 14, duration: 3 + i * 0.4, ease: 'sine.inOut', yoyo: true, repeat: -1 }));
         $$('.sec-head h2').forEach((el) => G.from(el, { y: 50, opacity: 0, duration: 1.1, ease: 'expo.out', clearProps: 'transform,opacity', scrollTrigger: { trigger: el, start: 'top 88%' } }));
 
@@ -371,6 +377,7 @@ export function initLanding(root: HTMLElement): () => void {
   return () => {
     alive = false;
     ac.abort();
+    hands?.stop();
     heroIO.disconnect();
     modeObs.disconnect();
     timers.forEach((t) => { window.clearTimeout(t); window.clearInterval(t); });
