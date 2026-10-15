@@ -12,7 +12,7 @@ import './landing-x.css';
  * surfaces with a site-wide interactive card treatment, a particle hero,
  * a word-by-word manifesto, a pinned 3D exploded view, a horizontal service
  * reel, a night-shift care log, frosted pricing over a giant word, numbered
- * glass process steps, an orbit hub and a beam + horizon close.
+ * glass process steps, a centred philosophy + why ribbon and a promise close.
  *
  * Markup is static (SSR-safe for the build-time prerender); all motion and
  * interaction live in landingFx.ts, started once on mount and torn down on
@@ -60,14 +60,15 @@ const PROCESS = [
   { t: 'Operation', d: 'The part most studios skip. We stay.' },
 ];
 
-const STATS = [
-  { k: '01', n: '48', suf: 'h', l: 'From first call to fixed-price proforma' },
-  { k: '02', n: '99.9', suf: '%', dec: '1', l: 'Monthly uptime target on sites we host' },
-  { k: '03', n: '24', suf: 'h', l: 'Ticket response SLA' },
-  { k: '04', n: '100', suf: '%', l: 'Of your code, data and accounts are yours' },
+// Philosophy + Why Kipkiren (option E): four reasons, each with the number we commit to.
+const BELIEFS = [
+  { k: '01 · Transparent pricing', n: '48', suf: 'h', t: 'A proforma before any work.', d: 'No surprise invoices, no padded hours, no "it depends".' },
+  { k: '02 · We run what we build', n: '99.9', suf: '%', dec: '1', t: 'We stay on the line.', d: 'Care is a first-class part of the work, not an upsell.' },
+  { k: '03 · You own everything', n: '100', suf: '%', t: 'No lock-in, ever.', d: 'Code, database, DNS and every account are yours.' },
+  { k: '04 · Local, senior, reachable', n: '24', suf: 'h', t: 'A small Nairobi team.', d: 'On Kenyan time, fluent in M-Pesa and the market you sell to.' },
 ];
 
-const MANIFESTO = 'Websites decay. Traffic shifts. Frameworks age. The gap between "we shipped it" and "it still works two years later" is where most agencies quietly disappear. *We stay,* with monitoring, backups, patches and a real person who knows your business, *for as long as it runs.*';
+const MANIFESTO = 'Websites decay. Most agencies quietly disappear after launch. *We stay,* with monitoring, backups, patches and a real person who knows your business.';
 
 // Short labels for the footer legal column (the full names live on the pages).
 const FOOTER_LEGAL: Record<string, string> = { terms: 'Terms', privacy: 'Privacy', refunds: 'Refunds', sla: 'Service', cookies: 'Cookies', faq: 'FAQ' };
@@ -148,25 +149,20 @@ function LandingImpl({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; on
 
         <div className="marquee glass" aria-hidden="true"><span className="mono">Built with</span><div className="mq"><div className="mq-track">{[...STACK, ...STACK].map((s, i) => <span key={i}>{s}</span>)}</div></div></div>
 
-        {/* philosophy */}
-        <section className="sec band" id="about" data-tone="paper">
+        {/* philosophy + why kipkiren: centred statement + ribbon */}
+        <section className="sec belief" id="about" data-tone="paper">
           <div className="wrap">
-            <span className="eyebrow">Philosophy · 01</span>
-            <h2 className="d-lg">We treat your site<br /><em>like infrastructure.</em></h2>
+            <span className="eyebrow">Philosophy · Why Kipkiren</span>
+            <h2 className="d-lg belief-h">We treat your site <em>like infrastructure.</em></h2>
             <p className="manifesto" id="manifesto">{manifestoWords()}</p>
-          </div>
-        </section>
-
-        {/* numbers */}
-        <section className="sec" data-tone="paper">
-          <div className="wrap">
-            <div className="sec-head">
-              <div><span className="eyebrow">By the numbers</span><h2 className="d-lg">Numbers we put<br /><em>in writing.</em></h2></div>
-              <p className="lead">Commitments, not vanity metrics. Each one is part of your proforma or our service terms, so you can hold us to it.</p>
-            </div>
-            <div className="stats">
-              {STATS.map((s) => (
-                <div key={s.k} className="stat glass"><span className="k">{s.k}</span><span className="n" data-count={s.n} data-suf={s.suf} data-dec={s.dec ?? '0'}>{s.n}{s.suf}</span><span className="l">{s.l}</span></div>
+            <div className="ribbon glass">
+              {BELIEFS.map((r) => (
+                <div key={r.k} className="rib">
+                  <span className="rk">{r.k}</span>
+                  <span className="rn" data-count={r.n} data-suf={r.suf} data-dec={r.dec ?? '0'}>{r.n}{r.suf}</span>
+                  <h3>{r.t}</h3>
+                  <p>{r.d}</p>
+                </div>
               ))}
             </div>
           </div>
@@ -333,24 +329,6 @@ function LandingImpl({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; on
               {FAQ.map((f, i) => (
                 <div key={f.q} className={`faq glass${i === 0 ? ' open' : ''}`}><button type="button" aria-expanded={i === 0}><span>{f.q}</span><span className="chev" /></button><div className="body"><p>{f.a}</p></div></div>
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* why: orbit hub */}
-        <section className="sec" data-tone="paper">
-          <div className="wrap">
-            <div className="sec-head">
-              <div><span className="eyebrow">Why Kipkiren</span><h2 className="d-lg">Reasons to trust us <em>with your website.</em></h2></div>
-              <p className="lead">No borrowed logos, no invented awards. Just the things that actually matter when you hand a business over to a studio.</p>
-            </div>
-            <div className="hub" id="hub">
-              <svg className="hub-lines" id="hubLines" aria-hidden="true" />
-              <div className="hub-card glass hc1"><span className="n">01 · Transparent pricing</span><h3>A proforma before any work.</h3><p>No surprise invoices, no padded hours, no "it depends".</p></div>
-              <div className="hub-card glass hc2"><span className="n">02 · We run what we build</span><h3>We stay on the line.</h3><p>Care is a first-class part of the work, not an upsell.</p></div>
-              <div className="core" aria-hidden="true"><span className="ring"><i /></span><span className="ring r2" /><span className="ball">K</span></div>
-              <div className="hub-card glass hc3"><span className="n">03 · You own everything</span><h3>No lock-in, ever.</h3><p>Code, database, DNS and every account are yours.</p></div>
-              <div className="hub-card glass hc4"><span className="n">04 · Local, senior, reachable</span><h3>A small Nairobi team.</h3><p>On Kenyan time, fluent in M-Pesa and the market you sell to.</p></div>
             </div>
           </div>
         </section>

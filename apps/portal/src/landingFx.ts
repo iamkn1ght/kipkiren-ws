@@ -23,7 +23,7 @@ const EVENTS: [string, string][] = [
   ['PATCH', 'Update promoted to live · zero downtime'],
 ];
 
-const FX_SELECTOR = '.plan, .stat, .step, .hub-card, .faq, .compare, .cta-card, .studio, .panel, .log, .fl, .foot-panel';
+const FX_SELECTOR = '.plan, .stat, .step, .rib, .hub-card, .faq, .compare, .cta-card, .studio, .panel, .log, .fl, .foot-panel';
 
 interface Particle { hx: number; hy: number; x: number; y: number; vx: number; vy: number; ang: number; dist: number; s: number; t: boolean; free: boolean }
 
@@ -249,7 +249,7 @@ export function initLanding(root: HTMLElement): () => void {
   if (!reduce) timers.push(window.setInterval(() => push(true), 2400));
 
   /* ---------- site-wide interactive glass cards ---------- */
-  ['.plans', '.stats', '.proc-grid', '.hub'].forEach((g) => $(g)?.classList.add('fx-group'));
+  ['.plans', '.stats', '.proc-grid', '.hub', '.ribbon'].forEach((g) => $(g)?.classList.add('fx-group'));
   const setOn = (card: HTMLElement, isOn: boolean) => {
     card.classList.toggle('fx-on', isOn);
     const g = card.parentElement;

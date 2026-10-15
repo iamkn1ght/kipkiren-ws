@@ -574,3 +574,34 @@
   .kx .hero { padding-top: clamp(250px, 64vw, 300px); }
 }
 @media (max-width: 380px) { .kx .nav .klp-toggle { display: none; } }
+
+/* ---------- philosophy + why kipkiren (option E): centred statement + ribbon ---------- */
+.kx .belief { text-align: center; }
+.kx .belief .wrap { display: flex; flex-direction: column; align-items: center; }
+.kx .belief-h { margin-top: 20px; max-width: 18ch; font-size: clamp(40px, 5.6vw, 84px); }
+.kx .belief-h em { color: var(--teal-deep); }
+.kx .belief .manifesto { margin: 24px auto 0; max-width: 34ch; font-size: clamp(22px, 2.4vw, 34px); line-height: 1.35; color: var(--slate); }
+.kx .belief .manifesto .w { color: color-mix(in oklab, var(--ink) 18%, transparent); }
+.kx .belief .manifesto .w.on { color: var(--ink); }
+.kx .belief .manifesto .w.em.on { color: var(--teal-deep); }
+.kx .ribbon { position: relative; width: 100%; margin-top: clamp(40px, 5vw, 68px); border-radius: 28px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); text-align: left; overflow: hidden; }
+.kx .rib { position: relative; padding: clamp(22px, 2.4vw, 32px); border-left: 1px solid var(--hairline); display: flex; flex-direction: column; gap: 10px; }
+.kx .rib:first-child { border-left: 0; }
+.kx .rib .rk { font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--teal-deep); }
+.kx .rib .rn { font-family: var(--serif); font-weight: 500; font-size: clamp(40px, 3.6vw, 58px); line-height: 1; letter-spacing: -.03em; color: var(--teal-deep); font-variant-numeric: tabular-nums; margin-top: 6px; }
+.kx .rib h3 { font-size: clamp(20px, 1.6vw, 24px); line-height: 1.2; }
+.kx .rib p { color: var(--slate); font-size: 14px; line-height: 1.55; }
+/* cells sit inside one panel: highlight in place instead of lifting out of it */
+.kx .ribbon .rib.fxc { transition: background .35s; }
+.kx .ribbon .rib.fx-on { translate: none; scale: 1; box-shadow: none; border-color: var(--hairline); background: var(--glass-strong); }
+.kx .ribbon.has-on > .rib:not(.fx-on) { scale: 1; }
+@media (max-width: 960px) {
+  .kx .ribbon { grid-template-columns: 1fr 1fr; }
+  .kx .rib:nth-child(odd) { border-left: 0; }
+  .kx .rib:nth-child(n+3) { border-top: 1px solid var(--hairline); }
+}
+@media (max-width: 520px) {
+  .kx .ribbon { grid-template-columns: 1fr; }
+  .kx .rib { border-left: 0; }
+  .kx .rib + .rib { border-top: 1px solid var(--hairline); }
+}
