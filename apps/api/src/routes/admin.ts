@@ -22,6 +22,8 @@ import { runSlaBreachAlerts } from '../services/sla-alerts.js';
 import { loadSiteHealth } from '../services/observability.js';
 import { loadRailsHealth } from '../services/rails.js';
 import { logger } from '../lib/logger.js';
+import { sendEmail } from '../services/email.js';
+import { emailTransport, loadEnv } from '../config/env.js';
 import { BillingError, markInvoicePaid, recordManualPayment, runCareBilling, setCareStarted } from '../services/billing.js';
 
 export const adminRouter: Router = Router();
@@ -598,5 +600,30 @@ adminRouter.post(
   requireRole('admin'),
   async (_req: Request, res: Response) => {
     try { res.json(await runCareBilling()); } catch (err) { billingFail(res, err); }
+  },
+);
+
+// POST /v1/admin/email/test - send one email synchronously and report the
+// exact outcome (normal sends are fire-and-forget and only log failures).
+// Never echoes credentials: only the transport kind, sender and error text.
+adminRouter.post(
+  '/email/test',
+  requireAuth,
+  requireRole('admin'),
+  async (req: Request, res: Response) => {
+    const env = loadEnv();
+    const to = typeof req.body?.to === 'string' && req.body.to.includes('@') ? req.body.to.trim() : env.STUDIO_NOTIFY_EMAIL;
+    const started = Date.now();
+    const result = await sendEmail({ to, template: 'studio_alert', variables: { title: 'Test email', body: 'If you can read this, website email is working.' } });
+    res.json({
+      transport: emailTransport(env),
+      from: env.EMAIL_FROM || null,
+      reply_to: env.EMAIL_REPLY_TO || null,
+      smtp_host: env.SMTP_HOST || null,
+      smtp_port: env.SMTP_PORT,
+      to,
+      ms: Date.now() - started,
+      result,
+    });
   },
 );
