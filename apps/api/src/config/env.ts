@@ -70,6 +70,8 @@ const CoreEnvSchema = z.object({
   EMAIL_API_URL: z.string().optional().default(''),
   EMAIL_API_KEY: z.string().optional().default(''),
   EMAIL_FROM: z.string().optional().default(''),
+  // Where client replies go when EMAIL_FROM is a Gmail sender (e.g. studio@kipkiren.co.ke).
+  EMAIL_REPLY_TO: z.string().optional().default(''),
   // Or plain SMTP (e.g. Google Workspace: smtp.gmail.com:465 + an App Password).
   // Email is live when EMAIL_FROM plus EITHER the HTTP pair OR the SMTP trio is set.
   SMTP_HOST: z.string().optional().default(''),

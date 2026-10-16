@@ -241,7 +241,7 @@ function getEmailClient(): EmailClient {
   if (realClient) return realClient;
   const env = loadEnv();
   if (emailTransport(env) === 'smtp') {
-    // Google Workspace (smtp.gmail.com:465, App Password) or any SMTP relay.
+    // Gmail / Google Workspace (smtp.gmail.com:465, App Password) or any SMTP relay.
     const transporter = nodemailer.createTransport({
       host: env.SMTP_HOST,
       port: env.SMTP_PORT,
@@ -250,7 +250,7 @@ function getEmailClient(): EmailClient {
     });
     realClient = {
       async send(msg) {
-        const info = await transporter.sendMail({ from: msg.from, to: msg.to, subject: msg.subject, html: msg.html, text: msg.text });
+        const info = await transporter.sendMail({ from: msg.from, to: msg.to, subject: msg.subject, html: msg.html, text: msg.text, ...(env.EMAIL_REPLY_TO ? { replyTo: env.EMAIL_REPLY_TO } : {}) });
         return { id: info.messageId ?? 'smtp' };
       },
     };
@@ -261,7 +261,7 @@ function getEmailClient(): EmailClient {
       const res = await fetch(env.EMAIL_API_URL, {
         method: 'POST',
         headers: { 'content-type': 'application/json', authorization: `Bearer ${env.EMAIL_API_KEY}` },
-        body: JSON.stringify({ from: msg.from, to: msg.to, subject: msg.subject, html: msg.html, text: msg.text }),
+        body: JSON.stringify({ from: msg.from, to: msg.to, subject: msg.subject, html: msg.html, text: msg.text, ...(env.EMAIL_REPLY_TO ? { reply_to: env.EMAIL_REPLY_TO } : {}) }),
       });
       if (!res.ok) {
         const text = await res.text().catch(() => '');
