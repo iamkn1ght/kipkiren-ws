@@ -27,7 +27,7 @@ interface ClientContext {
   sla_response_hours: number;
 }
 
-async function loadClientContext(clientId: string): Promise<ClientContext> {
+export async function loadClientContext(clientId: string): Promise<ClientContext> {
   const sb = getServiceClient();
   const { data, error } = await sb
     .from('clients')

@@ -12,6 +12,7 @@ import { useAdminData, slaLabel, type QueueRow, type RailHealth } from './useAdm
 import { SkelList, Search, SegBar, EmptyState, ToolbarMeta } from './portalUi.tsx';
 import { AdminClients } from './AdminClients.tsx';
 import { AdminBilling } from './AdminBilling.tsx';
+import { QuoteWriter } from './AdminQuote.tsx';
 import './landing.css';
 
 type Tab = 'dashboard' | 'queue' | 'review' | 'clients' | 'billing' | 'capacity' | 'services' | 'rails' | 'health';
@@ -26,6 +27,8 @@ const TITLE: Record<Tab, string> = {
 };
 
 const cssVars = (v: Record<string, string | number>) => v as CSSProperties;
+// Tickets with no quote yet (AI draft missing or failed) - staff can write one.
+const QUOTABLE = new Set(['submitted', 'decomposing', 'review']);
 const fmtDate = (iso: string | null) => iso ? new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '-';
 
 function slaPill(row: QueueRow): { cls: string; label: string } {
@@ -54,7 +57,10 @@ export function AdminPortal() {
   const [showRaise, setShowRaise] = useState(false);
   const [newTicket, setNewTicket] = useState({ client_id: '', category: 'web', urgency: 'standard', description: '' });
   const [raiseResult, setRaiseResult] = useState<string | null>(null);
-  const [preview, setPreview] = useState<QueueRow | null>(null);
+  const [preview, setPreviewRaw] = useState<QueueRow | null>(null);
+  const [quoting, setQuoting] = useState(false);
+  const [quoteMsg, setQuoteMsg] = useState<string | null>(null);
+  const setPreview = (r: QueueRow | null) => { setPreviewRaw(r); setQuoting(false); };
   const [qSearch, setQSearch] = useState('');
   const [qFilter, setQFilter] = useState<'all' | 'on' | 'warn' | 'breached'>('all');
 
@@ -198,6 +204,7 @@ export function AdminPortal() {
             )}
 
             {/* review */}
+            {tab === 'review' && quoteMsg && <div className="klp-note" style={cssVars({ marginBottom: 16 })}>{quoteMsg}</div>}
             {tab === 'review' && (
               loading ? <SkelList rows={3} />
                 : reviewItems.length === 0 ? <EmptyState title="Nothing to review" sub="Every AI-drafted proforma has been dispatched. New drafts land here for approval." />
@@ -407,10 +414,16 @@ export function AdminPortal() {
                   <div><div className="k">Raised</div><div className="v">{fmtDate(preview.created_at)}</div></div>
                   <div><div className="k">SLA</div><div className="v">{slaLabel(preview.sla_state, preview.ms_until_breach)}</div></div>
                 </div>
-                <div className="klp-portal-actions">
-                  <button type="button" className="klp-btn primary" onClick={() => { setPreview(null); setTab('review'); }}>Go to AI review →</button>
-                  <button type="button" className="klp-btn ghost" onClick={() => setPreview(null)}>Close</button>
-                </div>
+                {quoting
+                  ? <QuoteWriter ticketId={preview.id} category={preview.category} onCancel={() => setQuoting(false)}
+                      onDone={(msg) => { setQuoteMsg(msg); setPreview(null); setTab('review'); reload(); }} />
+                  : (
+                    <div className="klp-portal-actions">
+                      {QUOTABLE.has(preview.status) && <button type="button" className="klp-btn primary" onClick={() => setQuoting(true)}>Write quote</button>}
+                      <button type="button" className={`klp-btn ${QUOTABLE.has(preview.status) ? 'ghost' : 'primary'}`} onClick={() => { setPreview(null); setTab('review'); }}>Go to AI review →</button>
+                      <button type="button" className="klp-btn ghost" onClick={() => setPreview(null)}>Close</button>
+                    </div>
+                  )}
               </div>
             </div>
           );

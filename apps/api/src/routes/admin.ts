@@ -11,7 +11,8 @@ import {
 } from '../services/client-onboarding.js';
 import { getServiceClient } from '../lib/supabase.js';
 import { writeAuditEvent } from '../services/audit.js';
-import { intakeTicket } from '../services/ticket-intake.js';
+import { intakeTicket, loadClientContext } from '../services/ticket-intake.js';
+import { createDraftProforma, loadActiveRateCard } from '../services/proforma.js';
 import { loadQueue, loadClientAccounts, loadCapacitySnapshot, loadReviewQueue, loadCapacityDetail, loadRecentDispatches, loadSlaAudit, loadAgentRegistry } from '../services/admin-views.js';
 import { runUptimeChecks } from '../services/uptime.js';
 import { runSslChecks } from '../services/ssl.js';
@@ -430,6 +431,69 @@ adminRouter.post(
       input: ticketInput,
     });
     res.status(201).json(result);
+  },
+);
+
+// GET /v1/admin/rate-card - active entries, to price a hand-written quote
+adminRouter.get(
+  '/rate-card',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (_req: Request, res: Response) => {
+    res.json({ entries: await loadActiveRateCard() });
+  },
+);
+
+// POST /v1/admin/tickets/:id/proforma - staff write the quote by hand.
+// Used when AI decomposition is off or failed (ticket stuck in 'review').
+// Creates the same draft the AI would; it then goes through the normal
+// review -> dispatch -> content-hash lock path, so no invariant is bypassed.
+const ManualLine = z.object({
+  task_name: z.string().trim().min(2).max(160),
+  task_description: z.string().trim().max(600).optional(),
+  estimated_hours: z.number().positive().max(1000),
+  rate_kes_per_hour: z.number().int().positive().max(1_000_000),
+});
+const ManualProformaInput = z.object({ line_items: z.array(ManualLine).min(1).max(12) });
+adminRouter.post(
+  '/tickets/:id/proforma',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (req: Request, res: Response) => {
+    const parsed = ManualProformaInput.safeParse(req.body);
+    if (!parsed.success) { res.status(400).json({ error: 'invalid_input', issues: parsed.error.flatten() }); return; }
+    const ticketId = String(req.params.id);
+    const sb = getServiceClient();
+    const { data: ticket, error: tErr } = await sb.from('tickets').select('id, ref, client_id, urgency, status').eq('id', ticketId).single();
+    if (tErr || !ticket) throw new HttpError(404, 'ticket_not_found');
+    if (['approved', 'paid', 'in_progress', 'complete', 'closed'].includes(ticket.status)) throw new HttpError(409, 'ticket_not_quotable');
+    const { data: open } = await sb.from('proformas').select('id').eq('ticket_id', ticketId).in('status', ['ai_draft', 'under_review', 'dispatched']).limit(1);
+    if (open && open.length > 0) throw new HttpError(409, 'proforma_already_open');
+
+    const ctx = await loadClientContext(ticket.client_id);
+    const line_items = parsed.data.line_items.map((l, i) => ({
+      task_name: l.task_name,
+      task_description: l.task_description ?? null,
+      estimated_hours: l.estimated_hours,
+      rate_kes_per_hour: l.rate_kes_per_hour,
+      amount_kes: Math.round(l.estimated_hours * l.rate_kes_per_hour),
+      position: i,
+    }));
+    const draft = await createDraftProforma({
+      ticket_id: ticketId,
+      ai: { confidence: 1, flag_reason: null, line_items },
+      urgency: ticket.urgency,
+      plan: ctx.retainer_plan_name,
+    });
+    await writeAuditEvent({
+      actor_id: req.auth!.sub,
+      actor_role: req.auth!.role,
+      event_type: 'proforma_manual_drafted',
+      entity_type: 'proforma',
+      entity_id: draft.id,
+      payload_snapshot: { ticket_ref: ticket.ref, line_count: line_items.length, total_kes: draft.total_kes },
+    });
+    res.status(201).json({ proforma_id: draft.id, ref: draft.ref, total_kes: draft.total_kes });
   },
 );
 

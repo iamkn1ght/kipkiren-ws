@@ -154,3 +154,24 @@ describe('email transport + templates', () => {
     expect(renderEmail('payment_confirmed', { ref: 'KWS-2026-000184', amount: '40,600', invoice_ref: 'KWS-INV-202610-0001' }).text).toContain('KWS-INV-202610-0001');
   });
 });
+
+describe('POST /v1/admin/tickets/:id/proforma - staff-written quote', () => {
+  const TICKET = '33333333-3333-3333-3333-333333333333';
+  const body = { line_items: [{ task_name: 'Home page', estimated_hours: 6, rate_kes_per_hour: 3500 }] };
+  it('is staff-only', async () => {
+    const tok = mintTestToken('client', { clientId: CLIENT });
+    expect((await request(app).post(`/v1/admin/tickets/${TICKET}/proforma`).set(auth(tok)).send(body)).status).toBe(403);
+  });
+  it('validates the lines', async () => {
+    const lead = mintTestToken('delivery_lead');
+    const res = await request(app).post(`/v1/admin/tickets/${TICKET}/proforma`).set(auth(lead)).send({ line_items: [] });
+    expect(res.status).toBe(400);
+  });
+  it('refuses a second quote while one is still open', async () => {
+    db.tables.tickets = [{ id: TICKET, ref: 'KWS-T-0009', client_id: CLIENT, urgency: 'standard', status: 'review' }];
+    const lead = mintTestToken('delivery_lead');
+    const res = await request(app).post(`/v1/admin/tickets/${TICKET}/proforma`).set(auth(lead)).send(body);
+    expect(res.status).toBe(409);
+    expect(res.body.error).toBe('proforma_already_open');
+  });
+});
