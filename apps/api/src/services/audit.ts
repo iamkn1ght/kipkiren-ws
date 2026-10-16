@@ -83,7 +83,9 @@ export type AuditEventType =
   | 'care_started'
   | 'care_stopped'
   // staff-written quote (no AI draft available)
-  | 'proforma_manual_drafted';
+  | 'proforma_manual_drafted'
+  // staff-composed email to a client / address
+  | 'client_emailed';
 
 export interface AuditEventInput {
   actor_id: string | null;

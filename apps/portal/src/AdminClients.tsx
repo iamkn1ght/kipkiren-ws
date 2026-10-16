@@ -10,6 +10,7 @@ import { useEffect, useState, type CSSProperties } from 'react';
 import { useApi } from './auth.tsx';
 import { Search, SegBar, EmptyState, SkelList, ToolbarMeta } from './portalUi.tsx';
 import type { ClientSummaryRow, RetainerPlanOption } from './useAdminData.ts';
+import { ComposeEmailModal, type ComposeTarget } from './AdminEmail.tsx';
 
 const cssVars = (v: Record<string, string | number>) => v as CSSProperties;
 const fmtDate = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '-');
@@ -30,10 +31,11 @@ export function AdminClients({ clients, loading, reload }: { clients: ClientSumm
   const [menuFor, setMenuFor] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [compose, setCompose] = useState<ComposeTarget | null>(null);
 
   useEffect(() => {
     if (!toast) return;
-    const t = setTimeout(() => setToast(null), 2200);
+    const t = setTimeout(() => setToast(null), 2600);
     return () => clearTimeout(t);
   }, [toast]);
 
@@ -60,6 +62,7 @@ export function AdminClients({ clients, loading, reload }: { clients: ClientSumm
         <SegBar value={statusFilter} onChange={setStatusFilter} ariaLabel="Filter by status"
           options={[{ id: 'all', label: 'All', count: counts.all }, { id: 'active', label: 'Active', count: counts.active }, { id: 'suspended', label: 'Suspended', count: counts.suspended }]} />
         <ToolbarMeta>{rows.length} shown</ToolbarMeta>
+        <button type="button" className="klp-btn ghost" onClick={() => setCompose({})}>Write email</button>
         <button type="button" className="klp-btn primary klp-crm-add" onClick={() => setAddOpen(true)}>Add client</button>
       </div>
 
@@ -92,6 +95,7 @@ export function AdminClients({ clients, loading, reload }: { clients: ClientSumm
                     </button>
                     {menuFor === c.id && (
                       <div className="klp-crm-menu" onMouseLeave={() => setMenuFor(null)}>
+                        <button type="button" onClick={() => { setCompose({ client: { id: c.id, business_name: c.business_name, email: c.email } }); setMenuFor(null); }}>Send email</button>
                         <button type="button" onClick={() => { setEditClient(c); setMenuFor(null); }}>Edit details</button>
                         {c.status === 'active'
                           ? <button type="button" onClick={() => runAction(c.id, `/v1/admin/clients/${c.id}/status`, 'Client suspended', { status: 'suspended' })} className="danger">Suspend</button>
@@ -109,6 +113,7 @@ export function AdminClients({ clients, loading, reload }: { clients: ClientSumm
 
       {addOpen && <OnboardModal onClose={() => setAddOpen(false)} onDone={() => { setToast('Client onboarded'); reload(); }} />}
       {editClient && <EditModal client={editClient} onClose={() => setEditClient(null)} onDone={() => { setEditClient(null); setToast('Client updated'); reload(); }} />}
+      {compose && <ComposeEmailModal target={compose} onClose={() => setCompose(null)} onSent={setToast} />}
       <div className={toast ? 'klp-toast show' : 'klp-toast'}>{toast}</div>
     </>
   );

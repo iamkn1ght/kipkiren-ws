@@ -22,7 +22,7 @@ import { runSlaBreachAlerts } from '../services/sla-alerts.js';
 import { loadSiteHealth } from '../services/observability.js';
 import { loadRailsHealth } from '../services/rails.js';
 import { logger } from '../lib/logger.js';
-import { sendEmail } from '../services/email.js';
+import { renderEmail, sendEmail } from '../services/email.js';
 import { emailTransport, loadEnv } from '../config/env.js';
 import { BillingError, markInvoicePaid, recordManualPayment, runCareBilling, setCareStarted } from '../services/billing.js';
 
@@ -625,5 +625,91 @@ adminRouter.post(
       ms: Date.now() - started,
       result,
     });
+  },
+);
+
+// Staff-composed email in the branded template. Recipient is either a client
+// (their email on file, optionally about one of their tickets) or, for admins,
+// any address. Sent synchronously so the console can show the real outcome;
+// every send is recorded in audit_log (subject + first 500 chars, not secrets).
+const ComposeInput = z.object({
+  client_id: z.string().uuid().optional(),
+  to: z.string().trim().toLowerCase().email().max(160).optional(),
+  ticket_id: z.string().uuid().optional(),
+  subject: z.string().trim().min(3).max(140),
+  message: z.string().trim().min(1).max(5000),
+  cta: z.enum(['portal', 'none']).default('portal'),
+}).refine((v) => !!v.client_id !== !!v.to, { message: 'Choose a client or an email address' });
+
+async function buildComposed(req: Request): Promise<
+  | { ok: true; to: string; vars: Record<string, string>; clientId: string | null; ticketRef: string | null }
+  | { ok: false; status: number; error: string }
+> {
+  const parsed = ComposeInput.safeParse(req.body);
+  if (!parsed.success) return { ok: false, status: 400, error: parsed.error.issues[0]?.message ?? 'invalid_input' };
+  const input = parsed.data;
+  const sb = getServiceClient();
+  let to = input.to ?? '';
+  let name = '';
+  let clientId: string | null = null;
+  if (input.client_id) {
+    const { data: c } = await sb.from('clients').select('id, email, contact_name').eq('id', input.client_id).single();
+    if (!c?.email) return { ok: false, status: 404, error: 'client_not_found' };
+    to = c.email; clientId = c.id; name = (c.contact_name ?? '').split(' ')[0] ?? '';
+  } else if (req.auth!.role !== 'admin') {
+    return { ok: false, status: 403, error: 'admin_only_free_address' };
+  }
+  let ticketRef: string | null = null;
+  let ticketSummary = '';
+  if (input.ticket_id) {
+    const { data: t } = await sb.from('tickets').select('id, ref, client_id, description').eq('id', input.ticket_id).single();
+    if (!t || (clientId && t.client_id !== clientId)) return { ok: false, status: 404, error: 'ticket_not_found' };
+    ticketRef = t.ref;
+    ticketSummary = t.description.length > 60 ? `${t.description.slice(0, 57)}...` : t.description;
+  }
+  const vars: Record<string, string> = {
+    subject: ticketRef && !input.subject.includes(ticketRef) ? `${input.subject} · ${ticketRef}` : input.subject,
+    title: input.subject,
+    body: input.message,
+    cta: input.cta,
+    account: clientId ? 'yes' : 'no',
+    ...(name ? { name } : {}),
+    ...(ticketRef ? { ticket_ref: ticketRef, ticket_summary: ticketSummary, cta_label: 'View your request' } : {}),
+  };
+  return { ok: true, to, vars, clientId, ticketRef };
+}
+
+// POST /v1/admin/email/preview - render without sending
+adminRouter.post(
+  '/email/preview',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (req: Request, res: Response) => {
+    const b = await buildComposed(req);
+    if (!b.ok) { res.status(b.status).json({ error: b.error }); return; }
+    const r = renderEmail('message', b.vars);
+    res.json({ to: b.to, subject: r.subject, html: r.html });
+  },
+);
+
+// POST /v1/admin/email/compose - send it
+adminRouter.post(
+  '/email/compose',
+  requireAuth,
+  requireRole('delivery_lead', 'admin'),
+  async (req: Request, res: Response) => {
+    const b = await buildComposed(req);
+    if (!b.ok) { res.status(b.status).json({ error: b.error }); return; }
+    const result = await sendEmail({ to: b.to, template: 'message', variables: b.vars, entity_type: b.clientId ? 'client' : 'email', entity_id: b.clientId ?? b.to });
+    await writeAuditEvent({
+      actor_id: req.auth!.sub,
+      actor_role: req.auth!.role,
+      event_type: 'client_emailed',
+      entity_type: b.clientId ? 'client' : 'email',
+      entity_id: b.clientId ?? b.to,
+      payload_snapshot: { to: b.to, subject: b.vars.subject, ticket_ref: b.ticketRef, body_preview: (b.vars.body ?? '').slice(0, 500), status: result.status },
+    });
+    if (result.status === 'sent') { res.json({ ok: true, to: b.to }); return; }
+    res.status(502).json({ error: result.status === 'feature_unavailable' ? 'email_not_configured' : 'email_send_failed', detail: result.status === 'failed' ? result.error : undefined });
   },
 );

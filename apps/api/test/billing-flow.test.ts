@@ -175,3 +175,30 @@ describe('POST /v1/admin/tickets/:id/proforma - staff-written quote', () => {
     expect(res.body.error).toBe('proforma_already_open');
   });
 });
+
+describe('staff-composed email', () => {
+  it('renders paragraphs, greeting, ticket ref and escapes the body', () => {
+    const r = renderEmail('message', { subject: 'Update', title: 'Update', name: 'Silvia', body: 'First line\nsame para\n\n<b>Second</b>', ticket_ref: 'KWS-T-0005' });
+    expect(r.html).toContain('Hi Silvia,');
+    expect(r.html).toContain('First line<br>same para');
+    expect(r.html).toContain('RE: KWS-T-0005');
+    expect(r.html).not.toContain('<b>Second</b>');
+    expect(r.text).toContain('KWS-T-0005');
+  });
+  it('drops the button and uses the non-account footer for free addresses', () => {
+    const r = renderEmail('message', { subject: 'Hi', body: 'x', cta: 'none', account: 'no' });
+    expect(r.html).not.toContain('Open your portal');
+    expect(r.html).toContain('Reply to this email to reach us');
+  });
+  it('lets only admins email a free address; clients are blocked', async () => {
+    const lead = mintTestToken('delivery_lead');
+    const res = await request(app).post('/v1/admin/email/preview').set(auth(lead)).send({ to: 'someone@example.com', subject: 'Hello', message: 'x' });
+    expect(res.status).toBe(403);
+    const cli = mintTestToken('client', { clientId: CLIENT });
+    expect((await request(app).post('/v1/admin/email/compose').set(auth(cli)).send({ to: 'a@b.co', subject: 'Hello', message: 'x' })).status).toBe(403);
+    const admin = mintTestToken('admin');
+    const ok = await request(app).post('/v1/admin/email/preview').set(auth(admin)).send({ to: 'someone@example.com', subject: 'Hello there', message: 'Body' });
+    expect(ok.status).toBe(200);
+    expect(ok.body.html).toContain('Hello there');
+  });
+});

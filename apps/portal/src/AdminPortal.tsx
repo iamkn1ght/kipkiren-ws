@@ -13,6 +13,7 @@ import { SkelList, Search, SegBar, EmptyState, ToolbarMeta } from './portalUi.ts
 import { AdminClients } from './AdminClients.tsx';
 import { AdminBilling } from './AdminBilling.tsx';
 import { QuoteWriter } from './AdminQuote.tsx';
+import { ComposeEmailModal, type ComposeTarget } from './AdminEmail.tsx';
 import './landing.css';
 
 type Tab = 'dashboard' | 'queue' | 'review' | 'clients' | 'billing' | 'capacity' | 'services' | 'rails' | 'health';
@@ -60,6 +61,7 @@ export function AdminPortal() {
   const [preview, setPreviewRaw] = useState<QueueRow | null>(null);
   const [quoting, setQuoting] = useState(false);
   const [quoteMsg, setQuoteMsg] = useState<string | null>(null);
+  const [compose, setCompose] = useState<ComposeTarget | null>(null);
   const setPreview = (r: QueueRow | null) => { setPreviewRaw(r); setQuoting(false); };
   const [qSearch, setQSearch] = useState('');
   const [qFilter, setQFilter] = useState<'all' | 'on' | 'warn' | 'breached'>('all');
@@ -393,6 +395,9 @@ export function AdminPortal() {
         )}
       </div>
 
+      {compose && <ComposeEmailModal target={compose} onClose={() => setCompose(null)} onSent={(m) => setQuoteMsg(m)} />}
+      {quoteMsg && tab !== 'review' && <div className="klp-toast show" onClick={() => setQuoteMsg(null)}>{quoteMsg}</div>}
+
       {/* ticket preview */}
       <div className={`klp-overlay ${preview ? 'open' : ''}`} onClick={(e) => { if (e.target === e.currentTarget) setPreview(null); }}>
         {preview && (() => {
@@ -420,6 +425,7 @@ export function AdminPortal() {
                   : (
                     <div className="klp-portal-actions">
                       {QUOTABLE.has(preview.status) && <button type="button" className="klp-btn primary" onClick={() => setQuoting(true)}>Write quote</button>}
+                      {(() => { const c = (clients ?? []).find((x) => x.id === preview.client.id); return c ? <button type="button" className="klp-btn ghost" onClick={() => { setCompose({ client: { id: c.id, business_name: c.business_name, email: c.email }, ticket: { id: preview.id, ref: preview.ref } }); setPreview(null); }}>Email client</button> : null; })()}
                       <button type="button" className={`klp-btn ${QUOTABLE.has(preview.status) ? 'ghost' : 'primary'}`} onClick={() => { setPreview(null); setTab('review'); }}>Go to AI review →</button>
                       <button type="button" className="klp-btn ghost" onClick={() => setPreview(null)}>Close</button>
                     </div>

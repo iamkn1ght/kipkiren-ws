@@ -28,6 +28,7 @@ import { logger } from '../lib/logger.js';
 import { writeAuditEvent } from './audit.js';
 
 export type EmailTemplate =
+  | 'message'
   | 'ticket_raised'
   | 'proforma_ready'
   | 'payment_confirmed'
@@ -51,7 +52,7 @@ export function escapeHtml(s: string): string {
 }
 
 /** Minimal, email-client-safe layout (inline styles, no external CSS/images). */
-function layout(headline: string, bodyHtml: string, cta: { label: string; href: string }): string {
+function layout(headline: string, bodyHtml: string, cta: { label: string; href: string } | null, footer?: string): string {
   return `<!doctype html><html><body style="margin:0;background:#F5F3EE;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1A1712;">
   <div style="max-width:520px;margin:0 auto;padding:32px 20px;">
     <div style="font:600 13px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:4px;color:#0D5C4E;">KIPKIREN</div>
@@ -59,10 +60,10 @@ function layout(headline: string, bodyHtml: string, cta: { label: string; href: 
     <div style="background:#FFFFFF;border:1px solid #E4DFD3;border-radius:12px;padding:28px 26px;margin-top:20px;">
       <h1 style="font:700 22px/1.25 Georgia,serif;color:#1A1712;margin:0 0 14px;">${headline}</h1>
       ${bodyHtml}
-      <a href="${cta.href}" style="display:inline-block;margin-top:22px;background:#0D5C4E;color:#fff;text-decoration:none;font:600 11px/1 ui-monospace,monospace;letter-spacing:1.5px;text-transform:uppercase;padding:13px 20px;border-radius:8px;">${cta.label}</a>
+      ${cta ? `<a href="${cta.href}" style="display:inline-block;margin-top:22px;background:#0D5C4E;color:#fff;text-decoration:none;font:600 11px/1 ui-monospace,monospace;letter-spacing:1.5px;text-transform:uppercase;padding:13px 20px;border-radius:8px;">${cta.label}</a>` : ''}
     </div>
     <div style="font:400 11px/1.5 ui-monospace,monospace;color:#8A8070;margin-top:18px;">
-      Kipkiren Web Services · Nairobi, Kenya<br>You are receiving this because you have an account at ${PORTAL_URL}.
+      Kipkiren Web Services · Nairobi, Kenya<br>${footer ?? `You are receiving this because you have an account at ${PORTAL_URL}.`}
     </div>
   </div></body></html>`;
 }
@@ -187,6 +188,25 @@ export function renderEmail(template: EmailTemplate, vars: Record<string, string
           p(`We have received <strong>KES ${total}</strong> for invoice <strong>${ref}</strong>. It is marked paid in your portal.`),
           { label: 'View in portal', href }),
         text: `Payment received: KES ${vars.total ?? ''} for invoice ${vars.ref ?? ''}. It is marked paid in your portal.\n\n${href}\n\nKipkiren Web Services`,
+      };
+    }
+    case 'message': {
+      // Staff-composed email. Blank lines split paragraphs; single newlines become <br>.
+      const paras = (vars.body ?? '').split(/\n[ \t]*\n/).map((t) => t.trim()).filter(Boolean);
+      const ticket = vars.ticket_ref
+        ? `<div style="font:600 11px/1.4 ui-monospace,monospace;letter-spacing:1.5px;color:#0D5C4E;margin:0 0 14px;">RE: ${escapeHtml(vars.ticket_ref)}${vars.ticket_summary ? ` · ${escapeHtml(vars.ticket_summary)}` : ''}</div>`
+        : '';
+      const greet = vars.name ? p(`Hi ${escapeHtml(vars.name)},`) : '';
+      const sender = vars.sender || 'The Kipkiren WS studio';
+      const body = paras.map((t) => p(escapeHtml(t).replace(/\n/g, '<br>'))).join('');
+      const cta = vars.cta === 'none' ? null : { label: vars.cta_label || 'Open your portal', href: vars.portal_url || PORTAL_URL };
+      const footer = vars.account === 'no' ? 'Sent by the Kipkiren Web Services studio. Reply to this email to reach us.' : undefined;
+      return {
+        subject: vars.subject || vars.title || 'A message from Kipkiren WS',
+        html: layout(escapeHtml(vars.title || vars.subject || ''), ticket + greet + body + p(escapeHtml(sender)), cta, footer),
+        text: [vars.ticket_ref ? `RE: ${vars.ticket_ref}` : '', vars.name ? `Hi ${vars.name},` : '', ...paras, sender, cta ? cta.href : '']
+          .filter(Boolean)
+          .join('\n\n'),
       };
     }
     case 'studio_alert': {
