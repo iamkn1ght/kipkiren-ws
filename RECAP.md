@@ -3,7 +3,7 @@
 > Per-app sprint state, deployment state, test counts, blockers. Master cross-rail tracker at `C:\Projects\Platform Rails-instruction pack v1-reboot pack v1.2\RECAP.md`.
 
 **App:** Kipkiren WS (Kipkiren Teknolojia subsidiary · `ws.kipkiren.co.ke`)
-**Status:** 🟢 S1-S4 closed · 🟢 **LIVE + auth working end-to-end** (client self-signup/login, admin console, dev task view all functional; the JWT-keypair + login `session_issue_failed` bugs were found and fixed, verified against the live API 11 Jul) · 🟡 S6/S7/S8/S9 partial · 🔴 S5 blocked on 3 CEO partnership gates · 🔴 **revenue loop incomplete** (the client proforma+payment screen is still the canonical *mockup* - not wired to real proformas/checkout; live M-Pesa gated on S3-012) · 🎨 active dev on `feat/portal-redesign` (merged per-commit to main → auto-deploys)
+**Status:** 🟢 S1-S4 closed · 🟢 **LIVE + auth working end-to-end** (client self-signup/login, admin console, dev task view all functional; the JWT-keypair + login `session_issue_failed` bugs were found and fixed, verified against the live API 11 Jul) · 🟡 S6/S7/S8/S9 partial · 🔴 S5 blocked on 3 CEO partnership gates · 🟢 **revenue loop works without KP/Todoku (16 Oct 2026):** staff "Write quote" (or AI draft) -> dispatch (hash-locked) -> client picks bank transfer -> admin records payment in the Billing tab -> scope locks, receipt invoice auto-issued + emailed; monthly care invoices auto-issued. Verified live on prod 16 Oct (test quote `KWS-2026-000001`, receipt `KWS-INV-202610-0001` on a ZZZ client). M-Pesa/card light up automatically once KP/Paystack keys are set · 📧 **email live** (Google Apps Script relay + Gmail SMTP for Supabase Auth; see "Email" below) · 🎨 active dev on `feat/portal-redesign` (merged per-commit to main → auto-deploys)
 **Repo:** local `C:\Projects\kipkiren_web_services\kws\` · GitHub `iamkn1ght/kipkiren-ws` (renamed from `thhvvv`)
 **Latest on main:** `b8a82cd` shipped; `main` is local-ahead by the portal-merge `b85064d` (unpushed). Active work on `feat/portal-redesign` (pushed, HEAD `94b2b07`): unified single portal (role-picker → login → client/admin/task), dark/light theme + toggle, editorial landing page, admin **Rails health panel** (`GET /v1/admin/rails`), dev mock-data mode. **HEAD now `052980e`** after the codeable-sprint pass (S6-003/005, S8-003/004, S9-001/003/004/006 - v1.5/1.7/1.8) and the portal UI/UX redesign (entry flow + client "operating system" - v2.0). **Landing overhaul (Jun 2026):** repo-wide AI-marker sweep (em/en-dash, smart quotes, ellipsis → ASCII); de-fabricated chrome (removed fake telemetry/lighthouse/version numbers/dead links/fake contact); copy re-aimed studio→SME (service cards, "what you get", proforma-centred process); true-black dark / true-white light; dark brand favicon (SVG); nav polish (bigger/bolder mark + headings, animated underline hover, solid pill sign-in, wider 1320px container, status bar removed); **self-typing AI proforma terminal** + scroll-reveal. typecheck clean · 125 api tests pass.
 **Deploy note:** ✅ **LIVE.** Single Cloudflare Pages project `kipkiren-ws-portal` git-connected to `iamkn1ght/kipkiren-ws` main (auto-deploys on push; build `pnpm --filter @kws/shared build && pnpm --filter @kws/portal build`, output `apps/portal/dist`, env `VITE_API_BASE=https://api.ws.kipkiren.co.ke` + `NODE_VERSION=22`). The three old portal apps were merged into `apps/portal`. API on Railway; DNS on Cloudflare (`ws` + `api.ws` subdomains of `kipkiren.co.ke`).
@@ -39,13 +39,16 @@
 | `pnpm typecheck` clean | ✅ (re-verified 23 Jun 2026; also fixed a latent `exactOptionalPropertyTypes` error in `rails.ts`) |
 | `pnpm lint` clean | ✅ |
 | Vitest tests passing | ✅ **220 passed / 5 skipped** across 25 files (run 10 Jul 2026; +13 for S8-001 onboarding + 11 for S8-002 self-service signup: SelfSignupInput validation incl. no role/status escalation + 72-char cap, saga happy path, duplicate-email rollback 409, generic-auth-fail rollback 502, profile-fail rollback deletes client+auth, and public signup not being auth-gated). Adds - on top of the 23-Jun set (SLA-audit, decomposition-accuracy macro-F1 gate, SSL classification, domain-expiry banding, agent-execution guard, observability baseline/anomaly, admin role-gates) - the S9-005 SSL-renewal decision core (11 planner-branch + 5 guard-composition tests) and role-gate coverage for `/ssl-renewal-run`. `rls-isolation` (5 tests) skipped - needs staging Supabase |
-| Migrations applied | 0001 + 0002 + 0003 + 0004 (current Supabase project). **0005-0007 authored 23 Jun, NOT yet applied** (need a DB connection): 0005 SSL columns on `client_services`, 0006 `agent_registry` (+ `helpan-kws-v1` seed), 0007 `agent_executions` ledger |
+| Vitest (16 Oct 2026) | ✅ **244 passed / 5 skipped** (adds `test/billing-flow.test.ts`: bank rail, rails discovery, billing role gates, amount guard, care rules, Nairobi month, VAT, SMTP/HTTP transport choice, new templates, staff quote route, staff-composed email) |
+| Migrations applied | ✅ **0001-0009 all applied** on prod (16 Oct 2026, verified with `db/ops/2026-10_migration_status.sql`). 0009 = billing: `bank` gateway, `build` invoice kind, invoice `due_at`/`payment_method`/`payment_ref`, `retainer_plans.build_fee_kes`, `clients.care_started_at`, site prices (Starter 45k+3.5k/mo, Growth 89k+7.5k, Business 165k+18k) |
 | Railway service deployed | per RAILWAY.md |
 | `/v1/health` live | ✅ |
 | Tier 1 env set | ✅ (boot succeeds) |
-| Tier 2 env: Anthropic | ✅ |
-| Tier 2 env: Kipkiren Pay sandbox | ✅ (real STK + B2C client adapter - KP-3/4/5 live since 21 May) |
-| Tier 2 env: Paystack sandbox | ✅ |
+| Tier 2 env: Anthropic | ❌ **NOT set on prod** (Rails panel 16 Oct: `ANTHROPIC_API_KEY not set`). Every ticket lands in `review` with no AI draft; staff use **Write quote** (`POST /v1/admin/tickets/:id/proforma`) meanwhile |
+| Tier 2 env: Kipkiren Pay | ❌ not set on prod (checkout shows M-Pesa "Opening soon") |
+| Tier 2 env: Paystack | ❌ not set on prod (card "Opening soon") |
+| Email | ✅ **Live 16 Oct.** Railway blocks outbound SMTP (non-Pro), so the API posts to a Google Apps Script web app under `kipkiren.ws@gmail.com` (`docs/ops/gmail-relay.gs`; `EMAIL_API_URL=.../exec?key=…`, `EMAIL_API_KEY=gas`, `EMAIL_REPLY_TO=studio@kipkiren.co.ke`; ~100/day). Supabase Auth uses Gmail SMTP (app password) - works. `studio@kipkiren.co.ke` → Cloudflare Email Routing → `kipkiren.ws@gmail.com`. Diagnose with `POST /v1/admin/email/test`. Upgrade path: Cloudflare Email Sending (beta) to send *from* studio@ |
+| Bank-transfer details | ❌ `BANK_*` env not set → clients told "details follow by email" |
 | Tier 2 env: Todoku (S9 dep) | 🟡 Scaffold built (`notifications.ts` + `/v1/webhooks/todoku/delivery`, env-gated). Pending creds + template ULIDs per OPERATOR_REQUEST_TODOKU.md |
 | Tier 2 env: Helpan KWS service JWT (S9 dep) | ⚪ Pending OPERATOR_REQUEST_HELPAN.md |
 
@@ -71,8 +74,8 @@
 
 | ID | Item | Owner | Effect / what it unblocks |
 |---|---|---|---|
-| **SUPABASE-PAUSED** 🔴 | The KWS Supabase project `qderqzcyyhnfphrswexm` is **PAUSED** (confirmed 12 Jul: its subdomain no longer resolves - DNS `NXDOMAIN`; free-tier auto-pause). The API is up (`/v1/health` 200) but every DB call fails (`/v1/auth/plans` -> 502), so signup/login/proformas are down. | You (Cornelius) | **App is live-down until fixed.** Supabase dashboard -> project -> **Restore/Resume** (a few min). To prevent recurrence, upgrade to Pro (no auto-pause). Not a code issue - all deployed code works once the DB is back. |
-| **SUPABASE-RECONNECT** | MCP Supabase is on the wrong org (`ssevliwftzaeysntnovb`); KWS project `qderqzcyyhnfphrswexm` is not reachable | You (Cornelius) | **Highest leverage.** Blocks applying migrations 0005-0007 → blocks SSL-on-Services UI, the uptime/SSL/domain-expiry scan buttons, the agent-executions ledger view, and `/site-health` + `/agents` returning real data |
+| ~~SUPABASE-PAUSED~~ ✅ RESOLVED (restored; live and verified 16 Oct) | The KWS Supabase project `qderqzcyyhnfphrswexm` is **PAUSED** (confirmed 12 Jul: its subdomain no longer resolves - DNS `NXDOMAIN`; free-tier auto-pause). The API is up (`/v1/health` 200) but every DB call fails (`/v1/auth/plans` -> 502), so signup/login/proformas are down. | You (Cornelius) | **App is live-down until fixed.** Supabase dashboard -> project -> **Restore/Resume** (a few min). To prevent recurrence, upgrade to Pro (no auto-pause). Not a code issue - all deployed code works once the DB is back. |
+| ~~SUPABASE-RECONNECT~~ ✅ RESOLVED (migrations 0005-0009 applied via SQL editor 16 Oct) | MCP Supabase is on the wrong org (`ssevliwftzaeysntnovb`); KWS project `qderqzcyyhnfphrswexm` is not reachable | You (Cornelius) | **Highest leverage.** Blocks applying migrations 0005-0007 → blocks SSL-on-Services UI, the uptime/SSL/domain-expiry scan buttons, the agent-executions ledger view, and `/site-health` + `/agents` returning real data |
 | **CHAMIA-S3-012** | Live M-Pesa E2E with a real Safaricom number + PIN | Chamia | Closes S3; also gates S8 go-live (= KWS-S8-005) |
 | **CHAMIA-S5-001** | GCP Partner Advantage application | Chamia | Unblocks all of S5 + S9-007; Nairobi-region 2026 time-sensitive |
 | **CHAMIA-S5-002** | Google Cloud Digital Leader cert | Chamia | S5 prerequisite |
@@ -90,7 +93,36 @@
 
 **Code-ready, gated ONLY on applying migrations 0005-0007 (I ship these the moment SUPABASE-RECONNECT clears):** SSL-state column on the Services tab · uptime/SSL/domain-expiry "run scan" buttons · agent-executions ledger view.
 
-**Operational go-live (you):** ✅ Cloudflare Pages `@kws/portal` → `ws.kipkiren.co.ke` · ✅ Railway API live · ✅ **auth working** (JWT keypair set to a matching pair - signing kid `LbK-ByAQ99VfdNuu`; login `session_issue_failed` fixed - see auth notes in memory). **Still pending, roughly in priority order:**
+### Fully-functional + SEO checklist (16 Oct 2026) - supersedes the go-live list below
+
+**Shipped 15-16 Oct:** bank-transfer rail + checkout reads live rails · admin **Billing** tab (record payment, mark invoice paid, start/stop care, run care billing) · auto receipts + monthly care invoices (6h scheduler) · staff **Write quote** (rate-card presets) · staff **Write email** (branded template, per client / per ticket / any address, live preview, audited) · welcome + studio alerts (signup, request, bank transfer, payment) · email live · Cloudflare DNS: duplicate DMARC removed, SPF added · migrations 0004-0009 applied.
+
+**A. Before real customers (must):**
+1. 🔴 **Site copy promises M-Pesa/card** (11 mentions incl. FAQ + FAQ JSON-LD "Pay by M-Pesa or card") but only bank transfer works → reword until KP/Paystack keys land (code, quick). FAQ also says build "invoiced in stages" - the system invoices the full quote.
+2. `BANK_*` env on Railway (you).
+3. Rotate: admin password + Apps Script relay secret (both shared in chat), JWT key, Postgres + Supabase service/anon keys (you).
+4. Run `db/ops/2026-10_suspend_test_clients.sql` (hide ~12 ZZZ clients); delete `JWT_*_DELETE_AFTER.txt` in `C:\Projects\kipkiren_web_services\` (you).
+5. Privacy Policy counsel review (still behind DRAFT banner) - CHAMIA-S7-005.
+6. Client-side bank checkout E2E with a real client login + live "mark invoice paid" (both unit-tested, not yet clicked on prod).
+
+**B. Gated on partners/keys (auto-activate, no code):** Kipkiren Pay (M-Pesa) · Paystack (card) · Todoku SMS · Anthropic key (AI quote drafts) · Cloudflare API token (client-DNS panel only, optional).
+
+**C. SEO / getting found (nothing here is done yet):**
+1. **Google Search Console + Bing Webmaster**: verify `ws.kipkiren.co.ke` (DNS TXT in Cloudflare), submit `sitemap.xml`. No verification exists today.
+2. **Google Business Profile** (service-area business, Nairobi) - the biggest lever for "web design Nairobi" local results + reviews.
+3. **Keyword targeting**: title/H1 are brand lines ("Precision websites, quietly operated"); the page never says "web design" (0 mentions). Rework `<title>`/meta to e.g. "Web Design & Managed Websites in Nairobi · Kipkiren WS" and add a keyword subheading.
+4. **More indexable pages**: only 1 content page + 6 legal. Need service pages (web design, maintenance/care, SEO, hosting), a pricing page, portfolio/case studies, and a few guides - the main ranking gap.
+5. **Proof**: no portfolio, testimonials or reviews yet (trust + SEO).
+6. **kipkiren.co.ke + www don't resolve** (no A/CNAME) - point/redirect the brand domain.
+7. JSON-LD: add `sameAs` once socials are final; sitemap `lastmod`; measure Core Web Vitals (PageSpeed) - GSAP + 130 KB CSS never measured.
+
+Done for SEO already: title/description/canonical, OG + Twitter cards (og.png 1200x630), `ProfessionalService` + `FAQPage` JSON-LD, robots.txt, sitemap, prerendered HTML, custom 404.
+
+**D. Product/UI (parked by owner):** header upgrade, story restructure, Cloudflare Email Sending to send from studio@, client domain split (`studio.kipkiren.co.ke` CNAME exists - confirm project + `ALLOWED_ORIGINS`).
+
+**Supabase free tier:** auto-pauses after ~7 idle days; the API's 6-hourly care-billing job queries the DB, which should keep it awake while Railway is up.
+
+**Operational go-live history (Jul, mostly superseded):** ✅ Cloudflare Pages `@kws/portal` → `ws.kipkiren.co.ke` · ✅ Railway API live · ✅ **auth working** (JWT keypair set to a matching pair - signing kid `LbK-ByAQ99VfdNuu`; login `session_issue_failed` fixed - see auth notes in memory). **Still pending, roughly in priority order:**
 1. 🔴 **Wire the client's real proforma + payment** (code, mine) - the single biggest gap to charging anyone; today every client sees the mockup quote.
 2. 🚀 **Client/staff domain split** (code shipped `a755cc6`, `VITE_PORTAL_AUDIENCE`): create the `studio.kipkiren.co.ke` Cloudflare Pages project (env `VITE_PORTAL_AUDIENCE=staff`), add `https://studio.kipkiren.co.ke` to Railway `ALLOWED_ORIGINS`, then set `VITE_PORTAL_AUDIENCE=client` on the `ws` project. Same Supabase DB + API for both - split is presentational only.
 3. 📧 **Email** (Chamia+Silvia): Google Workspace SMTP on Supabase (invite emails) + `EMAIL_*` on Railway (ticket/proforma/receipt). Nothing emails until this lands; admin-CRM-onboarded clients can't get in without it (self-signup is the working path meanwhile).
