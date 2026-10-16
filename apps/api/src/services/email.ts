@@ -269,7 +269,9 @@ function getEmailClient(): EmailClient {
       if (!res.ok) {
         const text = await res.text().catch(() => '');
         logger.error({ status: res.status, body: text }, 'email_send_failed');
-        throw new Error('email_send_failed');
+        // Status + a tag-stripped snippet so /v1/admin/email/test can show why.
+        const snippet = text.replace(/<[^>]*>/g, ' ').replace(/[ \t\r\n]+/g, ' ').trim().slice(0, 160);
+        throw new Error(`email_send_failed: http ${res.status} ${snippet}`.trim());
       }
       const json = (await res.json().catch(() => null)) as { id?: string; error?: string } | null;
       // Google Apps Script relays always answer 200, so failures arrive as {error}.
