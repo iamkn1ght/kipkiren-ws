@@ -271,7 +271,12 @@ function getEmailClient(): EmailClient {
         logger.error({ status: res.status, body: text }, 'email_send_failed');
         throw new Error('email_send_failed');
       }
-      const json = (await res.json().catch(() => null)) as { id?: string } | null;
+      const json = (await res.json().catch(() => null)) as { id?: string; error?: string } | null;
+      // Google Apps Script relays always answer 200, so failures arrive as {error}.
+      if (json?.error) {
+        logger.error({ body: json.error }, 'email_send_failed');
+        throw new Error(`email_send_failed: ${json.error}`);
+      }
       return { id: json?.id ?? 'unknown' };
     },
   };
