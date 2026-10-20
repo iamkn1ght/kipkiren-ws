@@ -93,6 +93,9 @@
 
 **Code-ready, gated ONLY on applying migrations 0005-0007 (I ship these the moment SUPABASE-RECONNECT clears):** SSL-state column on the Services tab · uptime/SSL/domain-expiry "run scan" buttons · agent-executions ledger view.
 
+### Honesty pass (20 Oct 2026, `07ad010`)
+Every claim the site could not back up was removed or marked "coming soon": M-Pesa/card checkout (bank transfer today), SMS, AI quote drafting, AI agents, cloud provisioning, cloud/social requests, phone line (email only), our own "nightly backups". Monitoring now runs on a timer (`services/ops-scheduler.ts`: uptime 5 min + studio email on anomaly, SLA 15 min, SSL + domain expiry daily); copy says "every 5 minutes". Pending (owner): apex/www -> ws redirect in Cloudflare, `privacy@` routing rule, pre-launch data reset (preview script `db/ops/2026-10_prelaunch_reset_1_preview.sql`; wipe step not yet written - needs owner go-ahead).
+
 ### Fully-functional + SEO checklist (16 Oct 2026) - supersedes the go-live list below
 
 **Shipped 15-16 Oct:** bank-transfer rail + checkout reads live rails · admin **Billing** tab (record payment, mark invoice paid, start/stop care, run care billing) · auto receipts + monthly care invoices (6h scheduler) · staff **Write quote** (rate-card presets) · staff **Write email** (branded template, per client / per ticket / any address, live preview, audited) · welcome + studio alerts (signup, request, bank transfer, payment) · email live · Cloudflare DNS: duplicate DMARC removed, SPF added · migrations 0004-0009 applied.
