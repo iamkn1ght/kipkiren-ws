@@ -1,7 +1,7 @@
 # App routes served by the single-page app. Everything else that is not a real
 # file gets 404.html with a real 404 status (no more "soft 404s").
-/staff      /index.html  200
-/portal     /index.html  200
-/portal/*   /index.html  200
-/admin      /index.html  200
-/admin/*    /index.html  200
+/staff      /app  200
+/portal     /app  200
+/portal/*   /app  200
+/admin      /app  200
+/admin/*    /app  200

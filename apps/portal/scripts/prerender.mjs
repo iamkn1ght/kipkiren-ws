@@ -48,6 +48,11 @@ const notFound = template
   .replace(/<title>[^<]*<\/title>/, '<title>Page not found · Kipkiren Web Services</title>')
   .replace('</head>', '  <meta name="robots" content="noindex" />\n  </head>');
 writeFileSync(resolve(dist, '404.html'), notFound);
+// App shell for the app's own routes (/staff, /portal/*, /admin/*). _redirects
+// rewrites them to /app; rewriting to /index.html instead makes Pages
+// redirect to the homepage. Not for search engines.
+const appShell = template.replace('</head>', '  <meta name="robots" content="noindex" />\n  </head>');
+writeFileSync(resolve(dist, 'app.html'), appShell);
 
 // Legal pages.
 for (const id of ssr.legalIds) {
