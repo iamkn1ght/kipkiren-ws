@@ -93,8 +93,14 @@
 
 **Code-ready, gated ONLY on applying migrations 0005-0007 (I ship these the moment SUPABASE-RECONNECT clears):** SSL-state column on the Services tab · uptime/SSL/domain-expiry "run scan" buttons · agent-executions ledger view.
 
+### Cloudflare - DONE for KWS (21 Oct 2026)
+- **Brand domain:** `kipkiren.co.ke` + `www` -> 301 -> `https://ws.kipkiren.co.ke/` (proxied A records + Redirect Rule on `http.host eq`; verified http/https both, one hop, ws + api unaffected). Deep paths land on the homepage (switch to a Dynamic `concat("https://ws.kipkiren.co.ke", http.request.uri.path)` redirect to keep paths).
+- **Email Routing:** studio@, privacy@, dev@, hello@ -> kipkiren.ws@gmail.com; ws@ -> chamia.mutuku@gmail.com; mumbua@ -> makausilvia964@gmail.com; catch-all = Drop (unlisted addresses silently discarded). privacy@ verified with a live send 21 Oct.
+- **DNS auth:** one DMARC (`p=none`, Cloudflare reports), SPF `include:_spf.mx.cloudflare.net`.
+- Optional only: Cloudflare API token (client-DNS panel), Email Sending beta (send *from* studio@), Search Console TXT (SEO).
+
 ### Honesty pass (20 Oct 2026, `07ad010`)
-Every claim the site could not back up was removed or marked "coming soon": M-Pesa/card checkout (bank transfer today), SMS, AI quote drafting, AI agents, cloud provisioning, cloud/social requests, phone line (email only), our own "nightly backups". Monitoring now runs on a timer (`services/ops-scheduler.ts`: uptime 5 min + studio email on anomaly, SLA 15 min, SSL + domain expiry daily); copy says "every 5 minutes". Pending (owner): apex/www -> ws redirect in Cloudflare, `privacy@` routing rule, pre-launch data reset (preview script `db/ops/2026-10_prelaunch_reset_1_preview.sql`; wipe step not yet written - needs owner go-ahead).
+Every claim the site could not back up was removed or marked "coming soon": M-Pesa/card checkout (bank transfer today), SMS, AI quote drafting, AI agents, cloud provisioning, cloud/social requests, phone line (email only), our own "nightly backups". Monitoring now runs on a timer (`services/ops-scheduler.ts`: uptime 5 min + studio email on anomaly, SLA 15 min, SSL + domain expiry daily); copy says "every 5 minutes". Pending (owner): pre-launch data reset (preview run 21 Oct: 16 clients, 17 non-admin users / 16 sign-ins, 122 sessions, 5 tickets, 1 test quote+payment+receipt, 78 audit rows; wipe script not yet written - owner to confirm the admin keep-list, then say "write the wipe script").
 
 ### Fully-functional + SEO checklist (16 Oct 2026) - supersedes the go-live list below
 
@@ -116,7 +122,7 @@ Every claim the site could not back up was removed or marked "coming soon": M-Pe
 3. **Keyword targeting**: title/H1 are brand lines ("Precision websites, quietly operated"); the page never says "web design" (0 mentions). Rework `<title>`/meta to e.g. "Web Design & Managed Websites in Nairobi · Kipkiren WS" and add a keyword subheading.
 4. **More indexable pages**: only 1 content page + 6 legal. Need service pages (web design, maintenance/care, SEO, hosting), a pricing page, portfolio/case studies, and a few guides - the main ranking gap.
 5. **Proof**: no portfolio, testimonials or reviews yet (trust + SEO).
-6. **kipkiren.co.ke + www don't resolve** (no A/CNAME) - point/redirect the brand domain.
+6. ~~kipkiren.co.ke + www don't resolve~~ ✅ now 301 to ws.kipkiren.co.ke (21 Oct).
 7. JSON-LD: add `sameAs` once socials are final; sitemap `lastmod`; measure Core Web Vitals (PageSpeed) - GSAP + 130 KB CSS never measured.
 
 Done for SEO already: title/description/canonical, OG + Twitter cards (og.png 1200x630), `ProfessionalService` + `FAQPage` JSON-LD, robots.txt, sitemap, prerendered HTML, custom 404.
