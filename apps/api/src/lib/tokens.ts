@@ -70,3 +70,38 @@ export function publicJwk(): JsonWebKey & { kid: string; use: string; alg: strin
   const jwk = pub.export({ format: 'jwk' });
   return { ...jwk, kid: currentKid(), use: 'sig', alg: 'RS256' };
 }
+
+/**
+ * Two-factor step token: proves the password was right, nothing more. It is
+ * signed with the same key but a DIFFERENT audience, so requireAuth (which
+ * checks JWT_AUDIENCE) refuses it as a session. Five minutes to enter a code.
+ */
+export const MFA_TOKEN_TTL_SECONDS = 300;
+const mfaAudience = (aud: string) => `${aud}:mfa`;
+
+export function signMfaToken(sub: string): string {
+  const env = loadEnv();
+  return jwt.sign({ purpose: 'mfa' }, env.jwtPrivateKey, {
+    algorithm: 'RS256',
+    issuer: env.JWT_ISSUER,
+    audience: mfaAudience(env.JWT_AUDIENCE),
+    expiresIn: MFA_TOKEN_TTL_SECONDS,
+    keyid: currentKid(),
+    subject: sub,
+  });
+}
+
+/** Returns the user id, or null when the token is missing, expired or forged. */
+export function verifyMfaToken(token: string): string | null {
+  const env = loadEnv();
+  try {
+    const decoded = jwt.verify(token, env.jwtPublicKey, {
+      algorithms: ['RS256'],
+      issuer: env.JWT_ISSUER,
+      audience: mfaAudience(env.JWT_AUDIENCE),
+    }) as { sub?: string; purpose?: string };
+    return decoded.purpose === 'mfa' && typeof decoded.sub === 'string' ? decoded.sub : null;
+  } catch {
+    return null;
+  }
+}

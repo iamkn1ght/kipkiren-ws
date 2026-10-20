@@ -41,6 +41,14 @@ const faq = `<script type="application/ld+json">${ssr.faqJsonLd().replace(/</g, 
 const home = template.replace(marker, `<div id="root">${ssr.renderLanding()}</div>`).replace('</head>', faq);
 writeFileSync(resolve(dist, 'index.html'), home);
 
+// 404 page: the bare app shell (it renders the NotFound view for any unknown
+// path). Cloudflare Pages serves it with a real 404 status, and _redirects
+// keeps the app's own routes (/staff, /portal/*, /admin/*) on index.html.
+const notFound = template
+  .replace(/<title>[^<]*<\/title>/, '<title>Page not found · Kipkiren Web Services</title>')
+  .replace('</head>', '  <meta name="robots" content="noindex" />\n  </head>');
+writeFileSync(resolve(dist, '404.html'), notFound);
+
 // Legal pages.
 for (const id of ssr.legalIds) {
   const { title, description } = ssr.legalDocMeta(id);

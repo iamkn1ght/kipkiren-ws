@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
-import { useAuth, type PortalRole } from './auth.tsx';
+import { useAuth, type MfaChallenge, type PortalRole } from './auth.tsx';
+import { MfaStep } from './MfaStep.tsx';
 import { KlpToggle } from './klpTheme.tsx';
 import { ApiError } from './api.ts';
 import './landing.css';
@@ -44,6 +45,7 @@ export function LoginScreen({ role, onBack, backLabel = 'Change role', onCreateA
   const [showPass, setShowPass] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [challenge, setChallenge] = useState<MfaChallenge | null>(null);
   const intro = INTRO[role];
 
   const onSubmit = async (e: FormEvent) => {
@@ -51,9 +53,11 @@ export function LoginScreen({ role, onBack, backLabel = 'Change role', onCreateA
     setError(null);
     setSubmitting(true);
     try {
-      await signIn(email.trim(), password);
+      const mfa = await signIn(email.trim(), password);
+      if (mfa) { setChallenge(mfa); setPassword(''); }
     } catch (err) {
-      if (err instanceof ApiError && err.status === 401) setError('Invalid email or password.');
+      if (err instanceof ApiError && err.status === 429) setError('Too many attempts. For your security, wait 10 minutes and try again.');
+      else if (err instanceof ApiError && err.status === 401) setError('Invalid email or password.');
       else if (err instanceof ApiError) setError(`Sign-in failed · ${err.code}`);
       else setError('Sign-in failed. Check your connection and try again.');
     } finally {
@@ -89,6 +93,7 @@ export function LoginScreen({ role, onBack, backLabel = 'Change role', onCreateA
           </div>
 
           <div className="panel">
+            {challenge ? <MfaStep challenge={challenge} onRestart={() => { setChallenge(null); setError(null); }} /> : (
             <div className="klp-card klp-authcard">
               <div className="head">Sign in</div>
               <form className="klp-form" onSubmit={onSubmit}>
@@ -117,6 +122,7 @@ export function LoginScreen({ role, onBack, backLabel = 'Change role', onCreateA
                 ? <p className="klp-auth-terms">New to Kipkiren? <button type="button" className="klp-auth-link" onClick={onCreateAccount}>Create an account</button></p>
                 : <p className="klp-auth-terms">Team accounts are provisioned by an admin. Need access? <a href="mailto:studio@kipkiren.co.ke">Talk to the studio.</a></p>}
             </div>
+            )}
           </div>
         </div>
       </div>

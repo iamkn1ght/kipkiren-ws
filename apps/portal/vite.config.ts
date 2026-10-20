@@ -24,6 +24,7 @@ export default defineConfig({
   },
   build: {
     target: 'es2022',
-    sourcemap: true,
+    // No public source maps: they would hand anyone the full app source.
+    sourcemap: false,
   },
 });

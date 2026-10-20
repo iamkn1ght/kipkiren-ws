@@ -15,6 +15,7 @@ import {
   apiRequest,
   decodeAccessToken,
   login as apiLogin,
+  mfaVerify as apiMfaVerify,
   logout as apiLogout,
   signup as apiSignup,
   refreshSession,
@@ -48,12 +49,16 @@ export interface Session {
   email: string;
 }
 
+export interface MfaChallenge { token: string; setup: boolean; email: string }
+
 interface AuthContextValue {
   session: Session | null;
   picked: PortalRole | null;
   bootstrapping: boolean;
   pickRole: (role: PortalRole) => void;
-  signIn: (email: string, password: string) => Promise<void>;
+  /** Resolves null when signed in, or a two-factor challenge for staff. */
+  signIn: (email: string, password: string) => Promise<MfaChallenge | null>;
+  completeMfa: (challenge: MfaChallenge, code: string) => Promise<void>;
   signUp: (payload: SignupPayload) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -172,9 +177,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (DEV_AUTH_BYPASS) signInAs(role);
   }, [signInAs]);
 
-  const signIn = useCallback(async (email: string, password: string) => {
+  const signIn = useCallback(async (email: string, password: string): Promise<MfaChallenge | null> => {
     const res = await apiLogin(email, password);
-    if (!applyRealSession(res.access_token, email)) throw new Error('invalid_session_token');
+    if (res.mfa_required && res.mfa_token) return { token: res.mfa_token, setup: !!res.mfa_setup_required, email };
+    if (!res.access_token || !applyRealSession(res.access_token, email)) throw new Error('invalid_session_token');
+    return null;
+  }, [applyRealSession]);
+
+  const completeMfa = useCallback(async (challenge: MfaChallenge, code: string) => {
+    const res = await apiMfaVerify(challenge.token, code);
+    if (!applyRealSession(res.access_token, challenge.email)) throw new Error('invalid_session_token');
   }, [applyRealSession]);
 
   // Self-service signup - the API creates the client + auth user + profile and
@@ -197,8 +209,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [clearSessionOnly]);
 
   const value = useMemo<AuthContextValue>(() => ({
-    session, picked, bootstrapping, pickRole, signIn, signUp, signOut,
-  }), [session, picked, bootstrapping, pickRole, signIn, signUp, signOut]);
+    session, picked, bootstrapping, pickRole, signIn, completeMfa, signUp, signOut,
+  }), [session, picked, bootstrapping, pickRole, signIn, completeMfa, signUp, signOut]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

@@ -1,6 +1,8 @@
 import express, { type Express } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
+import { cloudflareOnly } from './lib/client-ip.js';
+import { apiRateLimit } from './middleware/rate-limit.js';
 import cookieParser from 'cookie-parser';
 import { pinoHttp } from 'pino-http';
 import { loadEnv } from './config/env.js';
@@ -36,7 +38,9 @@ export function buildApp(): Express {
       origin: (origin, cb) => {
         if (!origin) return cb(null, true);
         if (env.allowedOrigins.includes(origin)) return cb(null, true);
-        return cb(new Error('cors_origin_not_allowed'));
+        // Not allowed: answer without CORS headers (the browser blocks it).
+        // Throwing here used to turn every foreign preflight into a 500.
+        return cb(null, false);
       },
       credentials: true,
     }),
@@ -56,7 +60,11 @@ export function buildApp(): Express {
   app.use(pinoHttp({ logger }));
 
   // Public
+  // Refuse non-Cloudflare traffic once CLOUDFLARE_ONLY=true; then a per-visitor
+  // ceiling on the whole API (health stays reachable for uptime probes).
+  app.use(cloudflareOnly(process.env.CLOUDFLARE_ONLY === 'true'));
   app.use('/v1', healthRouter);
+  app.use('/v1', apiRateLimit);
   app.use('/v1', jwksRouter);
   app.use('/v1/auth', authRouter);
 

@@ -76,6 +76,11 @@ export type AuditEventType =
   | 'auth_login_failed'
   | 'auth_password_reset_requested'
   | 'auth_password_set'
+  // staff two-factor (services/mfa.ts)
+  | 'auth_mfa_challenged'
+  | 'auth_mfa_enabled'
+  | 'auth_mfa_failed'
+  | 'auth_mfa_unavailable'
   // billing before Kipkiren Pay / Todoku (services/billing.ts)
   | 'bank_transfer_requested'
   | 'invoice_issued'

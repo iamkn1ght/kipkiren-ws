@@ -1,0 +1,5 @@
+Contact: mailto:studio@kipkiren.co.ke
+Expires: 2027-10-21T00:00:00.000Z
+Preferred-Languages: en, sw
+Canonical: https://ws.kipkiren.co.ke/.well-known/security.txt
+Policy: https://ws.kipkiren.co.ke/terms

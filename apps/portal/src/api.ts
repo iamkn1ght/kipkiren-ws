@@ -103,8 +103,22 @@ export async function apiRequest<T>(path: string, opts: RequestOptions = {}): Pr
 }
 
 export interface LoginResponse {
-  access_token: string;
-  expires_in: number;
+  access_token?: string;
+  expires_in?: number;
+  // Staff: the password was right, now a two-factor code is needed.
+  mfa_required?: boolean;
+  mfa_setup_required?: boolean;
+  mfa_token?: string;
+}
+
+export interface MfaSetup { secret: string; otpauth_url: string }
+
+export function mfaSetup(mfaToken: string): Promise<MfaSetup> {
+  return apiRequest<MfaSetup>('/v1/auth/mfa/setup', { method: 'POST', body: { mfa_token: mfaToken } });
+}
+
+export function mfaVerify(mfaToken: string, code: string): Promise<{ access_token: string; expires_in: number }> {
+  return apiRequest<{ access_token: string; expires_in: number }>('/v1/auth/mfa/verify', { method: 'POST', body: { mfa_token: mfaToken, code } });
 }
 
 export async function login(email: string, password: string): Promise<LoginResponse> {
