@@ -18,12 +18,12 @@ import './landing.css';
 
 type Tab = 'dashboard' | 'queue' | 'review' | 'clients' | 'billing' | 'capacity' | 'services' | 'rails' | 'health';
 const NAV: { id: Tab; label: string }[] = [
-  { id: 'dashboard', label: 'Overview' }, { id: 'queue', label: 'Ticket queue' }, { id: 'review', label: 'AI review' },
+  { id: 'dashboard', label: 'Overview' }, { id: 'queue', label: 'Ticket queue' }, { id: 'review', label: 'Quote review' },
   { id: 'clients', label: 'Clients' }, { id: 'billing', label: 'Billing' }, { id: 'capacity', label: 'Capacity' }, { id: 'services', label: 'Services' },
   { id: 'rails', label: 'Rails' }, { id: 'health', label: 'Health' },
 ];
 const TITLE: Record<Tab, string> = {
-  dashboard: 'Overview', queue: 'Ticket queue', review: 'AI review', clients: 'Clients', billing: 'Billing',
+  dashboard: 'Overview', queue: 'Ticket queue', review: 'Quote review', clients: 'Clients', billing: 'Billing',
   capacity: 'Capacity', services: 'Services', rails: 'Rails', health: 'Health',
 };
 
@@ -209,7 +209,7 @@ export function AdminPortal() {
             {tab === 'review' && quoteMsg && <div className="klp-note" style={cssVars({ marginBottom: 16 })}>{quoteMsg}</div>}
             {tab === 'review' && (
               loading ? <SkelList rows={3} />
-                : reviewItems.length === 0 ? <EmptyState title="Nothing to review" sub="Every AI-drafted proforma has been dispatched. New drafts land here for approval." />
+                : reviewItems.length === 0 ? <EmptyState title="Nothing to review" sub="Every drafted quote has been dispatched. AI drafting is coming soon; for now, open a ticket in the queue and use Write quote." />
                 : (
                   <div className="klp-tasks">
                     {reviewItems.map((item) => (
@@ -327,14 +327,14 @@ export function AdminPortal() {
                   </div>
                 </section>
                 <section className="klp-portal-sec">
-                  <div className="sechd"><h2>AI agents</h2></div>
+                  <div className="sechd"><h2>AI agents · coming soon</h2></div>
                   <div className="klp-list">
                     {!(agents ?? []).length ? <div className="klp-list-empty">No agents registered.</div>
                       : (agents ?? []).map((a) => (
                         <div key={a.agent_id} className="klp-list-row" style={cssVars({ gridTemplateColumns: '1fr auto auto' })}>
                           <span className="title" style={cssVars({ fontSize: 16 })}>{a.agent_id}<span style={cssVars({ display: 'block', fontSize: 11, color: 'var(--mid)' })}>{a.scope.map((x) => x.replace(/_/g, ' ')).join(', ')}</span></span>
                           <span className="date">Phase {a.phase}</span>
-                          <span className={`klp-pill ${a.active ? 'active' : 'draft'}`}>{a.active ? 'Active' : 'Inactive'}</span>
+                          <span className="klp-pill draft">{a.active ? 'Registered · not running yet' : 'Inactive'}</span>
                         </div>
                       ))}
                   </div>
@@ -363,7 +363,7 @@ export function AdminPortal() {
           <div className="klp-modal">
             <div className="klp-modal-hd"><div className="t">Raise a ticket for a client</div><button type="button" className="klp-modal-close" onClick={() => setShowRaise(false)}>Close</button></div>
             <div className="klp-modal-body">
-              <p style={cssVars({ fontSize: 13, color: 'var(--slate)' })}>Runs the same flow as a client ticket: AI decomposes it into a proforma the client approves before any work begins.</p>
+              <p style={cssVars({ fontSize: 13, color: 'var(--slate)' })}>Runs the same flow as a client ticket. Write its quote from the ticket queue (AI drafting is coming soon); the client approves it before any work begins.</p>
               <div><label className="klp-field-label" htmlFor="rt-client">Client</label>
                 <select id="rt-client" className="klp-field-input" value={newTicket.client_id} onChange={(e) => setNewTicket({ ...newTicket, client_id: e.target.value })}>
                   <option value="">Select client...</option>
@@ -373,7 +373,7 @@ export function AdminPortal() {
               <div style={cssVars({ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 })}>
                 <div><label className="klp-field-label" htmlFor="rt-cat">Category</label>
                   <select id="rt-cat" className="klp-field-input" value={newTicket.category} onChange={(e) => setNewTicket({ ...newTicket, category: e.target.value })}>
-                    <option value="web">Web</option><option value="cloud">Cloud</option><option value="seo">SEO</option><option value="social">Social</option><option value="dns">DNS</option><option value="general">General</option>
+                    <option value="web">Web</option><option value="cloud" disabled>Cloud (coming soon)</option><option value="seo">SEO</option><option value="social" disabled>Social (coming soon)</option><option value="dns">DNS</option><option value="general">General</option>
                   </select>
                 </div>
                 <div><label className="klp-field-label" htmlFor="rt-urg">Urgency</label>
@@ -426,7 +426,7 @@ export function AdminPortal() {
                     <div className="klp-portal-actions">
                       {QUOTABLE.has(preview.status) && <button type="button" className="klp-btn primary" onClick={() => setQuoting(true)}>Write quote</button>}
                       {(() => { const c = (clients ?? []).find((x) => x.id === preview.client.id); return c ? <button type="button" className="klp-btn ghost" onClick={() => { setCompose({ client: { id: c.id, business_name: c.business_name, email: c.email }, ticket: { id: preview.id, ref: preview.ref } }); setPreview(null); }}>Email client</button> : null; })()}
-                      <button type="button" className={`klp-btn ${QUOTABLE.has(preview.status) ? 'ghost' : 'primary'}`} onClick={() => { setPreview(null); setTab('review'); }}>Go to AI review →</button>
+                      <button type="button" className={`klp-btn ${QUOTABLE.has(preview.status) ? 'ghost' : 'primary'}`} onClick={() => { setPreview(null); setTab('review'); }}>Go to quote review →</button>
                       <button type="button" className="klp-btn ghost" onClick={() => setPreview(null)}>Close</button>
                     </div>
                   )}

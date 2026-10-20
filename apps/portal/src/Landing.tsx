@@ -24,32 +24,33 @@ import './landing-x.css';
 export const PLANS = [
   { kick: '01 · starter', name: 'Starter', desc: 'A polished presence for a small business getting online properly.',
     build: '45,000', care: '3,500',
-    feats: ['Up to 5 pages, designed and built', 'Domain, hosting and business email', 'Mobile-perfect, fast, SEO-ready', 'Care: uptime, SSL, backups, edits', '48-hour support SLA'],
+    feats: ['Up to 5 pages, designed and built', 'Domain, hosting and email forwarding', 'Mobile-perfect, fast, SEO-ready', 'Care: uptime, SSL, backups, edits', '48-hour support SLA'],
     cta: 'Start with Starter', featured: false },
   { kick: '02 · growth', name: 'Growth', desc: 'For teams that treat their website as core infrastructure.',
     build: '89,000', care: '7,500',
-    feats: ['Up to 10 pages, blog or simple CMS', 'On-page SEO and analytics built in', 'Payment or M-Pesa integration', 'Care: everything, plus monthly SEO', 'Named delivery lead · 24-hour SLA'],
+    feats: ['Up to 10 pages, blog or simple CMS', 'On-page SEO and analytics built in', 'Card payments on your site (M-Pesa coming soon)', 'Care: everything, plus monthly SEO', 'Named delivery lead · 24-hour SLA'],
     cta: 'Choose Growth', featured: true },
   { kick: '03 · business', name: 'Business', desc: 'Mid-market sites, portals and integrations, actively operated.',
     build: '165,000', care: '18,000',
-    feats: ['Unlimited pages and integrations', 'E-commerce or booking systems', 'Priority delivery and support', 'Care: everything, plus cloud provisioning', '12-hour SLA · quarterly reviews'],
+    feats: ['Unlimited pages and integrations', 'E-commerce or booking systems', 'Priority delivery and support', 'Care: everything (cloud provisioning coming soon)', '12-hour SLA · quarterly reviews'],
     cta: 'Choose Business', featured: false },
 ];
 
 export const FAQ = [
   { q: 'Do prices include VAT?', a: 'No. All figures exclude 16% VAT, which is itemised on your proforma.' },
-  { q: 'How does payment work?', a: 'Every build and every change is priced on a proforma you approve first. Pay by M-Pesa or card. The one-time build is invoiced in stages; monthly care is billed on the 1st. No surprise invoices, ever.' },
+  { q: 'How does payment work?', a: 'Every build and every change is priced on a proforma you approve first. Today you pay by bank transfer and we confirm it, usually the same working day, with a receipt by email. M-Pesa and card checkout are coming soon. Monthly care is invoiced on the 1st and due by the 7th. No surprise invoices, ever.' },
   { q: 'Do I have to take a care plan?', a: 'The build and its first year of care go together, so your site is looked after from day one. After that, care is month to month and you can pause any time. You always keep the site.' },
-  { q: 'What does monthly care cover?', a: 'Hosting, uptime monitoring, SSL, daily backups, security patches and a block of change requests each month. Anything larger is quoted on the rate card before we start.' },
+  { q: 'What does monthly care cover?', a: 'Hosting, uptime checks every five minutes, SSL, backups, security patches and a block of change requests each month. Anything larger is quoted on the rate card before we start.' },
   { q: 'Where are you based?', a: 'Nairobi. We work with clients across East Africa, and occasionally further afield.' },
   { q: 'What if we want to leave?', a: 'We hand over the codebase, database, DNS and every account. No lock-in, ever. The site is yours.' },
 ];
 
 const COMPARE_THEM = ['Maintenance billed separately, if at all', 'Slow to reach when something breaks', 'The site quietly rots within a year', 'You chase them for every small fix'];
-const COMPARE_US = ['Care included from the first day', 'A named team and a phone that answers', 'Monitored, patched and updated for you', 'We watch it so you never have to'];
+const COMPARE_US = ['Care included from the first day', 'A named team that answers within your SLA', 'Monitored, patched and updated for you', 'We watch it so you never have to'];
 
-// Authentic competence signal (real stack) in place of fabricated client logos.
-const STACK = ['React', 'TypeScript', 'Supabase', 'PostgreSQL', 'Cloudflare', 'M-Pesa', 'Paystack', 'Vite', 'Row-level security', 'Daily backups'];
+// Authentic competence signal (the stack this site actually runs on) in place
+// of fabricated client logos. Only list what is live today.
+const STACK = ['React', 'TypeScript', 'Supabase', 'PostgreSQL', 'Cloudflare', 'Railway', 'Vite', 'GSAP', 'Row-level security', 'Audit log'];
 
 const PROCESS = [
   { t: 'Discovery', d: '45-90 minutes. We listen more than we present.' },
@@ -132,8 +133,8 @@ function LandingImpl({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; on
           <div className="wrap">
             <div>
               <h1 className="d-xl hero-h1" id="heroTitle"><span className="ln"><span>Precision websites,</span></span><span className="ln"><span><em>quietly operated.</em></span></span></h1>
-              <p className="lead">Kipkiren designs, builds and runs the websites Kenyan businesses depend on. One senior team, one transparent price, and a phone that still answers long after launch.</p>
-              <div className="ctas"><a className="btn primary" href="#pricing">See pricing <span className="ar">&rarr;</span></a><a className="btn ghost" href="#contact">Book a conversation</a></div>
+              <p className="lead">Kipkiren designs, builds and runs the websites Kenyan businesses depend on. One senior team, one transparent price, and people who still answer long after launch.</p>
+              <div className="ctas"><a className="btn primary" href="#pricing">See pricing <span className="ar">&rarr;</span></a><a className="btn ghost" href="mailto:studio@kipkiren.co.ke?subject=Project%20conversation">Book a conversation</a></div>
               <div className="assure"><span>Fixed price before any work</span><span>You own everything</span><span>No lock-in</span></div>
             </div>
             <aside className="studio glass" id="studio">
@@ -176,8 +177,8 @@ function LandingImpl({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; on
               <ol className="ex-list" id="exList">
                 <li data-i="3"><span className="k">L4</span><span><b>Interface</b><small>Your brand, mobile-first, accessible, fast on a Safaricom 4G phone.</small></span></li>
                 <li data-i="2"><span className="k">L3</span><span><b>Structure</b><small>A grid, a type scale and performance budgets set before a pixel ships.</small></span></li>
-                <li data-i="1"><span className="k">L2</span><span><b>Code</b><small>React and TypeScript, tested, with M-Pesa wired in through Kipkiren Pay.</small></span></li>
-                <li data-i="0"><span className="k">L1</span><span><b>Infrastructure</b><small>Edge network, API, Postgres with row-level security, nightly backups.</small></span></li>
+                <li data-i="1"><span className="k">L2</span><span><b>Code</b><small>React and TypeScript, tested. M-Pesa through Kipkiren Pay is coming soon.</small></span></li>
+                <li data-i="0"><span className="k">L1</span><span><b>Infrastructure</b><small>Edge network, API, Postgres with row-level security, an insert-only audit log.</small></span></li>
               </ol>
             </div>
             <div className="ex-stage" aria-hidden="true">
@@ -188,8 +189,8 @@ function LandingImpl({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; on
                   <div className="node" style={{ left: '8%', top: '22%' }}>Cloudflare edge<br />CDN · SSL · DNS</div>
                   <div className="node t" style={{ left: '40%', top: '42%' }}>API<br />RS256 JWT</div>
                   <div className="node t" style={{ left: '66%', top: '40%' }}>Postgres<br />RLS per client</div>
-                  <div className="node" style={{ left: '40%', top: '76%' }}>Nightly backups</div>
-                  <div className="node" style={{ left: '66%', top: '72%' }}>Uptime · 60s</div>
+                  <div className="node" style={{ left: '40%', top: '76%' }}>Audit log</div>
+                  <div className="node" style={{ left: '66%', top: '72%' }}>Uptime · 5 min</div>
                 </div>
                 <div className="ex-layer L-code">
                   <span className="tag">L2 · Code</span>
@@ -241,8 +242,8 @@ function LandingImpl({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; on
                 <div className="panel-r"><svg viewBox="0 0 300 300" aria-hidden="true"><rect className="dl" x="20" y="80" width="260" height="38" rx="19" /><text className="dt" x="38" y="104">bakery near westlands</text><rect className="df-t" x="20" y="132" width="260" height="46" rx="12" /><text className="dt" x="36" y="160" style={{ fill: '#fff' }}>KILELE BAKERY · OPEN NOW</text><path className="dl m" d="M20 204 H240 M20 222 H200 M20 240 H220" /></svg><div className="rate"><span>SEO work</span><b>from KES 3,000/hr</b></div></div>
               </article>
               <article className="panel glass">
-                <div className="panel-l"><span className="code">MANAGED HOSTING</span><div><h3>Hosting</h3><p>We own uptime, backups, updates and the 03:00 phone call. You own the site.</p></div><ul><li>Continuous uptime monitoring and alerts</li><li>SSL, daily backups and tested restores</li><li>A named person who answers the phone</li></ul></div>
-                <div className="panel-r"><svg viewBox="0 0 300 300" aria-hidden="true"><text className="dt big" x="30" y="130">99.9%</text><text className="dt" x="30" y="160">MONTHLY UPTIME TARGET</text><path className="dl m" d="M30 200 H270" /><rect className="df-l" x="30" y="214" width="8" height="8" rx="4" /><text className="dt t" x="46" y="222">CHECKED EVERY 60s</text></svg><div className="rate"><span>Included in</span><b>every care plan</b></div></div>
+                <div className="panel-l"><span className="code">MANAGED HOSTING</span><div><h3>Hosting</h3><p>We own uptime, backups, updates and the 03:00 incident. You own the site.</p></div><ul><li>Uptime checked every 5 minutes, with alerts</li><li>SSL, backups and restores</li><li>A named person who answers</li></ul></div>
+                <div className="panel-r"><svg viewBox="0 0 300 300" aria-hidden="true"><text className="dt big" x="30" y="130">99.9%</text><text className="dt" x="30" y="160">MONTHLY UPTIME TARGET</text><path className="dl m" d="M30 200 H270" /><rect className="df-l" x="30" y="214" width="8" height="8" rx="4" /><text className="dt t" x="46" y="222">CHECKED EVERY 5 MIN</text></svg><div className="rate"><span>Included in</span><b>every care plan</b></div></div>
               </article>
             </div>
           </div>
@@ -340,7 +341,7 @@ function LandingImpl({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; on
               <span className="w t">We</span> <span className="w t">build</span> <span className="w t">it.</span>
             </p>
             <ul className="promise-chips">
-              <li>Fixed price</li><li>Proforma in 48h</li><li>M-Pesa ready</li><li>No lock-in</li><li>We stay after launch</li>
+              <li>Fixed price</li><li>Proforma in 48h</li><li>Receipts by email</li><li>No lock-in</li><li>We stay after launch</li>
             </ul>
           </div>
           <div className="wrap">
@@ -353,7 +354,7 @@ function LandingImpl({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; on
           </div>
           <div className="floaters" aria-hidden="true">
             <div className="fl glass f1"><span className="k">Proforma</span><b>Approved</b><span className="ok">Scope locked</span></div>
-            <div className="fl glass f2"><span className="k">M-Pesa</span><b>Payment received</b><span className="ok">Receipt sent</span></div>
+            <div className="fl glass f2"><span className="k">Bank transfer</span><b>Payment confirmed</b><span className="ok">Receipt emailed</span></div>
             <div className="fl glass f3"><span className="k">SSL</span><b>Renewed</b><span className="ok">Valid 90 days</span></div>
             <div className="fl glass f4"><span className="k">Ticket</span><b>Scoped in 48h</b><span className="ok">Awaiting you</span></div>
           </div>

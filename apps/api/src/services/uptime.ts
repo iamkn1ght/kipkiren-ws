@@ -19,6 +19,7 @@ import { getServiceClient } from '../lib/supabase.js';
 import { logger } from '../lib/logger.js';
 import { writeAuditEvent } from './audit.js';
 import { computeHealthBaseline, detectAnomaly } from './observability.js';
+import { sendStudioAlert } from './email.js';
 
 type UptimeErrorType = 'timeout' | 'http_error' | 'network_error' | null;
 
@@ -116,6 +117,12 @@ export async function runUptimeChecks(): Promise<UptimeResult[]> {
         entity_id: svc.id,
         payload_snapshot: { domain, type: anomaly.type ?? null, detail: anomaly.detail ?? null, uptime_pct: baseline.uptime_pct },
       });
+      // Tell the studio once, at onset (fire-and-forget; no-op without email).
+      void sendStudioAlert(`Site problem: ${domain}`, [
+        `${(anomaly.type ?? 'anomaly').replace(/_/g, ' ')}${anomaly.detail ? ` - ${anomaly.detail}` : ''}`,
+        `Last check: ${ping.ok ? 'reachable' : `down (${ping.error_type ?? 'error'})`}${ping.latency_ms != null ? `, ${ping.latency_ms} ms` : ''}. Uptime ${baseline.uptime_pct}%.`,
+        'Open the console Health tab for the history.',
+      ], { type: 'client_service', id: svc.id });
     }
 
     results.push({ service_id: svc.id, domain, ok: ping.ok, latency_ms: ping.latency_ms });

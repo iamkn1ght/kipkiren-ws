@@ -493,7 +493,7 @@ function ProformaView({ proformas, loading, reload, initialId }: { proformas: Cl
       } finally { setSubmitting(false); }
       return;
     }
-    if (!railLive(method)) { setResult({ ok: false, msg: 'That payment option opens soon. Bank transfer is available now.' }); return; }
+    if (!railLive(method)) { setResult({ ok: false, msg: 'That payment option is coming soon. Bank transfer is available now.' }); return; }
     if (method === 'mpesa' && msisdn.trim().length < 9) { setResult({ ok: false, msg: 'Enter the Safaricom number that should receive the M-Pesa prompt.' }); return; }
     setSubmitting(true); setResult(null);
     try {
@@ -575,7 +575,7 @@ function ProformaView({ proformas, loading, reload, initialId }: { proformas: Cl
                 const live = railLive(m);
                 return (
                 <button key={m} type="button" role="radio" aria-checked={method === m} aria-disabled={!live} disabled={!live} style={live ? undefined : cssVars({ opacity: 0.55, cursor: 'not-allowed' })} className={`klp-pf-method ${method === m ? 'sel' : ''}`} onClick={() => { setMethod(m); setResult(null); }}>
-                  <span className="klp-pf-method-t">{label}</span><span className="klp-pf-method-s">{live ? sub : 'Opening soon'}</span>
+                  <span className="klp-pf-method-t">{label}</span><span className="klp-pf-method-s">{live ? sub : 'Coming soon'}</span>
                 </button>
                 );
               })}
@@ -601,6 +601,9 @@ function ProformaView({ proformas, loading, reload, initialId }: { proformas: Cl
 }
 
 //  new ticket 
+// Services we cannot deliver yet (cloud reselling needs the Google / Microsoft
+// partner approvals; social media is not one of our four disciplines yet).
+const COMING_SOON_CATEGORIES = new Set(['Cloud Services', 'Social Media']);
 const CATEGORY_MAP: Record<string, string> = { 'Web Development': 'web', 'Cloud Services': 'cloud', 'SEO': 'seo', 'Social Media': 'social', 'Domain / DNS': 'dns', 'Not sure': 'web' };
 const URGENCY_MAP: Record<string, string> = { 'Standard': 'standard', 'Elevated · within 48h': 'elevated', 'Urgent · within 24h': 'urgent' };
 
@@ -648,7 +651,7 @@ function NewTicket({ onDone }: { onDone: (ref: string | null) => void }) {
           <div style={cssVars({ background: 'transparent', padding: 0 })}>
             <label className="klp-field-label" htmlFor="nt-cat">Service</label>
             <select id="nt-cat" className="klp-field-input" value={category} onChange={(e) => setCategory(e.target.value)} disabled={submitting}>
-              {Object.keys(CATEGORY_MAP).map((c) => <option key={c}>{c}</option>)}
+              {Object.keys(CATEGORY_MAP).map((c) => <option key={c} value={c} disabled={COMING_SOON_CATEGORIES.has(c)}>{COMING_SOON_CATEGORIES.has(c) ? `${c} (coming soon)` : c}</option>)}
             </select>
           </div>
           <div style={cssVars({ background: 'transparent', padding: 0 })}>

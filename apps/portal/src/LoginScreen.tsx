@@ -20,7 +20,7 @@ const INTRO: Record<PortalRole, { eyebrow: string; hint: string; list: string[] 
     hint: 'Sign in to manage the queue, proformas, clients and capacity.',
     list: [
       'Triage the live ticket queue by SLA',
-      'Review and dispatch AI-drafted proformas',
+      'Write, review and dispatch proformas',
       'Watch client health, capacity and the rails',
       'Raise a ticket on a client\'s behalf',
     ],

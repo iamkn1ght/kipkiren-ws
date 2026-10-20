@@ -16,9 +16,9 @@ import './landing.css';
 
 const BENEFITS = [
   'Open and track custom tickets',
-  'Approve AI-drafted proformas in one click',
+  'Approve fixed-price proformas in one click',
   'See progress, invoices and history in one place',
-  'Pay by M-Pesa or card, keep every receipt',
+  'Pay by bank transfer, keep every receipt (M-Pesa and card coming soon)',
 ];
 
 // Show the same Build + Care prices the visitor just saw on the landing, not

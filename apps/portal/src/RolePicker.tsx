@@ -4,7 +4,7 @@ import './landing.css';
 
 const OPTIONS: { role: PortalRole; title: string; tag: string; blurb: string }[] = [
   { role: 'client', title: 'Client', tag: 'Client portal', blurb: 'Your services, tickets, proformas and invoices.' },
-  { role: 'admin', title: 'Admin', tag: 'Delivery lead', blurb: 'The ticket queue, AI review, clients, capacity and rails.' },
+  { role: 'admin', title: 'Admin', tag: 'Delivery lead', blurb: 'The ticket queue, quotes, billing, clients and rails.' },
   { role: 'technical_delivery', title: 'Task view', tag: 'Technical delivery', blurb: 'The tasks assigned to you. No client or billing data.' },
 ];
 
