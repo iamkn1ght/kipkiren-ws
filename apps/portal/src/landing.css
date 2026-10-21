@@ -815,7 +815,7 @@
 /* ============================================================================
    LEGAL + TRUST PAGES - editorial document layout with a sticky contents rail.
    ============================================================================ */
-.klp-topbrand-home { display: inline-flex; align-items: center; gap: 12px; background: none; border: none; cursor: pointer; padding: 0; }
+.klp-topbrand-home { text-decoration: none; color: inherit; display: inline-flex; align-items: center; gap: 12px; background: none; border: none; cursor: pointer; padding: 0; }
 
 .klp-legal { display: grid; gap: 40px; padding-block: 32px 96px; }
 @media (min-width: 900px) { .klp-legal { grid-template-columns: 236px 1fr; gap: 64px; align-items: start; } }
@@ -823,13 +823,13 @@
 .klp-legal-toc .lbl { color: var(--mid); margin-bottom: 16px; }
 .klp-legal-toc nav { display: flex; flex-direction: column; gap: 2px; }
 @media (min-width: 900px) { .klp-legal-toc { position: sticky; top: 88px; } }
-.klp-legal-toc nav button {
+.klp-legal-toc nav button, .klp-legal-toc nav a {
   text-align: left; background: none; border: none; cursor: pointer; font-family: var(--font-sans); font-size: 14px;
   color: var(--slate); padding: 9px 13px; border-radius: 10px; border-left: 2px solid transparent;
   transition: color .16s ease, background .16s ease, border-color .16s ease;
 }
-.klp-legal-toc nav button:hover { color: var(--ink); background: color-mix(in oklab, var(--paper) 55%, var(--muted)); }
-.klp-legal-toc nav button.active { color: var(--teal-deep); font-weight: 600; border-left-color: var(--teal-deep); background: color-mix(in oklab, var(--teal-light) 55%, transparent); }
+.klp-legal-toc nav button:hover, .klp-legal-toc nav a:hover { color: var(--ink); background: color-mix(in oklab, var(--paper) 55%, var(--muted)); }
+.klp-legal-toc nav button.active, .klp-legal-toc nav a.active { color: var(--teal-deep); font-weight: 600; border-left-color: var(--teal-deep); background: color-mix(in oklab, var(--teal-light) 55%, transparent); }
 .klp-legal-help { margin-top: 26px; padding-top: 24px; border-top: 1px solid var(--hairline); display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
 .klp-legal-help a { font-size: 13px; color: var(--teal-deep); }
 .klp-legal-help .klp-btn { margin-top: 4px; padding: 10px 16px; font-size: 10px; }
@@ -848,9 +848,9 @@
 .klp-legal-foot { margin-top: 56px; padding-top: 28px; border-top: 1px solid var(--hairline); }
 .klp-legal-foot .klp-mono { color: var(--mid); }
 .klp-legal-cross { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 12px 24px; }
-.klp-legal-cross button { background: none; border: none; cursor: pointer; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--teal-deep); }
-.klp-legal-cross button span { display: inline-block; transition: transform .2s ease; }
-.klp-legal-cross button:hover span { transform: translateX(3px); }
+.klp-legal-cross button, .klp-legal-cross a { background: none; border: none; cursor: pointer; font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--teal-deep); }
+.klp-legal-cross button span, .klp-legal-cross a span { display: inline-block; transition: transform .2s ease; }
+.klp-legal-cross button:hover span, .klp-legal-cross a:hover span { transform: translateX(3px); }
 
 /* footer legal-links row */
 
@@ -1217,3 +1217,7 @@
 .klp-pwmeter-bars span.on.s4 { background: var(--teal-deep); }
 .klp-pwmeter-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--mid); min-width: 62px; text-align: right; }
 .klp-login-forgot { display: block; margin-top: 12px; font-size: 12.5px; }
+
+/* Service pages use real links (crawlable) styled like the legal buttons. */
+.klp-legal-toc nav a, .klp-legal-cross a { text-decoration: none; display: block; }
+.klp-legal-cross a { display: inline-block; }

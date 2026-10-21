@@ -88,6 +88,13 @@ function manifestoWords() {
 
 const Check = () => <span className="chk" />;
 
+// Footer links to the service pages (ids match Services.tsx; kept here to
+// avoid a circular import, since Services.tsx reads PLANS from this file).
+const FOOTER_SERVICES: { id: string; label: string }[] = [
+  { id: 'web-design-nairobi', label: 'Web design' }, { id: 'website-maintenance-kenya', label: 'Website care' },
+  { id: 'seo-services-kenya', label: 'SEO' }, { id: 'website-hosting-kenya', label: 'Hosting' }, { id: 'pricing', label: 'Pricing' },
+];
+
 function LandingImpl({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; onSignUp: () => void; onLegal: (id: LegalDocId) => void }) {
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -97,6 +104,7 @@ function LandingImpl({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; on
   }, []);
 
   const legal = (id: LegalDocId) => (e: MouseEvent) => { e.preventDefault(); onLegal(id); };
+  const page = (id: string) => (e: MouseEvent) => { e.preventDefault(); onLegal(id as LegalDocId); };
 
   return (
     <div className="kx" ref={rootRef}>
@@ -133,7 +141,7 @@ function LandingImpl({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; on
           <div className="wrap">
             <div>
               <h1 className="d-xl hero-h1" id="heroTitle"><span className="ln"><span>Precision websites,</span></span><span className="ln"><span><em>quietly operated.</em></span></span></h1>
-              <p className="lead">Kipkiren designs, builds and runs the websites Kenyan businesses depend on. One senior team, one transparent price, and people who still answer long after launch.</p>
+              <p className="lead">Kipkiren is a Nairobi web design studio that designs, builds and runs the websites Kenyan businesses depend on. One senior team, one transparent price, and people who still answer long after launch.</p>
               <div className="ctas"><a className="btn primary" href="#pricing">See pricing <span className="ar">&rarr;</span></a><a className="btn ghost" href="mailto:studio@kipkiren.co.ke?subject=Project%20conversation">Book a conversation</a></div>
               <div className="assure"><span>Fixed price before any work</span><span>You own everything</span><span>No lock-in</span></div>
             </div>
@@ -376,7 +384,7 @@ function LandingImpl({ onSignIn, onSignUp, onLegal }: { onSignIn: () => void; on
               </div>
             </div>
             <div className="foot-cols">
-              <div className="foot-col"><span className="fc-h">Studio</span><ul><li><a href="#services">Services</a></li><li><a href="#process">Process</a></li><li><a href="#about">About</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#contact">Contact</a></li></ul></div>
+              <div className="foot-col"><span className="fc-h">Services</span><ul>{FOOTER_SERVICES.map((s) => <li key={s.id}><a href={`/${s.id}`} onClick={page(s.id)}>{s.label}</a></li>)}</ul></div>
               <div className="foot-col"><span className="fc-h">Legal</span><ul>{LEGAL_NAV.map((n) => <li key={n.id}><a href={`/${n.id}`} onClick={legal(n.id)}>{FOOTER_LEGAL[n.id] ?? n.label}</a></li>)}</ul></div>
               <div className="foot-col foot-contact"><span className="fc-h">Contact</span><ul>
                 <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M12 21s-6-5.3-6-10a6 6 0 0 1 12 0c0 4.7-6 10-6 10Z" /><circle cx="12" cy="11" r="2" /></svg><span>Nairobi, Kenya. Serving locally and beyond.</span></li>

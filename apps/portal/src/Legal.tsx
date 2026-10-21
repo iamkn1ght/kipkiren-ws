@@ -123,7 +123,7 @@ const DOCS: Record<LegalDocId, LegalDoc> = {
   },
 };
 
-const SITE_TITLE = 'Kipkiren Web Services · Precision websites, quietly operated';
+const SITE_TITLE = 'Web Design in Nairobi & Website Care · Kipkiren WS';
 
 /** Map a URL path (/privacy, /privacy/, /privacy.html) to a legal doc id. */
 export function legalDocFromPath(path: string): LegalDocId | null {

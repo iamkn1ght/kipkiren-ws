@@ -2,6 +2,12 @@ import { useEffect, useState } from 'react';
 import { AuthProvider, useAuth, hasStoredSession, portalForRole, type PortalRole } from './auth.tsx';
 import { Landing } from './Landing.tsx';
 import { LegalPage, legalDocFromPath, type LegalDocId } from './Legal.tsx';
+import { ServicePage, serviceFromPath, type ServiceId } from './Services.tsx';
+
+// Public content pages with real URLs: legal/FAQ and the service pages.
+type PageId = LegalDocId | ServiceId;
+const pageFromPath = (p: string): PageId | null => legalDocFromPath(p) ?? serviceFromPath(p);
+const isServicePage = (id: PageId): id is ServiceId => serviceFromPath(`/${id}`) !== null;
 import { RolePicker } from './RolePicker.tsx';
 import { LoginScreen } from './LoginScreen.tsx';
 import { SignupScreen } from './SignupScreen.tsx';
@@ -32,7 +38,7 @@ const STAFF_PATH = '/staff';
 function isKnownPath(path: string): boolean {
   const p = path.replace(/\/+$/, '') || '/';
   if (p === '/' || p === '/index.html' || p === STAFF_PATH) return true;
-  if (legalDocFromPath(p)) return true;
+  if (pageFromPath(p)) return true;
   return p === '/portal' || p.startsWith('/portal/') || p === '/admin' || p.startsWith('/admin/');
 }
 
@@ -90,8 +96,8 @@ function Router() {
   const [authMode, setAuthMode] = useState<'default' | 'signup'>('default');
   // Legal/FAQ pages have real URLs (/terms, /privacy, ...) so they can be
   // linked, indexed and given to payment providers. Keep state and URL in sync.
-  const [legal, setLegalState] = useState<LegalDocId | null>(() => (AUDIENCE === 'staff' ? null : legalDocFromPath(window.location.pathname)));
-  const setLegal = (id: LegalDocId | null) => {
+  const [legal, setLegalState] = useState<PageId | null>(() => (AUDIENCE === 'staff' ? null : pageFromPath(window.location.pathname)));
+  const setLegal = (id: PageId | null) => {
     const path = id ? `/${id}` : '/';
     if (window.location.pathname !== path) window.history.pushState(null, '', path);
     setLegalState(id);
@@ -99,7 +105,7 @@ function Router() {
   const [notFound, setNotFound] = useState(() => !isKnownPath(window.location.pathname));
   useEffect(() => {
     const onPop = () => {
-      setLegalState(legalDocFromPath(window.location.pathname));
+      setLegalState(pageFromPath(window.location.pathname));
       setNotFound(!isKnownPath(window.location.pathname));
     };
     window.addEventListener('popstate', onPop);
@@ -120,8 +126,9 @@ function Router() {
     <Landing onSignIn={() => { setLegal(null); enterSignIn(); }} onSignUp={() => { setLegal(null); enterSignUp(); }} onLegal={setLegal} />
   );
 
-  const legalPage = (id: LegalDocId) => (
-    <LegalPage doc={id} onBack={() => setLegal(null)} onOpen={setLegal} onSignIn={() => { setLegal(null); enterSignIn(); }} />
+  const legalPage = (id: PageId) => (isServicePage(id)
+    ? <ServicePage page={id} onBack={() => setLegal(null)} onOpen={setLegal} onStart={() => { setLegal(null); enterSignUp(); }} />
+    : <LegalPage doc={id} onBack={() => setLegal(null)} onOpen={setLegal} onSignIn={() => { setLegal(null); enterSignIn(); }} />
   );
 
   // Unknown URL: the site-wide 404, before anything else (signed in or not).

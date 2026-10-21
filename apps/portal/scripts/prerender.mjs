@@ -70,14 +70,34 @@ for (const id of ssr.legalIds) {
   writeFileSync(resolve(dist, `${id}.html`), html);
 }
 
-// Sitemap: home + every legal page.
-const urls = ['/', ...ssr.legalIds.map((id) => `/${id}`)];
+// Service pages: same head treatment plus their own Service/WebPage
+// structured data, so search engines know what each page sells.
+for (const id of ssr.serviceIds) {
+  const { title, description, jsonLd } = ssr.servicePageMeta(id);
+  const url = `${SITE}/${id}`;
+  let html = template.replace(/<title>[^<]*<\/title>/, `<title>${esc(title)}</title>`);
+  html = setAttr(html, 'name="description"', 'content', description);
+  html = setAttr(html, 'rel="canonical"', 'href', url);
+  html = setAttr(html, 'property="og:url"', 'content', url);
+  html = setAttr(html, 'property="og:title"', 'content', title);
+  html = setAttr(html, 'property="og:description"', 'content', description);
+  html = setAttr(html, 'name="twitter:title"', 'content', title);
+  html = setAttr(html, 'name="twitter:description"', 'content', description);
+  const ld = `<script type="application/ld+json">${jsonLd.replace(/</g, '\\u003c')}</script>\n  </head>`;
+  html = html.replace('</head>', ld).replace(marker, `<div id="root">${ssr.renderService(id)}</div>`);
+  writeFileSync(resolve(dist, `${id}.html`), html);
+}
+
+// Sitemap: home, the service pages (they matter most after home), legal pages.
+const today = new Date().toISOString().slice(0, 10);
+const urls = ['/', ...ssr.serviceIds.map((id) => `/${id}`), ...ssr.legalIds.map((id) => `/${id}`)];
+const prio = (u) => (u === '/' ? '1.0' : ssr.serviceIds.includes(u.slice(1)) ? '0.8' : '0.4');
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map((u) => `  <url><loc>${SITE}${u}</loc><priority>${u === '/' ? '1.0' : '0.5'}</priority></url>`).join('\n')}
+${urls.map((u) => `  <url><loc>${SITE}${u}</loc><lastmod>${today}</lastmod><priority>${prio(u)}</priority></url>`).join('\n')}
 </urlset>
 `;
 writeFileSync(resolve(dist, 'sitemap.xml'), sitemap);
 
 rmSync(ssrDir, { recursive: true, force: true });
-console.log(`prerender: landing + ${ssr.legalIds.length} legal pages, sitemap with ${urls.length} urls`);
+console.log(`prerender: landing + ${ssr.serviceIds.length} service + ${ssr.legalIds.length} legal pages, sitemap with ${urls.length} urls`);
