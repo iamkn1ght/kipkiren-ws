@@ -74,33 +74,39 @@ export function publicJwk(): JsonWebKey & { kid: string; use: string; alg: strin
 /**
  * Two-factor step token: proves the password was right, nothing more. It is
  * signed with the same key but a DIFFERENT audience, so requireAuth (which
- * checks JWT_AUDIENCE) refuses it as a session. Five minutes to enter a code.
+ * checks JWT_AUDIENCE) refuses it as a session. It carries a keyed hash of the
+ * emailed code (`ch`) and a nonce (`n`), never the code itself, so the code
+ * is checked without storing anything. Ten minutes to enter it.
  */
-export const MFA_TOKEN_TTL_SECONDS = 300;
+export const MFA_TOKEN_TTL_SECONDS = 600;
 const mfaAudience = (aud: string) => `${aud}:mfa`;
 
-export function signMfaToken(sub: string): string {
+export interface MfaClaims { sub: string; ch: string; n: string; jti: string; exp: number }
+
+export function signMfaToken(sub: string, claims: { ch: string; n: string }): string {
   const env = loadEnv();
-  return jwt.sign({ purpose: 'mfa' }, env.jwtPrivateKey, {
+  return jwt.sign({ purpose: 'mfa', ch: claims.ch, n: claims.n }, env.jwtPrivateKey, {
     algorithm: 'RS256',
     issuer: env.JWT_ISSUER,
     audience: mfaAudience(env.JWT_AUDIENCE),
     expiresIn: MFA_TOKEN_TTL_SECONDS,
     keyid: currentKid(),
     subject: sub,
+    jwtid: randomBytes(12).toString('base64url'),
   });
 }
 
-/** Returns the user id, or null when the token is missing, expired or forged. */
-export function verifyMfaToken(token: string): string | null {
+/** The verified claims, or null when the token is missing, expired or forged. */
+export function verifyMfaToken(token: string): MfaClaims | null {
   const env = loadEnv();
   try {
-    const decoded = jwt.verify(token, env.jwtPublicKey, {
+    const d = jwt.verify(token, env.jwtPublicKey, {
       algorithms: ['RS256'],
       issuer: env.JWT_ISSUER,
       audience: mfaAudience(env.JWT_AUDIENCE),
-    }) as { sub?: string; purpose?: string };
-    return decoded.purpose === 'mfa' && typeof decoded.sub === 'string' ? decoded.sub : null;
+    }) as { sub?: string; purpose?: string; ch?: string; n?: string; jti?: string; exp?: number };
+    if (d.purpose !== 'mfa' || typeof d.sub !== 'string' || !d.ch || !d.n || !d.jti || !d.exp) return null;
+    return { sub: d.sub, ch: d.ch, n: d.n, jti: d.jti, exp: d.exp };
   } catch {
     return null;
   }

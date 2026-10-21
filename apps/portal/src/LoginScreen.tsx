@@ -56,7 +56,8 @@ export function LoginScreen({ role, onBack, backLabel = 'Change role', onCreateA
       const mfa = await signIn(email.trim(), password);
       if (mfa) { setChallenge(mfa); setPassword(''); }
     } catch (err) {
-      if (err instanceof ApiError && err.status === 429) setError('Too many attempts. For your security, wait 10 minutes and try again.');
+      if (err instanceof ApiError && err.code === 'code_send_failed') setError('We could not email your sign-in code just now. Try again in a minute, or contact the studio.');
+      else if (err instanceof ApiError && err.status === 429) setError('Too many attempts. For your security, wait 10 minutes and try again.');
       else if (err instanceof ApiError && err.status === 401) setError('Invalid email or password.');
       else if (err instanceof ApiError) setError(`Sign-in failed · ${err.code}`);
       else setError('Sign-in failed. Check your connection and try again.');

@@ -49,7 +49,7 @@ export interface Session {
   email: string;
 }
 
-export interface MfaChallenge { token: string; setup: boolean; email: string }
+export interface MfaChallenge { token: string; sentTo: string; email: string }
 
 interface AuthContextValue {
   session: Session | null;
@@ -179,7 +179,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signIn = useCallback(async (email: string, password: string): Promise<MfaChallenge | null> => {
     const res = await apiLogin(email, password);
-    if (res.mfa_required && res.mfa_token) return { token: res.mfa_token, setup: !!res.mfa_setup_required, email };
+    if (res.mfa_required && res.mfa_token) return { token: res.mfa_token, sentTo: res.sent_to ?? 'your email', email };
     if (!res.access_token || !applyRealSession(res.access_token, email)) throw new Error('invalid_session_token');
     return null;
   }, [applyRealSession]);

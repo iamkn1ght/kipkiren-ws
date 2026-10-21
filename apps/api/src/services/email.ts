@@ -29,6 +29,7 @@ import { writeAuditEvent } from './audit.js';
 
 export type EmailTemplate =
   | 'message'
+  | 'login_code'
   | 'ticket_raised'
   | 'proforma_ready'
   | 'payment_confirmed'
@@ -137,6 +138,21 @@ export function renderEmail(template: EmailTemplate, vars: Record<string, string
           p(`Scope is now locked and work begins within two business days.`),
           { label: 'View in portal', href }),
         text: `Payment received: KES ${vars.amount ?? ''} for ${vars.ref ?? ''}.${vars.invoice_ref ? `\nReceipt: ${vars.invoice_ref}` : ''}\n\nScope is locked and work begins within two business days. View it in your portal: ${href}\n\nKipkiren Web Services`,
+      };
+    }
+    case 'login_code': {
+      // Staff sign-in second step. The code is the whole point of the email,
+      // so it is large and alone; no link (a link would invite phishing copies).
+      const code = escapeHtml(vars.code ?? '');
+      const mins = escapeHtml(vars.minutes ?? '10');
+      return {
+        subject: 'Your Kipkiren WS sign-in code',
+        html: layout('Your sign-in code',
+          p('Enter this code to finish signing in to the Kipkiren WS console:') +
+          `<div style="font:700 34px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:8px;color:#0D5C4E;margin:8px 0 18px;">${code}</div>` +
+          p(`It expires in ${mins} minutes and works once. If you did not just try to sign in, someone has your password: change it now and tell the studio.`),
+          null, 'Sent because someone signed in to a Kipkiren WS staff account with this email.'),
+        text: `Your Kipkiren WS sign-in code: ${vars.code ?? ''}\n\nIt expires in ${vars.minutes ?? '10'} minutes and works once. If you did not just try to sign in, someone has your password: change it now and tell the studio.`,
       };
     }
     case 'welcome': {

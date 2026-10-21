@@ -7,13 +7,12 @@ import {
   signAccessToken,
   generateRefreshToken,
   hashRefreshToken,
-  signMfaToken,
   verifyMfaToken,
 } from '../lib/tokens.js';
 import { clientIp } from '../lib/client-ip.js';
-import { checkMfaCode, mfaState, roleNeedsMfa, startMfaSetup } from '../services/mfa.js';
+import { checkLoginCode, mfaDisabled, roleNeedsMfa, sendLoginCode } from '../services/mfa.js';
 import { requireAuth } from '../middleware/auth.js';
-import { loginRateLimit, mfaRateLimit, signupRateLimit, passwordResetRateLimit } from '../middleware/rate-limit.js';
+import { loginRateLimit, mfaRateLimit, mfaResendRateLimit, signupRateLimit, passwordResetRateLimit } from '../middleware/rate-limit.js';
 import { HttpError } from '../middleware/error.js';
 import { writeAuditEvent } from '../services/audit.js';
 import { sendEmail, sendStudioAlert } from '../services/email.js';
@@ -151,17 +150,22 @@ authRouter.post('/login', loginRateLimit, async (req: Request, res: Response) =>
 
   const profile = await loadProfile(data.user.id);
 
-  // Staff must pass two-factor before any session exists. The password step
-  // only earns a 5-minute token that can do nothing except submit a code.
+  // Staff must enter a code emailed to them before any session exists. The
+  // password step only earns a 10-minute token that can do nothing except
+  // submit that code (lib/tokens.ts, services/mfa.ts).
   if (roleNeedsMfa(profile.role)) {
-    const state = await mfaState(profile.id);
-    if (state !== 'unavailable') {
-      void writeAuditEvent({ actor_id: profile.id, actor_role: profile.role, event_type: 'auth_mfa_challenged', entity_type: 'auth', entity_id: profile.id, payload_snapshot: { ip: clientIp(req), setup: state === 'needs_setup' } });
-      res.json({ mfa_required: true, mfa_setup_required: state === 'needs_setup', mfa_token: signMfaToken(profile.id) });
+    if (!mfaDisabled()) {
+      try {
+        const step = await sendLoginCode(profile.id, data.user.email ?? '');
+        void writeAuditEvent({ actor_id: profile.id, actor_role: profile.role, event_type: 'auth_mfa_challenged', entity_type: 'auth', entity_id: profile.id, payload_snapshot: { ip: clientIp(req), via: 'email' } });
+        res.json({ mfa_required: true, ...step });
+      } catch {
+        res.status(503).json({ error: 'code_send_failed' });
+      }
       return;
     }
-    // Migration 0010 not applied yet: let staff in (no lockout) but record it.
-    void writeAuditEvent({ actor_id: profile.id, actor_role: profile.role, event_type: 'auth_mfa_unavailable', entity_type: 'auth', entity_id: profile.id, payload_snapshot: { ip: clientIp(req) } });
+    // Emergency switch on (email down): password only, recorded.
+    void writeAuditEvent({ actor_id: profile.id, actor_role: profile.role, event_type: 'auth_mfa_unavailable', entity_type: 'auth', entity_id: profile.id, payload_snapshot: { ip: clientIp(req), reason: 'MFA_DISABLED' } });
   }
 
   const session = await issueSession(res, profile, sessionMeta(req));
@@ -177,40 +181,39 @@ function sessionMeta(req: Request): { userAgent?: string; ip?: string } {
 
 // ----------------------------------------------------------------------------
 // Two-factor (staff). Both calls take the mfa_token from /login.
-//   POST /v1/auth/mfa/setup  -> { secret, otpauth_url } (first time only)
-//   POST /v1/auth/mfa/verify -> a normal session, once the 6-digit code checks out
+//   POST /v1/auth/mfa/verify -> a normal session, once the emailed code matches
+//   POST /v1/auth/mfa/resend -> a fresh code by email (and a fresh token)
 // ----------------------------------------------------------------------------
 const MfaTokenInput = z.object({ mfa_token: z.string().min(20).max(4096) });
 const MfaVerifyInput = MfaTokenInput.extend({ code: z.string().trim().regex(/^\d{6}$/) });
 
-authRouter.post('/mfa/setup', mfaRateLimit, async (req: Request, res: Response) => {
-  const parsed = MfaTokenInput.safeParse(req.body);
-  const userId = parsed.success ? verifyMfaToken(parsed.data.mfa_token) : null;
-  if (!userId) { res.status(401).json({ error: 'mfa_token_invalid' }); return; }
-  const { data: user } = await getServiceClient().from('users').select('email').eq('id', userId).single();
-  const out = await startMfaSetup(userId, (user?.email as string | undefined) ?? 'staff');
-  if (out === 'already_enabled') { res.status(409).json({ error: 'mfa_already_enabled' }); return; }
-  res.json(out);
-});
-
 authRouter.post('/mfa/verify', mfaRateLimit, async (req: Request, res: Response) => {
   const parsed = MfaVerifyInput.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: 'invalid_code' }); return; }
-  const userId = verifyMfaToken(parsed.data.mfa_token);
-  if (!userId) { res.status(401).json({ error: 'mfa_token_invalid' }); return; }
-  const result = await checkMfaCode(userId, parsed.data.code);
+  const claims = verifyMfaToken(parsed.data.mfa_token);
+  if (!claims) { res.status(401).json({ error: 'mfa_token_invalid' }); return; }
+  const result = checkLoginCode(claims, parsed.data.code);
   if (!result.ok) {
-    void writeAuditEvent({ actor_id: userId, actor_role: null, event_type: 'auth_mfa_failed', entity_type: 'auth', entity_id: userId, payload_snapshot: { ip: clientIp(req), reason: result.reason } });
+    void writeAuditEvent({ actor_id: claims.sub, actor_role: null, event_type: 'auth_mfa_failed', entity_type: 'auth', entity_id: claims.sub, payload_snapshot: { ip: clientIp(req), reason: result.reason } });
     res.status(401).json({ error: result.reason });
     return;
   }
-  const profile = await loadProfile(userId);
-  if (result.justEnabled) {
-    void writeAuditEvent({ actor_id: profile.id, actor_role: profile.role, event_type: 'auth_mfa_enabled', entity_type: 'auth', entity_id: profile.id, payload_snapshot: { ip: clientIp(req) } });
-  }
+  const profile = await loadProfile(claims.sub);
   const session = await issueSession(res, profile, sessionMeta(req));
-  void writeAuditEvent({ actor_id: profile.id, actor_role: profile.role, event_type: 'auth_login_succeeded', entity_type: 'auth', entity_id: profile.id, payload_snapshot: { ip: clientIp(req), mfa: true } });
+  void writeAuditEvent({ actor_id: profile.id, actor_role: profile.role, event_type: 'auth_login_succeeded', entity_type: 'auth', entity_id: profile.id, payload_snapshot: { ip: clientIp(req), mfa: 'email' } });
   res.json(publicSession(session));
+});
+
+authRouter.post('/mfa/resend', mfaResendRateLimit, async (req: Request, res: Response) => {
+  const parsed = MfaTokenInput.safeParse(req.body);
+  const claims = parsed.success ? verifyMfaToken(parsed.data.mfa_token) : null;
+  if (!claims) { res.status(401).json({ error: 'mfa_token_invalid' }); return; }
+  const { data: user } = await getServiceClient().from('users').select('email').eq('id', claims.sub).single();
+  try {
+    res.json(await sendLoginCode(claims.sub, (user?.email as string | undefined) ?? ''));
+  } catch {
+    res.status(503).json({ error: 'code_send_failed' });
+  }
 });
 
 // ----------------------------------------------------------------------------

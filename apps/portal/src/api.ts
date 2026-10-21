@@ -105,16 +105,14 @@ export async function apiRequest<T>(path: string, opts: RequestOptions = {}): Pr
 export interface LoginResponse {
   access_token?: string;
   expires_in?: number;
-  // Staff: the password was right, now a two-factor code is needed.
+  // Staff: the password was right; a 6-digit code was emailed to sent_to.
   mfa_required?: boolean;
-  mfa_setup_required?: boolean;
   mfa_token?: string;
+  sent_to?: string;
 }
 
-export interface MfaSetup { secret: string; otpauth_url: string }
-
-export function mfaSetup(mfaToken: string): Promise<MfaSetup> {
-  return apiRequest<MfaSetup>('/v1/auth/mfa/setup', { method: 'POST', body: { mfa_token: mfaToken } });
+export function mfaResend(mfaToken: string): Promise<{ mfa_token: string; sent_to: string }> {
+  return apiRequest<{ mfa_token: string; sent_to: string }>('/v1/auth/mfa/resend', { method: 'POST', body: { mfa_token: mfaToken } });
 }
 
 export function mfaVerify(mfaToken: string, code: string): Promise<{ access_token: string; expires_in: number }> {

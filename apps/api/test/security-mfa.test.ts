@@ -10,6 +10,19 @@ const db = vi.hoisted(() => ({
   tables: {} as Record<string, unknown>,
   writes: [] as { table: string; op: string; row: unknown }[],
   signInOk: true,
+  emailOk: true,
+  lastCode: '' as string,
+  lastTo: '' as string,
+}));
+
+// Capture the emailed code instead of sending it.
+vi.mock('../src/services/email.js', async (orig) => ({
+  ...(await orig<typeof import('../src/services/email.js')>()),
+  sendEmail: vi.fn(async (i: { to: string; variables: Record<string, string> }) => {
+    db.lastCode = i.variables.code ?? '';
+    db.lastTo = i.to;
+    return db.emailOk ? { status: 'sent', provider_ref: 't' } : { status: 'failed', error: 'x' };
+  }),
 }));
 
 vi.mock('../src/lib/supabase.js', () => {
@@ -31,50 +44,30 @@ vi.mock('../src/lib/supabase.js', () => {
   return {
     getServiceClient: () => ({ from: (t: string) => make(t) }),
     createPasswordVerifyClient: () => ({
-      auth: { signInWithPassword: async () => (db.signInOk ? { data: { user: { id: 'u-admin' } }, error: null } : { data: null, error: { message: 'bad' } }) },
+      auth: { signInWithPassword: async () => (db.signInOk ? { data: { user: { id: 'u-admin', email: 'admin@example.com' } }, error: null } : { data: null, error: { message: 'bad' } }) },
     }),
   };
 });
 
 const { buildApp } = await import('../src/app.js');
-const { hotp, verifyTotp, base32Encode, base32Decode, timeStep } = await import('../src/lib/totp.js');
 const { signMfaToken, verifyMfaToken, signAccessToken } = await import('../src/lib/tokens.js');
+const { maskEmail } = await import('../src/services/mfa.js');
 const { clientIp, isCloudflareIp } = await import('../src/lib/client-ip.js');
 
 const app = buildApp();
-const SECRET = base32Encode(Buffer.from('12345678901234567890'));
 
 beforeEach(() => {
   db.writes = [];
   db.signInOk = true;
+  db.emailOk = true;
+  db.lastCode = '';
   db.tables = { users: { id: 'u-admin', role: 'admin', client_id: null, email: 'admin@example.com' } };
-});
-
-describe('TOTP (RFC 6238 / 4226)', () => {
-  it('matches the RFC 4226 HOTP test values', () => {
-    const secret = Buffer.from('12345678901234567890');
-    expect(['755224', '287082', '359152', '969429', '338314'].map((_, i) => hotp(secret, i))).toEqual(['755224', '287082', '359152', '969429', '338314']);
-  });
-  it('round-trips base32', () => {
-    expect(base32Decode(SECRET).toString()).toBe('12345678901234567890');
-  });
-  it('accepts the current code, one step of drift, and refuses replays and junk', () => {
-    const now = 1_792_500_000_000;
-    const code = hotp(Buffer.from('12345678901234567890'), timeStep(now));
-    const ok = verifyTotp(SECRET, code, { nowMs: now });
-    expect(ok.ok).toBe(true);
-    expect(verifyTotp(SECRET, code, { nowMs: now + 30_000 }).ok).toBe(true);
-    expect(verifyTotp(SECRET, code, { nowMs: now + 120_000 }).ok).toBe(false);
-    expect(verifyTotp(SECRET, code, { nowMs: now, afterStep: timeStep(now) }).ok).toBe(false);
-    expect(verifyTotp(SECRET, '12345', { nowMs: now }).ok).toBe(false);
-    expect(verifyTotp(SECRET, 'abcdef', { nowMs: now }).ok).toBe(false);
-  });
 });
 
 describe('two-factor step token', () => {
   it('is not usable as a session, and a session is not usable as an mfa token', async () => {
-    const mfa = signMfaToken('u-admin');
-    expect(verifyMfaToken(mfa)).toBe('u-admin');
+    const mfa = signMfaToken('u-admin', { ch: 'h', n: 'n' });
+    expect(verifyMfaToken(mfa)?.sub).toBe('u-admin');
     const res = await request(app).get('/v1/admin/billing').set('Authorization', `Bearer ${mfa}`);
     expect(res.status).toBe(401);
     expect(verifyMfaToken(signAccessToken({ sub: 'u-admin', role: 'admin' }))).toBeNull();
@@ -82,43 +75,53 @@ describe('two-factor step token', () => {
   });
 });
 
-describe('staff login requires a code', () => {
-  it('admin with two-factor enabled gets a code challenge, not a session', async () => {
-    db.tables.staff_mfa = { enabled_at: '2026-10-21T00:00:00Z', totp_secret: SECRET, last_used_step: null };
-    const res = await request(app).post('/v1/auth/login').send({ email: 'admin@example.com', password: 'correct-horse' });
+describe('staff login requires an emailed code', () => {
+  const login = () => request(app).post('/v1/auth/login').send({ email: 'admin@example.com', password: 'correct-horse' });
+  it('emails a code and returns a step token, not a session', async () => {
+    const res = await login();
     expect(res.status).toBe(200);
-    expect(res.body.mfa_required).toBe(true);
-    expect(res.body.mfa_setup_required).toBe(false);
+    expect(res.body).toMatchObject({ mfa_required: true, sent_to: 'ad***@example.com' });
     expect(res.body.access_token).toBeUndefined();
     expect(res.headers['set-cookie']).toBeUndefined();
+    expect(db.lastTo).toBe('admin@example.com');
+    expect(db.lastCode).toMatch(/^\d{6}$/);
+    // the code itself never appears in the token
+    expect(JSON.stringify(verifyMfaToken(res.body.mfa_token))).not.toContain(db.lastCode);
   });
-  it('admin without two-factor is sent to setup', async () => {
-    db.tables.staff_mfa = null;
-    const res = await request(app).post('/v1/auth/login').send({ email: 'admin@example.com', password: 'correct-horse' });
-    expect(res.body).toMatchObject({ mfa_required: true, mfa_setup_required: true });
+  it('the right code signs in once; a wrong code and a replay do not', async () => {
+    const { body } = await login();
+    const wrong = db.lastCode === '000000' ? '111111' : '000000';
+    expect((await request(app).post('/v1/auth/mfa/verify').send({ mfa_token: body.mfa_token, code: wrong })).status).toBe(401);
+    const ok = await request(app).post('/v1/auth/mfa/verify').send({ mfa_token: body.mfa_token, code: db.lastCode });
+    expect(ok.status).toBe(200);
+    expect(typeof ok.body.access_token).toBe('string');
+    const again = await request(app).post('/v1/auth/mfa/verify').send({ mfa_token: body.mfa_token, code: db.lastCode });
+    expect(again.status).toBe(401);
+    expect(again.body.error).toBe('code_used');
   });
-  it('a correct code issues the session; a wrong one does not', async () => {
-    db.tables.staff_mfa = { enabled_at: '2026-10-21T00:00:00Z', totp_secret: SECRET, last_used_step: null };
-    const token = signMfaToken('u-admin');
-    const bad = await request(app).post('/v1/auth/mfa/verify').send({ mfa_token: token, code: '000000' });
-    expect(bad.status).toBe(401);
-    const good = await request(app).post('/v1/auth/mfa/verify').send({ mfa_token: token, code: hotp(Buffer.from('12345678901234567890'), timeStep()) });
-    expect(good.status).toBe(200);
-    expect(typeof good.body.access_token).toBe('string');
+  it('a code from one login does not work with another login token', async () => {
+    const first = await login(); const code1 = db.lastCode;
+    const second = await login();
+    if (code1 !== db.lastCode) {
+      expect((await request(app).post('/v1/auth/mfa/verify').send({ mfa_token: second.body.mfa_token, code: code1 })).status).toBe(401);
+    }
+    expect(first.body.mfa_token).not.toBe(second.body.mfa_token);
   });
-  it('setup returns a secret and authenticator link for a valid token only', async () => {
-    db.tables.staff_mfa = null;
-    expect((await request(app).post('/v1/auth/mfa/setup').send({ mfa_token: 'x'.repeat(30) })).status).toBe(401);
-    const res = await request(app).post('/v1/auth/mfa/setup').send({ mfa_token: signMfaToken('u-admin') });
-    expect(res.status).toBe(200);
-    expect(res.body.otpauth_url).toMatch(/^otpauth:\/\/totp\/Kipkiren%20WS/);
-    expect(res.body.secret).toMatch(/^[A-Z2-7]{32}$/);
+  it('fails closed when the email cannot be sent', async () => {
+    db.emailOk = false;
+    const res = await login();
+    expect(res.status).toBe(503);
+    expect(res.body.error).toBe('code_send_failed');
+    expect(res.body.access_token).toBeUndefined();
   });
-  it('clients skip two-factor', async () => {
+  it('clients skip the code', async () => {
     db.tables.users = { id: 'u-admin', role: 'client', client_id: 'c1' };
     const res = await request(app).post('/v1/auth/login').send({ email: 'c@example.com', password: 'correct-horse' });
     expect(res.status).toBe(200);
     expect(typeof res.body.access_token).toBe('string');
+  });
+  it('masks the address it reports', () => {
+    expect(maskEmail('admin@kipkiren.co.ke')).toBe('ad***@kipkiren.co.ke');
   });
 });
 
