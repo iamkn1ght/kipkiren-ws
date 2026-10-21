@@ -7,7 +7,7 @@
 import { renderToString } from 'react-dom/server';
 import { FAQ, Landing } from './Landing.tsx';
 import { LEGAL_NAV, LegalPage, legalDocMeta, type LegalDocId } from './Legal.tsx';
-import { SERVICE_NAV, ServicePage, servicePageMeta, type ServiceId } from './Services.tsx';
+import { ALL_PAGES, ServicePage, servicePageMeta, type ServiceId } from './Services.tsx';
 
 const noop = () => {};
 
@@ -23,7 +23,7 @@ export function renderLegal(id: LegalDocId): string {
 
 export { legalDocMeta, servicePageMeta };
 
-export const serviceIds: ServiceId[] = SERVICE_NAV.map((n) => n.id);
+export const serviceIds: ServiceId[] = ALL_PAGES.map((n) => n.id);
 
 export function renderService(id: ServiceId): string {
   return renderToString(<ServicePage page={id} onBack={noop} onOpen={noop} onStart={noop} />);

@@ -1,0 +1,29 @@
+# Kipkiren Web Services
+
+> Kipkiren Web Services (Kipkiren WS) is a web design studio in Nairobi, Kenya. It designs, builds and runs websites for Kenyan businesses: a fixed-price proforma before any work, then a monthly care plan that keeps the site hosted, monitored, backed up and updated. Part of Kipkiren Teknolojia. Contact: studio@kipkiren.co.ke.
+
+Prices (Kenyan shillings, excluding 16% VAT):
+- Starter: build KES 45,000, care KES 3,500 per month
+- Growth: build KES 89,000, care KES 7,500 per month
+- Business: build KES 165,000, care KES 18,000 per month
+- Custom work: from KES 3,500 per hour (design and build), KES 3,000 per hour (SEO)
+
+Payment today is by bank transfer against an approved proforma; M-Pesa and card checkout are coming soon. Clients own their site, code and accounts; there is no lock-in.
+
+## Services
+- [Web design in Nairobi](https://ws.kipkiren.co.ke/web-design-nairobi): design and build, two to four weeks for most sites
+- [Website care and maintenance](https://ws.kipkiren.co.ke/website-maintenance-kenya): hosting, uptime checks every five minutes, SSL, backups, patches, monthly changes
+- [SEO for Kenyan businesses](https://ws.kipkiren.co.ke/seo-services-kenya): technical SEO, structured data, Search Console, Business Profile
+- [Managed website hosting](https://ws.kipkiren.co.ke/website-hosting-kenya): included in every care plan
+- [Pricing](https://ws.kipkiren.co.ke/pricing): Build + Care plans in full
+
+## Guides
+- [How much does a website cost in Kenya?](https://ws.kipkiren.co.ke/website-cost-kenya)
+- [How to choose a web designer in Nairobi](https://ws.kipkiren.co.ke/choose-web-designer-nairobi)
+- [Website maintenance checklist](https://ws.kipkiren.co.ke/website-maintenance-checklist)
+
+## Policies
+- [Terms of Service](https://ws.kipkiren.co.ke/terms)
+- [Privacy Policy](https://ws.kipkiren.co.ke/privacy)
+- [Service Agreement highlights](https://ws.kipkiren.co.ke/sla)
+- [FAQ](https://ws.kipkiren.co.ke/faq)

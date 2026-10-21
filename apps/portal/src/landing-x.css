@@ -682,3 +682,7 @@
   /* room for the glass shadows inside the swipe rows (no hard cut-off line) */
   .kx .ribbon, .kx .proc-grid, .kx .plans, .kx .compare { padding-bottom: 46px; margin-bottom: -28px; }
 }
+
+/* Service panel "Learn more" link to the indexable service page. */
+.kx .panel .more { display: inline-flex; align-items: center; gap: 6px; margin-top: 16px; font-family: var(--mono, ui-monospace, monospace); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: inherit; opacity: .85; text-decoration: none; border-bottom: 1px solid currentColor; padding-bottom: 2px; width: fit-content; }
+.kx .panel .more:hover { opacity: 1; }

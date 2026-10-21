@@ -16,10 +16,11 @@ import './landing.css';
 const cssVars = (v: Record<string, string | number>) => v as CSSProperties;
 const CONTACT = 'studio@kipkiren.co.ke';
 
-export type ServiceId = 'web-design-nairobi' | 'website-maintenance-kenya' | 'seo-services-kenya' | 'website-hosting-kenya' | 'pricing';
+export type ServiceId = 'web-design-nairobi' | 'website-maintenance-kenya' | 'seo-services-kenya' | 'website-hosting-kenya' | 'pricing'
+  | 'website-cost-kenya' | 'choose-web-designer-nairobi' | 'website-maintenance-checklist';
 
 interface Block { h: string; body?: string[]; list?: string[] }
-interface ServiceDoc { id: ServiceId; title: string; metaTitle: string; kicker: string; intro: string; blocks: Block[]; serviceType?: string; priceFrom?: number }
+interface ServiceDoc { id: ServiceId; title: string; metaTitle: string; kicker: string; intro: string; blocks: Block[]; serviceType?: string; priceFrom?: number; guide?: boolean }
 
 export const SERVICE_NAV: { id: ServiceId; label: string }[] = [
   { id: 'web-design-nairobi', label: 'Web design' },
@@ -28,6 +29,15 @@ export const SERVICE_NAV: { id: ServiceId; label: string }[] = [
   { id: 'website-hosting-kenya', label: 'Managed hosting' },
   { id: 'pricing', label: 'Pricing' },
 ];
+
+// Guides: plain answers to what business owners search before hiring.
+export const GUIDE_NAV: { id: ServiceId; label: string }[] = [
+  { id: 'website-cost-kenya', label: 'What a website costs' },
+  { id: 'choose-web-designer-nairobi', label: 'Choosing a web designer' },
+  { id: 'website-maintenance-checklist', label: 'Maintenance checklist' },
+];
+export const ALL_PAGES = [...SERVICE_NAV, ...GUIDE_NAV];
+const GUIDE_DATE = '2026-10-22';
 
 const kes = (s: string) => `KES ${s}`;
 const toNum = (s: string) => Number(s.replace(/,/g, ''));
@@ -138,17 +148,118 @@ const DOCS: Record<ServiceId, ServiceDoc> = {
       { h: 'How payment works', body: ['You approve a fixed proforma, then pay by bank transfer against its reference. We confirm it and email a receipt. M-Pesa and card checkout are coming soon. Care is invoiced on the 1st and due by the 7th.'] },
     ],
   },
+  'website-cost-kenya': {
+    id: 'website-cost-kenya',
+    guide: true,
+    title: 'How much does a website cost in Kenya?',
+    metaTitle: 'How Much Does a Website Cost in Kenya? (2026 Guide) · Kipkiren',
+    kicker: 'Guide · Costs',
+    intro: 'A plain guide to what a business website costs in Kenya: the one-time build, the running costs most quotes leave out, and the questions that stop a cheap site becoming an expensive one.',
+    blocks: [
+      { h: 'Every website has two costs', body: ['The build is paid once: design, pages, features and launch. The running cost never stops: hosting, the domain renewal, security certificates, backups, updates and the small fixes every site needs.', 'Many quotes cover only the build. A site that nobody runs slowly breaks: forms stop sending, software goes out of date, and a hacked site can cost more to clean up than it cost to build.'] },
+      { h: 'What makes a build cost more', list: [
+        'More pages, and more kinds of page (a product catalogue is more work than an About page).',
+        'Custom design rather than a lightly edited template.',
+        'Features: online payments, bookings, an online shop, member logins.',
+        'Connections to other systems, such as M-Pesa, accounting or a CRM.',
+        'Writing the content for you, and translating it.',
+        'A tight deadline.',
+      ] },
+      { h: 'Running costs to budget for', list: [
+        'Your domain name, renewed every year through a registrar.',
+        'Hosting, so the site stays online and fast.',
+        'An SSL certificate (the padlock), often free today but it must be renewed on time.',
+        'Updates, security patches and backups.',
+        'Someone to change content and fix things when they break.',
+      ] },
+      { h: 'What Kipkiren charges', body: ['We publish our prices. All exclude 16% VAT, and every job is quoted on a fixed proforma first.'], list: PLAN_LINES },
+      { h: 'Questions to ask any web designer', list: [
+        'Is the price fixed and written down before any work starts?',
+        'Whose name are the domain, hosting account and code registered in?',
+        'What happens after launch, and what does it cost each month?',
+        'How fast do you respond when something breaks, in writing?',
+        'If I leave, do I get everything: code, database, domain and accounts?',
+      ] },
+    ],
+  },
+  'choose-web-designer-nairobi': {
+    id: 'choose-web-designer-nairobi',
+    guide: true,
+    title: 'How to choose a web designer in Nairobi',
+    metaTitle: 'How to Choose a Web Designer in Nairobi: 7 Checks · Kipkiren',
+    kicker: 'Guide · Hiring',
+    intro: 'Seven checks that separate a web designer who builds and disappears from one who still answers a year later, written for Kenyan business owners hiring for the first time.',
+    blocks: [
+      { h: 'The seven checks', list: [
+        'A fixed, written quote before work starts, listing what is and is not included.',
+        'Ownership: the domain, hosting and code registered in your business name, not the designer\'s.',
+        'A plan for after launch: who keeps the site updated, backed up and secure, and at what monthly cost.',
+        'Response times in writing, so you know how long a broken site stays broken.',
+        'Real work you can visit: ask for live links, not screenshots, and ask one past client how it went.',
+        'Data protection: if your site collects customer details, ask how it meets the Data Protection Act, 2019.',
+        'Official receipts and invoices for every payment, with VAT shown.',
+      ] },
+      { h: 'Red flags', list: [
+        'The domain is registered in the designer\'s own name.',
+        'No written scope, just a price over the phone.',
+        'Full payment demanded before you have seen any design.',
+        'Unlimited revisions with no timeline, which usually means no plan.',
+        'Nobody named for support after launch.',
+      ] },
+      { h: 'How we answer these', body: ['Every Kipkiren job starts with a fixed proforma you approve. Your site, code and accounts are yours, with no lock-in. Care plans put response times in writing (12 to 48 business hours by plan), and every payment gets an emailed receipt.'] },
+    ],
+  },
+  'website-maintenance-checklist': {
+    id: 'website-maintenance-checklist',
+    guide: true,
+    title: 'Website maintenance checklist for Kenyan businesses',
+    metaTitle: 'Website Maintenance Checklist (Daily to Yearly) · Kipkiren',
+    kicker: 'Guide · Maintenance',
+    intro: 'What keeping a business website healthy actually involves, from daily to yearly, so you can do it yourself or know what to expect from whoever does it for you.',
+    blocks: [
+      { h: 'Continuously', list: ['Uptime monitoring that alerts someone when the site goes down.', 'Automatic backups of the site and its data.', 'Security alerts for the software the site runs on.'] },
+      { h: 'Every week', list: ['Test the contact form, checkout or booking flow by sending a real enquiry.', 'Read the security alerts and plan any urgent update.'] },
+      { h: 'Every month', list: [
+        'Apply updates and security patches.',
+        'Restore one backup somewhere safe, to prove it works.',
+        'Open the site on a phone over mobile data and check it is still fast.',
+        'Update prices, opening hours, staff and offers.',
+        'Check Google Search Console for errors and pages that dropped out.',
+      ] },
+      { h: 'Every year', list: [
+        'Renew the domain, ideally on auto-renew, and check who holds it.',
+        'Check the SSL certificate renews automatically.',
+        'Review every page: remove what is out of date, add what customers keep asking.',
+        'Remove website and email access for anyone who has left.',
+      ] },
+      { h: 'Do it yourself, or hand it over', body: ['All of this takes a few hours a month. Kipkiren care plans cover it from KES 3,500 a month, excluding VAT, with uptime checks every five minutes and a named team.'] },
+    ],
+  },
 };
 
 export function serviceFromPath(path: string): ServiceId | null {
   const id = path.replace(/^\/+|\/+$/g, '').replace(/\.html$/, '');
-  return SERVICE_NAV.some((n) => n.id === id) ? (id as ServiceId) : null;
+  return ALL_PAGES.some((n) => n.id === id) ? (id as ServiceId) : null;
 }
 
 export function servicePageMeta(id: ServiceId): { title: string; description: string; jsonLd: string } {
   const d = DOCS[id];
   const url = `https://ws.kipkiren.co.ke/${id}`;
-  const ld = d.serviceType
+  const ld = d.guide
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: d.title,
+        description: d.intro,
+        url,
+        mainEntityOfPage: url,
+        inLanguage: 'en-KE',
+        datePublished: GUIDE_DATE,
+        dateModified: GUIDE_DATE,
+        author: { '@id': 'https://ws.kipkiren.co.ke/#business' },
+        publisher: { '@id': 'https://ws.kipkiren.co.ke/#business' },
+      }
+    : d.serviceType
     ? {
         '@context': 'https://schema.org',
         '@type': 'Service',
@@ -204,6 +315,12 @@ export function ServicePage({ page, onBack, onOpen, onStart }: { page: ServiceId
               <a key={n.id} href={`/${n.id}`} className={n.id === page ? 'active' : ''} onClick={go(n.id)}>{n.label}</a>
             ))}
           </nav>
+          <div className="klp-mono lbl" style={cssVars({ marginTop: 22 })}>Guides</div>
+          <nav>
+            {GUIDE_NAV.map((n) => (
+              <a key={n.id} href={`/${n.id}`} className={n.id === page ? 'active' : ''} onClick={go(n.id)}>{n.label}</a>
+            ))}
+          </nav>
           <div className="klp-legal-help">
             <div className="klp-mono">Talk to a person</div>
             <a href={`mailto:${CONTACT}`}>{CONTACT}</a>
@@ -214,7 +331,7 @@ export function ServicePage({ page, onBack, onOpen, onStart }: { page: ServiceId
         <article className="klp-legal-doc">
           <span className="klp-eyebrow teal">{d.kicker}</span>
           <h1 className="klp-display-lg">{d.title}</h1>
-          <div className="klp-legal-meta klp-mono">Kipkiren Web Services · Nairobi, Kenya · Prices exclude 16% VAT</div>
+          <div className="klp-legal-meta klp-mono">{d.guide ? 'Guide · Kipkiren Web Services · Updated October 2026' : 'Kipkiren Web Services · Nairobi, Kenya · Prices exclude 16% VAT'}</div>
           <p className="klp-lead klp-legal-intro">{d.intro}</p>
 
           {d.blocks.map((b) => (
@@ -235,7 +352,7 @@ export function ServicePage({ page, onBack, onOpen, onStart }: { page: ServiceId
               <a className="klp-btn ghost" href={`mailto:${CONTACT}?subject=${encodeURIComponent(d.title)}`}>Email the studio</a>
             </div>
             <div className="klp-legal-cross">
-              {SERVICE_NAV.filter((n) => n.id !== page).map((n) => (
+              {(d.guide ? [...GUIDE_NAV, ...SERVICE_NAV] : SERVICE_NAV).filter((n) => n.id !== page).map((n) => (
                 <a key={n.id} href={`/${n.id}`} onClick={go(n.id)}>{n.label} <span>&rarr;</span></a>
               ))}
             </div>
