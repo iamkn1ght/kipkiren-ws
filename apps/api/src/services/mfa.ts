@@ -11,6 +11,9 @@
  *
  * Escape hatch: MFA_DISABLED=true on Railway lets staff in with the password
  * alone (audited). Use it only if email delivery is down, and remove it after.
+ *
+ * The staff_mfa table from migration 0010 belonged to the earlier
+ * authenticator-app version and is no longer read or written.
  */
 
 import { createHmac, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
