@@ -42,7 +42,7 @@ const DOCS: Record<LegalDocId, LegalDoc> = {
     intro: 'These terms govern the design, build and ongoing care of websites and related services by Kipkiren Web Services ("Kipkiren", "we", "us") for you, the client. By approving a proforma you accept them. We have written them in plain language on purpose.',
     review: true,
     blocks: [
-      { h: '1. Who we are', body: ['Kipkiren Web Services is a managed web services studio based in Nairobi, Kenya, operating as part of Kipkiren Teknolojia [company registration to be confirmed]. You can reach a person at ' + CONTACT + ' during business hours, East Africa Time.'] },
+      { h: '1. Who we are', body: ['Kipkiren Web Services is a managed web services studio based in Nairobi, Kenya, operating as part of Kipkiren Teknolojia. You can reach a person at ' + CONTACT + ' during business hours, East Africa Time.'] },
       { h: '2. How we scope and price work', body: ['Nothing is built before you approve it. Every piece of work, from the initial build to every later change, is written up as a proforma showing fixed scope and a fixed price in Kenyan shillings, with 16% VAT itemised separately.', 'You approve the proforma in your portal or by written confirmation. That approval is the contract for that work. We do not begin, and you are not charged, until you approve.'] },
       { h: '3. The Build and Care model', body: ['A build is a one-time project delivered for the price on its proforma. Care is a monthly service that keeps a live site hosted, monitored, backed up, patched and updated, with a defined block of change requests each month.', 'Your build includes its first year of care so the site is looked after from launch. After the first year, care continues month to month and you may pause or stop it with 30 days notice.'] },
       { h: '4. Payment', body: ['Today we accept bank transfer: you pay against the proforma reference and we confirm receipt, then email you a receipt. M-Pesa (through Kipkiren Pay) and card payments (through Paystack) are coming soon. Monthly care is invoiced in advance on the first of each month and due by the seventh.', 'Invoices are due within 14 days. We may pause work or suspend a service on an account more than 30 days overdue, having given you written notice first.'] },
@@ -61,11 +61,11 @@ const DOCS: Record<LegalDocId, LegalDoc> = {
     blocks: [
       { h: '1. What we collect', list: ['Contact and account details: name, business name, email, phone.', 'Billing details: proformas, invoices and payment references (card and M-Pesa numbers are handled by our payment providers, not stored by us).', 'Support content: the tickets, messages and files you send us.', 'Operational data: uptime, error and performance logs for sites we host.'] },
       { h: '2. Why we use it (lawful basis)', body: ['We process your data to deliver the services you asked for (performance of our contract), to meet legal and tax obligations, and for the legitimate interest of running and securing our studio. Where the law requires consent, for example for non-essential analytics, we ask for it first.'] },
-      { h: '3. Where your data is held', body: ['Our application data is hosted with Supabase in the eu-west-1 region (Ireland). This means some personal data is transferred outside Kenya. We rely on the recipient country\'s recognised data-protection standards and appropriate safeguards for that transfer, consistent with sections 48 and 49 of the Data Protection Act. [Cross-border transfer wording being finalised with counsel.]'] },
+      { h: '3. Where your data is held', body: ['Our application data is hosted with Supabase in the eu-west-1 region (Ireland). This means some personal data is transferred outside Kenya. We rely on the recipient country\'s recognised data-protection standards and appropriate safeguards for that transfer, consistent with sections 48 and 49 of the Data Protection Act.'] },
       { h: '4. Who we share it with', body: ['We share data only with the processors that run the service:'], list: ['Supabase, for application hosting and the database (EU).', 'Cloudflare, for DNS, edge and security on sites we manage.', 'Google (Gmail), to send you ticket, proforma, invoice and receipt emails.', 'Kipkiren Pay and Paystack, for M-Pesa and card payments, once those options launch (coming soon).', 'An SMS provider, for text notifications, once SMS launches (coming soon).'] },
       { h: '5. How long we keep it', body: ['We keep account and billing records for as long as you are a client and for seven years afterwards to meet Kenyan tax and accounting requirements. Operational logs are kept for a rolling window and then discarded. You can ask us to delete data we are not legally required to retain.'] },
       { h: '6. Your rights', body: ['Under the Data Protection Act you may ask us to access, correct, delete, restrict or port your personal data, and object to certain processing. To exercise any of these, email ' + CONTACT + ' or use the data request tool in your portal. We respond within the statutory timeframe.', 'You also have the right to lodge a complaint with the Office of the Data Protection Commissioner (ODPC).'] },
-      { h: '7. Contact', body: ['Questions about this policy or your data: ' + CONTACT + '. Our data protection contact [DPO details to be confirmed] will respond.'] },
+      { h: '7. Contact', body: ['Questions about this policy or your data: ' + CONTACT + '. Our data protection contact responds from privacy@kipkiren.co.ke.'] },
     ],
   },
   refunds: {
@@ -123,7 +123,7 @@ const DOCS: Record<LegalDocId, LegalDoc> = {
   },
 };
 
-const SITE_TITLE = 'Web Design in Nairobi & Website Care · Kipkiren WS';
+const SITE_TITLE = 'Kipkiren Web Services · Web Design in Nairobi & Website Care';
 
 /** Map a URL path (/privacy, /privacy/, /privacy.html) to a legal doc id. */
 export function legalDocFromPath(path: string): LegalDocId | null {
